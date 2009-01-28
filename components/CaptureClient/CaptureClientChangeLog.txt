@@ -1,0 +1,36 @@
+Change log for Capture Client
+-----------------------------
+1.0.0 (03/28/2008)
+* Added the 'EdsSetCapacity(camera, capacity)' to the connectCamera function in CameraControl.cpp, 
+this was the issue with 1DS Mark III
+
+0.9.6 (03/26/2008)
+* Removed the UI_Lock camera messages from CameraControl.cpp, trying to get the 1DS Mark III to work properly.
+
+0.9.6 (03/25/2008)
+* Increased the command string length to 12 bytes
+
+0.9.5 (03/22/2008)
+* Added the PreTranslateMsg function to captureDlg.cpp to prevent the dialog box from closing on ENTER / ESC
+* Fixed the bit padding issue in CaptureSequence.cpp, in ToggleOneFiber function 
+* Added the 'Lights delay' edit box to captureDlg, added saving and loading from the config file, and changed capturesequence.cpp to use it.
+* Modified ToggleOneFiber function, and SingleRelease function in CaptureSequence.cpp to handle light sync issues
+
+0.9.4 (03/17/2008)
+* Changed the fixed number of lights (32) to constant MAX_LIGHTS in CaptureSequence.cpp, 
+	changed the code to deal with variable numbers of lights.
+* Changed the text 'fiber' to 'light' in CaptureSequence.cpp
+
+0.9.3 (03/10/2008)
+* Removed the legacy = false patch in CameraControl.cpp, it didn't help, the image quality control box is going to be hidden for now.
+* Commented all the image quality combo box code in CaptureDlg.cpp
+* Added code to turn on the next lamp while the camera is downloading the picture
+
+0.9.2 (03/01/2008)
+* Removed (commented) the 1 second delay after taking a picture in CaptureSequence.cpp
+* Removed the saving and restoring of Av, Tv and ISO from the config file in captureDlg.cpp
+(The 'image quality' is still saved and restored)
+* Changed the log file name in CaptureSequence.cpp from 'default.log' to <capture_prefix>.log
+* Added the '_' before image sequence number in the image file name
+* Saved the patch file name in the log file (CaptureSequence.cpp/h)
+* Added scrolling to the Log Edit box (StatusBuffer.cpp)
