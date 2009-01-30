@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Hervé Drolon, FreeImage Team
+ * Copyright (c) 2005, Herve Drolon, FreeImage Team
  * Copyright (c) 2007, Callum Lerwick <seg@haxxed.com>
  * All rights reserved.
  *
@@ -80,9 +80,14 @@ Allocate memory aligned to a 16 byte boundry
 #else /* Not WIN32 */
 	#if defined(__sun)
 			#define HAVE_MEMALIGN
-		#elif defined(__GNUC__)
+		#elif defined(__GNUC__) && !defined(__APPLE__)
 			#define HAVE_MEMALIGN
 			#include <malloc.h>		
+		#elif defined(__GNUC__) && defined(__APPLE__)
+			//Note that on macosx malloc is in a non standard place
+			//#include <malloc/malloc.h>
+			// and it seems to do not hve the posix-memalign.
+			// so if apple do nothing...
 		/* Linux x86_64 and OSX always align allocations to 16 bytes */
 		#elif !defined(__amd64__) && !defined(__APPLE__)	
 			/* FIXME: Yes, this is a big assumption */
