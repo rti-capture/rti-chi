@@ -31,7 +31,7 @@
 static const char *TITLE = "Rti Viewer 0.1 - VCLab (C) 2008";
 
 RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
-	QDialog(parent),
+	QWidget(parent),
 	rendDlg(NULL)
 {
 	//Browser

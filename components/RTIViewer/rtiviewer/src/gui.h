@@ -24,7 +24,7 @@
 #include "httpthread.h"
 
 // Qt headers
-#include <qdialog.h>
+#include <QWidget>
 #include <QPushButton>
 #include <QToolBar>
 #include <QAction>
@@ -37,7 +37,7 @@
 /*!
   The class defines and manages the main window.
 */
-class RtiViewerDlg : public QDialog
+class RtiViewerDlg : public QWidget
 {
 	Q_OBJECT
 

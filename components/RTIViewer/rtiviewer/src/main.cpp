@@ -21,6 +21,6 @@ int main( int argc, char ** argv )
 	QApplication app( argc, argv );
 	
 	RtiViewerDlg *maindlg = new RtiViewerDlg();
-	QObject::connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
-	return maindlg->exec();
+	maindlg->show();
+	return app.exec();
 }
