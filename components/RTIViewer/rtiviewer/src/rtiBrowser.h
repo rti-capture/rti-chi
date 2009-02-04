@@ -17,6 +17,7 @@
 #include "util.h"
 
 #include <vcg/space/point3.h>
+#include <vcg/math/matrix33.h>
 
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
@@ -112,6 +113,11 @@ protected:
 	  Wheel event handler.
 	*/
 	void wheelEvent(QWheelEvent * event);
+
+	/*!
+	  Leave event handler.
+	*/
+	void leaveEvent(QEvent *event);
 	
 // private data member
 private:
@@ -119,7 +125,9 @@ private:
 	Rti* img; /*!< RTI image to display. */
 	
 	vcg::Point3f light; /*!< Light vector. */
-	bool lightChanged; /*!< Holds whether the light direction is changing by the user with a mouse action. */
+	bool lightChanged; /*!< Holds whether the light direction is changing by the user with the middle button of the mouse. */
+	bool lightChangedRight; /*!< Holds whether the light direction is changing by the user with the right button of the mouse. */
+	vcg::Point3f lastLight; /*!< Light vector used to update the light direction during the mouse interaction. */
 	float dxLight; /*!< Offset on x-axis of light vector. */
 	float dyLight; /*!< Offset on y-axis of light vector. */
 	
@@ -148,9 +156,11 @@ private:
 	QShortcut zoomIn; /*!< Shortcut for zoom in action.  */
 	QShortcut zoomOut; /*!< Shortcut for zoom out action. */
 	
-	QPoint dragPoint; /*!< Last point received from a move event */ 
+	QPoint dragPoint; /*!< Second-last point received from a move event */
+	QPoint nextDragPoint; /*!< Last point received from a move event */
 
 	bool dragging; /*!< Holds whether the user executes a dragging operation. */
+	bool focus; /*!< Holds whether the cursor of the mouse is over the image and the image can be panned. */
 	
 	QTimer* timer; /*!< Timer to manage the paint event. */
 	
@@ -204,6 +214,10 @@ private:
     */
 	void updateSubImage(int offx, int offy);
 
+	/*!
+	  Updates the light vector in the light control.
+	*/
+	void updateLight();
 
 // private Qt slots
 private slots:
@@ -269,7 +283,7 @@ signals:
 	/*!
 	  Emitted to set the light direction.
 	*/
-	void setLightDir(const vcg::Point3f& l);
+	void setLightDir(const vcg::Point3f& l, bool refresh);
 
 // public Qt slots
 public slots:

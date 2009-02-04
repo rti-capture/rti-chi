@@ -13,6 +13,7 @@
 
 #include <QPainter>
 #include <QMouseEvent>
+#include <QApplication>
 
 Navigator::Navigator(QWidget *parent, int w, int h, int zoom) : QWidget(parent),
 	height(h),	
@@ -58,7 +59,7 @@ void Navigator::paintEvent(QPaintEvent *event)
 		points[0] = selection.bottomRight();
 		points[1] = QPointF(points[0].x(), points[0].y() - 10);
 		points[2] = QPointF(points[0].x() - 10, points[0].y());
-		painter.drawPolygon(points, 3);
+		painter.drawPolygon(points, 3); 
 	}
 }
 
@@ -66,16 +67,18 @@ void Navigator::paintEvent(QPaintEvent *event)
 void Navigator::mousePressEvent(QMouseEvent *event)
 {
 	if (!image) return;
-	if (event->button() == Qt::LeftButton && selection.contains(event->pos()))
+	QRect rect(selection.bottomRight().x() - 12, selection.bottomRight().y() - 12, 14, 14);
+	if (event->button() == Qt::LeftButton && (selection.contains(event->pos()) || rect.contains(event->pos())))
 	{
-		QPolygon polygon;
 		dragging = true;
-		polygon << selection.bottomRight();
-		polygon << QPoint(selection.right(), selection.bottom() - 10);
-		polygon << QPoint(selection.right() - 10, selection.bottom());
 		timer->start(40);
-		if (polygon.containsPoint(event->pos(), Qt::OddEvenFill))
+		if (rect.contains(event->pos()))
+		{
 			resize = true;
+			QApplication::setOverrideCursor(Qt::SizeFDiagCursor);
+		}
+		else
+			QApplication::setOverrideCursor(Qt::SizeAllCursor);
 		dragPoint = event->pos();
 	}
 }
@@ -113,6 +116,7 @@ void Navigator::mouseReleaseEvent(QMouseEvent *event)
 		resize = false;
 		updateSubImage();
 		update();
+		QApplication::restoreOverrideCursor();
 	}
 }
 

@@ -25,6 +25,7 @@ RtiBrowser::RtiBrowser(int w, int h, Rti *image, int maxZ, QWidget *parent): QGL
 	img(NULL),
 	light(0,0,1),
 	lightChanged(false),
+	lightChangedRight(false),
 	dxLight(0.0f),
 	dyLight(0.0f),
 	subimg(0,0,0,0),
@@ -48,6 +49,7 @@ RtiBrowser::RtiBrowser(int w, int h, Rti *image, int maxZ, QWidget *parent): QGL
 	timer(new QTimer(this)),
 	maxZoom(maxZ),
 	dragging(false),
+	focus(false),
 	interactive(true),
 	posUpdated(false),
 	defaultMode(QKeySequence(Qt::ALT + Qt::Key_Q), this),
@@ -105,6 +107,7 @@ RtiBrowser::RtiBrowser(int w, int h, Rti *image, int maxZ, QWidget *parent): QGL
 	// set RTI image if given
 	if (image)
 		setImage(image);
+	setMouseTracking(true);
 }
 
 
@@ -274,12 +277,23 @@ void RtiBrowser::mousePressEvent(QMouseEvent *event)
 		timer->start(50);
 		dragging = true;
 	}
-	else if (event->button() == Qt::RightButton)
+	else if (event->button() == Qt::MidButton)
 	{
 		// Begins a operation to modify the light direction.
+		QApplication::setOverrideCursor(QCursor(Qt::CrossCursor));
 		dragPoint = event->pos();
 		timer->start(50);
 		lightChanged = true;
+		dxLight = 0;
+		dyLight = 0;
+	}
+	else if (event->button() == Qt::RightButton)
+	{
+		QApplication::setOverrideCursor(QCursor(Qt::CrossCursor));
+		dragPoint = event->pos();
+		timer->start(50);
+		lightChangedRight = true;
+		lastLight = light;
 		dxLight = 0;
 		dyLight = 0;
 	}
@@ -311,6 +325,41 @@ void RtiBrowser::mouseMoveEvent(QMouseEvent *event)
 		dyLight = (event->y() - dragPoint.y())/(zoom*2);
 		posUpdated = true;
 	}
+	else if (lightChangedRight)
+	{
+		dxLight = ((event->x() - dragPoint.x())/ static_cast<float>(_width)) * M_PI;
+		dyLight = ((event->y() - dragPoint.y())/ static_cast<float>(_height)) * M_PI;
+		nextDragPoint = event->pos();
+		posUpdated = true;
+	}
+	else if (event->button() ==  Qt::NoButton)
+	{
+		if (viewWidth == _width || viewHeight == _height)
+		{
+			QRect rect((_width - viewWidth)/2.0, (_height - viewHeight)/2.0, viewWidth, viewHeight);
+			if (rect.contains(event->pos()))
+			{
+				if (!focus && !lightChanged && !lightChangedRight)
+				{
+					focus = true;
+					QApplication::setOverrideCursor(QCursor(Qt::SizeAllCursor));
+				}
+			}
+			else
+			{
+				if (focus && !lightChanged && !lightChangedRight)
+				{
+					QApplication::restoreOverrideCursor();
+					focus = false;
+				}
+			}
+		}
+		else if (focus && !lightChanged && !lightChangedRight)
+		{
+			QApplication::restoreOverrideCursor();
+			focus = false;
+		}
+	}
 }
 
 
@@ -330,14 +379,21 @@ void RtiBrowser::mouseReleaseEvent(QMouseEvent *event)
 			updateTexture();
 		}
 	}
-	else if (event->button() == Qt::RightButton)
+	else if (event->button() == Qt::MidButton)
 	{
+		QApplication::restoreOverrideCursor();
 		timer->stop();
 		lightChanged = false;
 		dxLight = (event->x() - dragPoint.x())/(zoom*2);
 		dyLight = (event->y() - dragPoint.y() )/(zoom*2);
 		if (dxLight != 0 || dyLight != 0)
 			emit moveLight(dxLight / img->width(), dyLight / img->height());
+	}
+	else if (event->button() == Qt::RightButton)
+	{
+		QApplication::restoreOverrideCursor();
+		timer->stop();
+		lightChangedRight = false;
 		if(dynamic_cast<DetailEnhancement*>(img->getSupportedRendering()->at(img->getCurrentRendering())))
 		{
 			QPoint point = event->pos();
@@ -346,8 +402,15 @@ void RtiBrowser::mouseReleaseEvent(QMouseEvent *event)
 			if (x >= 0 && y >=0 && x < img->width() && y < img->height())
 			{
 				vcg::Point3f pixelLight = ((DetailEnhancement*) img->getSupportedRendering()->at(img->getCurrentRendering()))->getPixelLight(x, y);
-				emit setLightDir(pixelLight);
+				emit setLightDir(pixelLight, false);
 			}
+		}
+		else
+		{
+			nextDragPoint= event->pos();
+			dxLight = ((event->x() - dragPoint.x())/ static_cast<float>(_width)) * M_PI;
+			dyLight = ((event->y() - dragPoint.y())/ static_cast<float>(_height)) * M_PI;
+			updateLight();
 		}
 	}
  
@@ -387,6 +450,32 @@ void RtiBrowser::mouseDoubleClickEvent(QMouseEvent *event)
 		updateTexture();
 	}
 }
+
+
+void RtiBrowser::leaveEvent(QEvent *event)
+{
+	if (focus)
+	{
+		QApplication::restoreOverrideCursor();
+		focus = false;
+	}
+}
+
+
+
+void RtiBrowser::fired()
+{
+	if(interactive && posUpdated)
+	{
+		if (dragging)
+			updateTexture();
+		else if (lightChanged)
+			emit moveLight(dxLight / img->width(), dyLight / img->height());
+		else if (lightChangedRight)
+			updateLight();
+	}
+}
+
 
 
 void RtiBrowser::zoomOutActivated()
@@ -432,6 +521,33 @@ void RtiBrowser::setLight(vcg::Point3f l, bool refresh)
 		if (refresh)
 			updateTexture();
 	}
+}
+
+
+void RtiBrowser::updateLight()
+{
+	dragPoint = nextDragPoint;
+	float ro, theta, phi;
+	lastLight.ToPolar(ro, theta, phi);
+	if (theta - dxLight < 0.0)
+		dxLight = theta;
+	else if (theta - dxLight > M_PI)
+		dxLight = theta - M_PI;
+	if (phi - dyLight > M_PI_2)
+		dyLight = phi - M_PI_2;
+	else if (phi - dyLight < -M_PI_2)
+		dyLight = M_PI_2 + phi;
+	vcg::Matrix33f rotX, rotY;
+	rotX.SetRotateRad(dyLight, vcg::Point3f(1,0,0));
+	rotY.SetRotateRad(dxLight, vcg::Point3f(0,1,0));
+	vcg::Point3f temp = rotX*rotY*lastLight;
+	if (temp[2] < 0)
+		temp[2] = 0;
+	temp.Normalize();
+	emit setLightDir(temp, true);
+	lastLight = temp;
+	dxLight = 0;
+	dyLight = 0;
 }
 
 
@@ -547,17 +663,6 @@ void RtiBrowser::updateSubImage(int offx, int offy)
 	emit viewChanged(subimg);
 }
 
-
-void RtiBrowser::fired()
-{
-	if(interactive && posUpdated)
-	{
-		if (dragging)
-			updateTexture();
-		else if (lightChanged)
-			emit moveLight(dxLight / img->width(), dyLight / img->height());
-	}
-}
 
 
 void RtiBrowser::setRenderingMode(int mode)

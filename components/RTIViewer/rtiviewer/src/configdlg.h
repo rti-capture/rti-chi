@@ -86,7 +86,8 @@ public:
 		layout->addWidget(buttonBox);
 		setLayout(layout);
 		
-		setFixedSize(237, 155);
+		setMinimumSize(240, 160);
+		setMaximumSize(300, 200);
 
 		connect(fullSizeCkb, SIGNAL(stateChanged(int)), this, SLOT(setFullSize(int)));
 	};

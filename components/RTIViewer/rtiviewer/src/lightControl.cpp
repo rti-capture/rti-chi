@@ -39,8 +39,8 @@ LightControl::LightControl(QWidget *parent, int size): QWidget(parent),
 	stops << QGradientStop(0.14, QColor::fromRgba(0xffd3ff79));
 	stops << QGradientStop(0.40, QColor::fromRgba(0xff93b353));
 	stops << QGradientStop(0.80, QColor::fromRgba(0xff264619));
-	stops << QGradientStop(0.95, QColor::fromRgba(0xff0c1306));
-	stops << QGradientStop(1.00, QColor::fromRgba(0));
+	stops << QGradientStop(0.98, QColor::fromRgba(0xff0c1306));
+	stops << QGradientStop(1.00, QColor::fromRgba(0xff000000));
 }
 
 
@@ -187,14 +187,11 @@ void LightControl::moveLightPosition(float offx, float offy)
 }
 
 
-void LightControl::setLight(const vcg::Point3f& l)
+void LightControl::setLight(const vcg::Point3f& l, bool refresh)
 {
 	xFocus = width/2 + l.X()*width/2;
 	yFocus = height/2 - l.Y()*height/2;
-	calcLightVector();
-	emit lightChanged(light, false);
-#ifdef PRINT_DEBUG
-	printf("alpha = %.2f\n", acos(l.Z())*180/M_PI);
-#endif
+	light = l;
+	emit lightChanged(light, refresh);
 	update();
 }

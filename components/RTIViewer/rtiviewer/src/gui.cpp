@@ -85,13 +85,13 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	connect(browser, SIGNAL(setInteractiveLight(bool)), light, SLOT(setInteractive(bool)));
 	connect(browser, SIGNAL(setEnabledLight(bool)), light, SLOT(setEnabled(bool)));
 	connect(browser, SIGNAL(moveLight(float, float)), light, SLOT(moveLightPosition(float, float)));
-	connect(browser, SIGNAL(setLightDir(const vcg::Point3f&)), light, SLOT(setLight(const vcg::Point3f&)));
+	connect(browser, SIGNAL(setLightDir(const vcg::Point3f&, bool)), light, SLOT(setLight(const vcg::Point3f&, bool)));
 	
 	//Rendering mode widget
 	QGroupBox* rendGroup = new QGroupBox("Rendering mode", this);
-	rendGroup->setFixedWidth(360);
+	rendGroup->setFixedWidth(366);
 	rendDlg = new RenderingDialog(NULL, -1, rendGroup);
-	QHBoxLayout* rendLayout = new QHBoxLayout;
+	QVBoxLayout* rendLayout = new QVBoxLayout;
 	rendLayout->setContentsMargins(0, 0, 0, 0);
 	rendLayout->addWidget(rendDlg);
 	rendGroup->setLayout(rendLayout);
@@ -137,8 +137,6 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	setLayout(layout);
 		
 	// widget attributes
-	setWindowModality(Qt::ApplicationModal);
-	setWindowFlags(Qt::WindowMinMaxButtonsHint);
 	setWindowState(Qt::WindowMaximized);
 	setWindowTitle(TITLE);
 	

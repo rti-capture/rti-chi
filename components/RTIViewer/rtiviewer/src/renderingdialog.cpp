@@ -17,7 +17,6 @@ RenderingDialog::RenderingDialog(QVector<RenderingMode*>* l, int currRendering, 
 {
 	list = l;
 	modeList = new QComboBox(this);
-	modeList->setMinimumWidth(320);
 	modeList->setDuplicatesEnabled(false);
 	if (l)
 	{

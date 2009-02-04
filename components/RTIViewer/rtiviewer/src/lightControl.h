@@ -207,7 +207,7 @@ public slots:
 	  Sets the light direction.
 	  \param l light vector.
 	*/
-	void setLight(const vcg::Point3f& l);
+	void setLight(const vcg::Point3f& l, bool refresh);
 
 //accessor
 public:
