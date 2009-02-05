@@ -63,6 +63,8 @@ FORMS          = rtiviewer.ui \
                  about.ui
 
 RESOURCES     =  rtiviewer.qrc
+# to add MacOS icon
+ICON = images/rtiviewer.icns
 
 DEFINES += PRINT_DEBUG
 mac: LIBS  += ../../compression/src/lib/libjpeg2000.a
