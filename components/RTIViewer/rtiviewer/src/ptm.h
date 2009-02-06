@@ -35,6 +35,7 @@
 #include <QImage>
 #include <QVector>
 
+#include <vcg/math/base.h>
 
 /*!
   Rendering mode for PTM image.
@@ -188,14 +189,15 @@ protected:
 		for (int k = 0; k < 6; k++)
 			a[k] = coeff[k]/256.0;
 		double lx, ly, lz;
-		if (abs(4 * a[1] * a[0] - a[2] * a[2]) < zerotol)
+		
+		if (vcg::math::Abs(4 * a[1] * a[0] - a[2] * a[2]) < zerotol)
 		{
 			lx = 0.0;
 			ly = 0.0;
 		}
 		else
 		{
-			if (abs(a[2]) < zerotol)
+			if (vcg::math::Abs(a[2]) < zerotol)
 			{
 				lx = -a[3] / (2.0 * a[0]);
 				ly = -a[4] / (2.0 * a[1]);
@@ -207,8 +209,8 @@ protected:
 			}
 		}
 
-		if (abs(a[0]) < zerotol && abs(a[1]) < zerotol && abs(a[2]) < zerotol
-			&& abs(a[3]) < zerotol && abs(a[4]) < zerotol)
+		if (vcg::math::Abs(a[0]) < zerotol && vcg::math::Abs(a[1]) < zerotol && vcg::math::Abs(a[2]) < zerotol
+			&& vcg::math::Abs(a[3]) < zerotol && vcg::math::Abs(a[4]) < zerotol)
 		{
 			lx = 0.0;
 			ly = 0.0;
@@ -223,7 +225,7 @@ protected:
 			else
 				maxfound = 0;
 			if (length2d > 1 - zerotol || maxfound == 0) {
-				int stat = computeMaximumOnCircle(a, &lx, &ly);
+				int stat = computeMaximumOnCircle(a, lx, ly);
 				if (stat == -1) // failed
 				{
 					length2d = sqrt(length2d);
@@ -239,7 +241,9 @@ protected:
 			else 
 				lz = sqrt(disc);
 		}
-		return vcg::Point3f(lx, ly, lz).Normalize();
+		vcg::Point3f temp(lx, ly, lz);
+		temp.Normalize();
+		return temp;
 	}
 
 

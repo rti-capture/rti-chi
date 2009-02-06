@@ -690,8 +690,8 @@ double DetailEnhancement::computeSharpOperator(int* image, int width, int height
 				
 				if (sharpnessOperator == NORM_L1_SOBEL)
 				{
-					gx = abs(gx);
-					gy = abs(gy);
+					gx = vcg::math::Abs(gx);
+					gy = vcg::math::Abs(gy);
 					gradient += (gx + gy);
 				}
 				else if (sharpnessOperator == NORM_L2_SOBEL)
@@ -904,11 +904,11 @@ vcg::Point3f DetailEnhancement::getLight(int x, int y, int width, int height)
 		v4 = v3 + vcg::Point2f(deltaW - 1, 0);
 	}
 
-	float a = abs(v1.X() - v2.X());
-	float x1 = abs(v1.X() - x);
+	float a = vcg::math::Abs(v1.X() - v2.X());
+	float x1 = vcg::math::Abs(v1.X() - x);
 	float x2 = a - x1;
-	float b = abs(v1.Y() - v3.Y());
-	float y1 = abs(v1.Y() - y);
+	float b = vcg::math::Abs(v1.Y() - v3.Y());
+	float y1 = vcg::math::Abs(v1.Y() - y);
 	float y2 = b - y1;
 	vcg::Point3f la, lc;
 	la = (l1*x2 + l2*x1)/a;
@@ -1009,7 +1009,7 @@ std::vector<vcg::Point3f>* DetailEnhancement::getLightSamples(const vcg::Point3f
 		vcg::Point3f baseDir, baseN, baseTan, baseDirS, baseTanS;
 		baseDir = base;
 		baseDir.Z() = 0;
-		if (abs(baseDir.X()) < 0.00001 && abs(baseDir.Y()) < 0.00001)
+		if (vcg::math::Abs(baseDir.X()) < 0.00001 && vcg::math::Abs(baseDir.Y()) < 0.00001)
 			baseN = vcg::Point3f(1,0,0);
 		else
 		{

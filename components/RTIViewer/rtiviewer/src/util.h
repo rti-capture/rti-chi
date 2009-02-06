@@ -18,6 +18,7 @@
 #endif
 
 #include <vcg/space/point3.h>
+#include <vcg/math/base.h>
 
 #include <QString> 
 
@@ -355,7 +356,7 @@ static int solveQuartic(double c[5], double s[4])
 }
 
 
-static int computeMaximumOnCircle(double* a, double* lx, double* ly)
+static int computeMaximumOnCircle(double* a, double &lx, double &ly)
 {
 	double db0, db1, db2, db3, db4;
 	double zeros[4];
@@ -372,10 +373,11 @@ static int computeMaximumOnCircle(double* a, double* lx, double* ly)
 	db4 = a[2] + a[3];
 
 	/* polynomial is constant on circle, pick (0,1) as a solution */
-	if (abs(db0) < zerotol && abs(db1) < zerotol && abs(db2) < zerotol && abs(db3) < zerotol)
+	if (vcg::math::Abs(db0) < zerotol && vcg::math::Abs(db1) < zerotol && 
+			vcg::math::Abs(db2) < zerotol && vcg::math::Abs(db3) < zerotol)
 	{
-		*lx = 0.0;
-		*ly = 1.0;
+		lx = 0.0;
+		ly = 1.0;
 		return 1;
 	}
 
@@ -425,8 +427,8 @@ static int computeMaximumOnCircle(double* a, double* lx, double* ly)
 	 * from 260 degress to 280 degrees (270 degrees being the limit point).
 	 */
 
-	*lx = 2 * zeros[index] / (1 + zeros[index] * zeros[index]);
-	*ly = (1 - zeros[index] * zeros[index])/ (1 + zeros[index] * zeros[index]);
+	lx = 2 * zeros[index] / (1 + zeros[index] * zeros[index]);
+	ly = (1 - zeros[index] * zeros[index])/ (1 + zeros[index] * zeros[index]);
 
 	/*
 	 * test the correctness of solution:
@@ -452,8 +454,8 @@ static int computeMaximumOnCircle(double* a, double* lx, double* ly)
 	v = (1 - zeros[index] * zeros[index]) / (1 + zeros[index] * zeros[index]);
 	double val1 = a[0] * u * u + a[1] * v * v + a[2] * u * v + a[3] * u + a[4] * v + a[5];
 	if (maxval > val1) {
-		*lx = maxu;
-		*ly = maxv;
+		lx = maxu;
+		ly = maxv;
 	}
 	return 1;
 }

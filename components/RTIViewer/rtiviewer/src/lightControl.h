@@ -16,6 +16,7 @@
 #include <QTimer>
 
 #include <vcg/space/point3.h>
+#include <vcg/math/base.h>
 
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
@@ -165,7 +166,7 @@ private:
 			double m = (height/2.0 - yFocus)/(width/2.0 - xFocus);
 			alpha = atan(m);
 		}
-		alpha = abs(alpha);
+		alpha = vcg::math::Abs(alpha);
 		light[0] = xFocus > width/2? projectedDist * cos(alpha): -(projectedDist * cos(alpha));
 		light[1] = yFocus > height/2? -(projectedDist * sin(alpha)): projectedDist * sin(alpha);
 		double inner = 1 - light[0]*light[0] - light[1]*light[1];

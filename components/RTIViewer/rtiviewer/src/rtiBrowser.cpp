@@ -21,6 +21,7 @@
 #include <QFileDialog>
 
 
+
 RtiBrowser::RtiBrowser(int w, int h, Rti *image, int maxZ, QWidget *parent): QGLWidget(parent),
 	img(NULL),
 	light(0,0,1),
@@ -220,7 +221,7 @@ void RtiBrowser::paintGL()
 			isNewTexture = false;
 		}
 	}
-
+ 
 	glBegin(GL_POLYGON);
 	if (textureData)
 	{
@@ -234,8 +235,52 @@ void RtiBrowser::paintGL()
 		glVertex3f((_width - viewWidth)/2.0, (_height + viewHeight)/2.0, 0.0f);
 	}
 	glEnd();
+	
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(-1,1,-1,1,-1,1);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
-	 
+	glEnable(GL_BLEND);
+	QFont font;
+	font.setStyleStrategy(QFont::NoAntialias);
+	font.setFamily("Helvetica");
+	font.setPixelSize(12);
+	glColor4f(1,0,0,1);
+	QString text;
+	switch(currentMode)
+	{
+		case NORMALS_MODE: text = "NORMALS MAP"; break;
+		case SMOOTH_MODE: text = "SMOOTHED SIGNAL MAP"; break;
+		case CONTRAST_MODE: text = "CONTRAST SIGNAL MAP"; break;
+		case ENHANCED_MODE: text = "ENHANCED SIGNAL MAP"; break;
+		case LUM_UNSHARP_MODE: text = "LUMINANCE (UNSHARP MASKING)"; break;
+		case LUM_MODE: text = "LRGB LUMINACE CHANNEL "; break;
+		case RGB_MODE: text = "LRGB RGB COMPONENTS"; break;
+		case LUMR_MODE: text = "RGB RED COMPONENT"; break;
+		case LUMG_MODE: text = "RGB GREEN COMPONENT"; break;
+		case LUMB_MODE: text = "RGB BLUE COMPONENT"; break;
+		case A0_MODE: text = "COEFFICIENT A0"; break;
+		case A1_MODE: text = "COEFFICIENT A1"; break;
+		case A2_MODE: text = "COEFFICIENT A2"; break;
+		case A3_MODE: text = "COEFFICIENT A3"; break;
+		case A4_MODE: text = "COEFFICIENT A4"; break;
+		case A5_MODE: text = "COEFFICIENT A5"; break;
+		case LIGHT_VECTOR: text = "LIGHT VECTORS"; break;
+		case LIGHT_VECTOR2: text = "LIGHT VECTORS"; break;
+		default: text = "";
+	}
+	renderText(20, _height - 20, text, font);
+	glPopAttrib();
+	glPopMatrix(); // restore modelview
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);	 
 }
 
 
