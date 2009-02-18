@@ -36,6 +36,9 @@ rm -r -f $BUNDLE
 mkdir $BUNDLE
 cp -r rtiviewer.app $BUNDLE
 
+# we must add also a qt.conf that contains the new dir of the plugins
+cp ../install/qt.conf $BUNDLE/$APPNAME/Contents/Resources
+
 # copy the files icons into the app.
 # cp images/rtiviewer_obj.icns $BUNDLE/$APPNAME/Contents/Resources
 
@@ -77,7 +80,7 @@ done
 
 echo "Now Changing " #--------------------------
 
-EXECNAMES="MacOS/rtiviewer " 
+EXECNAMES="MacOS/rtiviewer" 
 QTLIBPATH="/usr/local/Trolltech/Qt-4.3.3/lib"
 for x in $EXECNAMES
 do
@@ -105,11 +108,11 @@ cd ../install
 #   d) Save As: This is the name for the mounted Image. Choose a good name for your disk image. It can contains spaces, etc., but you will not be # able to change this later (You will only be able to change name of .dmg file).
 # 3) Move your folder contents into the empty disk image that you just created (and it automatically mounts after the previous step).
 # 4) From the finder while you are viewing the opened image, Apple-J (View-->Show View Options)
-#   a) Use the icon view
+#   a) Use the icon view, Click the capsule to hide the toolbar.
 #   b) Select: This Window Only
 #   c) Select desired icon size
 #   d) Select Background: Picture, then choose the file that is *INSIDE* your disk image. There are a variety of ways to hide this file, such as # in hidden folders beginning with ".", or using blank or camoflauged icons and space " " file names with hidden extensions in Get Info.
-# 5) Apply the custom icon to your disk image, if desired. (Get info, and paste it in... 128x128).
+# 5) Apply the custom icon to your disk image, if desired. (If the icon is applied to another file or folder, just ÒGet InfoÓ on that item, click the icon in the upper-left corner of the window, and press Command-C to copy the icon. Click the icon in the ÒGet InfoÓ window of your target disk, and paste the icon with Command-V.).
 # 6) Arrange icons & window size as desired, and close window.
 # 7) Go back to Disk Utility, and in the left window click to select the .dmg (not the disk image that is hanging off of it).
 # 8 ) Select Images--> Convert...
