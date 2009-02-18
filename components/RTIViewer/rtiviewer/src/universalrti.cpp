@@ -137,7 +137,8 @@ int UniversalRti::load(QString name, CallBackPos *cb)
 		case 4: type = "URTI ADAPTIVE PTM"; return -1; break;
 		default: type = "URTI"; return -1;
 	}
-	image->loadData(file, w, h, basisTerm, true, cb, QString("Loading URTI..."));
+	QString text = "Loading URTI...";
+	image->loadData(file, w, h, basisTerm, true, cb, text);
 	
 
 	if (cb != NULL)	(*cb)(99, "Done");

@@ -100,8 +100,8 @@ int Hsh::load(QString name, CallBackPos *cb)
 				
 	ordlen *= ordlen;
 	
-	
-	if (loadData(file, w, h, ordlen, false, cb, QString("Loading HSH...")) != 0)
+	QString text = "Loading HSH...";
+	if (loadData(file, w, h, ordlen, false, cb, text) != 0)
 		return -1;
 
 	if (cb != NULL)	(*cb)(99, "Done");

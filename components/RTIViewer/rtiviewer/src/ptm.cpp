@@ -112,8 +112,8 @@ int RGBPtm::load(QString name, CallBackPos * cb)
 	if (eof) return -1;
 	setHeight(str.toInt(&error));
 	if (!error) return -1;
-	
-	if (loadData(file, w, h, 6, false, cb, QString("Loading RGB PTM...")) != 0)
+	QString text = "Loading RGB PTM...";
+	if (loadData(file, w, h, 6, false, cb, text) != 0)
 		return -1;
 
 	if (cb != NULL)	(*cb)(99, "Done");
@@ -539,7 +539,8 @@ int LRGBPtm::load(QString name, CallBackPos *cb)
 	setHeight(str.toInt(&error));
 	if (!error) return -1;
 
-	if (loadData(file, w, h, 6, false, cb, QString("Loading LRGB PTM...")) != 0)
+	QString text = "Loading LRGB PTM...";
+	if (loadData(file, w, h, 6, false, cb, text) != 0)
 		return -1;
 
 	if (cb != NULL)	(*cb)(99, "Done");
@@ -1260,18 +1261,17 @@ int JPEGLRGBPtm::load(QString name, CallBackPos *cb)
 			fread(&c, sizeof(unsigned char), 1, file);
 			info[i][j] = c;
 		}
-
 		//Decodes plane
 		QImage imagePlane = QImage::fromData(comprPlane, compressedSize[i], "JPEG");
 		if (imagePlane.isNull())
-			printf("null pointer");
+			return -1;
 		
-		QImage transformed = imagePlane.transformed(QTransform(1, 0, 0, 0, -1, h -1, 0, 0, 1), Qt::SmoothTransformation);
-		planeLenght[i] = imagePlane.height() * imagePlane.width();
+		QImage transformed = imagePlane.mirrored(false, true);
+		planeLenght[i] = transformed.height() * transformed.width();
 		plane[i] = new unsigned char[planeLenght[i]];
 		delete[] comprPlane;
 		for (int j = 0; j < planeLenght[i]; j++)
-			plane[i][j] = transformed.bits()[j*4];
+			plane[i][j] = transformed.bits()[j];
 	}
 
 	int* coef[9];
