@@ -53,16 +53,20 @@ public:
 	Rti():
 		maxRemoteResolution(0),
 		minRemoteResolution(0),
-		tiles(NULL)
+		tiles(NULL),
+		list(NULL)
 	{ };
 
 
 	//! Deconstructor.
 	virtual ~Rti()
 	{
-		for (int i = 0; i < list->size(); i++)
-			delete list->at(i);
-		delete list;
+		if (list)
+		{
+			for (int i = 0; i < list->size(); i++)
+				delete list->at(i);
+			delete list;
+		}
 		if (tiles)
 			delete tiles;
 	};
@@ -135,6 +139,19 @@ public:
 	virtual int loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level) = 0; 
 
 
+	/*!
+	  Loads the coefficients block of the image
+	  \param file pointer to the image file.
+	  \param width width of the image.
+	  \param height height of the image.
+	  \param basisTerm number of coefficients per component.
+	  \param urti holds whether the block is loaded from an URTI image.
+	  \param cb callback to update the progress bar.
+	  \param text string to display in the progress bar.
+	  \return returns 0 if the coefficients were successfully loaded, returns -1 otherwise.
+	*/
+	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0, QString& text = QString()) = 0;
+
 public:
 
 	/*!
@@ -165,17 +182,17 @@ public:
 	/*!
 	  Sets the rendering mode to apply to the image.
 	*/
-	void setRenderingMode(int a) {currentRendering = a;}
+	virtual void setRenderingMode(int a) {currentRendering = a;}
 
 	/*!
 	  Returns the index of the current rendering mode applied to the image.
 	*/
-	int getCurrentRendering() {return currentRendering;}
+	virtual int getCurrentRendering() {return currentRendering;}
 
 	/*!
 	  Retruns the list of rendering modes supported by the image.
 	*/
-	QVector<RenderingMode*>* getSupportedRendering() {return list;}
+	virtual QVector<RenderingMode*>* getSupportedRendering() {return list;}
 
 	/*!
 	  Returns the maximum level of resolution for a remote RTI image.

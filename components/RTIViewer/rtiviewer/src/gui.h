@@ -21,6 +21,7 @@
 #include "rti.h"
 #include "ptm.h"
 #include "hsh.h"
+#include "universalrti.h"
 #include "httpthread.h"
 
 // Qt headers

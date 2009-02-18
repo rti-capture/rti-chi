@@ -193,7 +193,7 @@ void RtiViewerDlg::about()
 
 int RtiViewerDlg::open()
 {
-	QString path = QFileDialog::getOpenFileName(this, tr("Open File"), "" , tr("All (*.ptm *.hsh);;Polynamial Texture Maps (*.ptm);; Hemispherical Harmonics Map (*.hsh)"));
+	QString path = QFileDialog::getOpenFileName(this, tr("Open File"), "" , tr("All (*.ptm *.hsh *.rti);;Polynamial Texture Maps (*.ptm);; Hemispherical Harmonics Map (*.hsh);; Universal RTI (*.rti)"));
 	if (path == "") return -1;
 	QFileInfo info(path);
 	QFile data(path);
@@ -260,6 +260,36 @@ int RtiViewerDlg::open()
 			}
 			delete loading;
 			
+		}
+		else if (info.suffix() == "rti")
+		{
+			LoadingDlg* loading = new LoadingDlg(this);
+			loading->show();
+			Rti* image = new UniversalRti();
+			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+			if (image->load(path, LoadingDlg::QCallBack)== 0) //Loads the image info
+			{
+				//Sets the browser image
+				browser->setImage(image);
+				//Sets the navigator image
+				navigator->setImage(image->createPreview(360, 240), image->width(), image->height());
+				QApplication::restoreOverrideCursor();
+				rendDlg->setRenderingMode(browser->getRenderingMode(), browser->getCurrentRendering());
+				loading->close();
+				//Sets file info
+				filename->setText(path);
+				filesize->setText(tr("%1 x %2").arg(image->width()).arg(image->height()));
+				fileformat->setText(image->typeFormat());
+				light->setInteractive(true);
+			}
+			else
+			{
+				loading->close();
+				QApplication::restoreOverrideCursor();
+				QMessageBox::critical(this, tr("Opening error"), tr("The file: \n%1\n is invalid.\n Internal format unknown.").arg(path));
+			}
+			delete loading;
+
 		}
 		else
 		{

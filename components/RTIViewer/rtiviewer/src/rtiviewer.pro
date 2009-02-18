@@ -30,6 +30,7 @@ SOURCES        =  \
 				detailenhanc.cpp\
 				dyndetailenhanc.cpp\
 				hsh.cpp\
+				universalrti.cpp
 				
 
 HEADERS        = \
@@ -56,6 +57,7 @@ HEADERS        = \
 				configdlg.h\
 				pyramid.h\
 				hsh.h\
+				universalrti.h
 				
                
 

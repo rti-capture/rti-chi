@@ -100,45 +100,105 @@ int Hsh::load(QString name, CallBackPos *cb)
 				
 	ordlen *= ordlen;
 	
-	fread(gmin, sizeof(float), ordlen, file);
-	fread(gmax, sizeof(float), ordlen, file);
+	
+	if (loadData(file, w, h, ordlen, false, cb, QString("Loading HSH...")) != 0)
+		return -1;
+
+	if (cb != NULL)	(*cb)(99, "Done");
+
+#ifdef PRINT_DEBUG
+	QTime second = QTime::currentTime();
+	double diff = first.msecsTo(second) / 1000.0;
+	printf("HSH Loading: %.5f s\n", diff);
+#endif
+
+	return 0;
+}
+
+
+int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb, QString& text)
+{
+	w = width;
+	h = height;
+
+	ordlen = basisTerm;
+	bands = 3;
+	fread(gmin, sizeof(float), basisTerm, file);
+	fread(gmax, sizeof(float), basisTerm, file);
 
 	if (feof(file))
 		return -1;
 
 	int offset = 0;
 
-	int size = w * h * ordlen;
+	int size = w * h * basisTerm;
 	float* redPtr = new float[size];
 	float* greenPtr = new float[size];
 	float* bluePtr = new float[size];
+	
+	unsigned char c;
 
-	for(int j = 0; j < h; j++)
+	if (!urti)
 	{
-		if (cb != NULL)(*cb)(j * 70.0 / h, "Loading HSH...");
-		for(int i = 0; i < w; i++)
-		{				
-			offset = j * w + i;
-			for (int k = 0; k < ordlen; k++)
-			{
-				if (feof(file))
-					return -1;
-				fread(&c, sizeof(unsigned char), 1, file);
-				redPtr[offset*ordlen + k] = (((float)c) / 255.0) * (gmax[k] - gmin[k]) + gmin[k];
+		for(int j = 0; j < h; j++)
+		{
+			if (cb != NULL)(*cb)(j * 70.0 / h, text);
+			for(int i = 0; i < w; i++)
+			{				
+				offset = j * w + i;
+				for (int k = 0; k < basisTerm; k++)
+				{
+					if (feof(file))
+						return -1;
+					fread(&c, sizeof(unsigned char), 1, file);
+					redPtr[offset*basisTerm + k] = (((float)c) / 255.0) * (gmax[k] - gmin[k]) + gmin[k];
+				}
+				for (int k = 0; k < basisTerm; k++)
+				{
+					if (feof(file))
+						return -1;
+					fread(&c, sizeof(unsigned char), 1, file);
+					greenPtr[offset*basisTerm + k] = (((float)c) / 255.0) * (gmax[k] - gmin[k]) + gmin[k];
+				}
+				for (int k = 0; k < basisTerm; k++)
+				{
+					if (feof(file))
+						return -1;
+					fread(&c, sizeof(unsigned char), 1, file);
+					bluePtr[offset*basisTerm + k] = (((float)c) / 255.0) * (gmax[k] - gmin[k]) + gmin[k];
+				}
 			}
-			for (int k = 0; k < ordlen; k++)
-			{
-				if (feof(file))
-					return -1;
-				fread(&c, sizeof(unsigned char), 1, file);
-				greenPtr[offset*ordlen + k] = (((float)c) / 255.0) * (gmax[k] - gmin[k]) + gmin[k];
-			}
-			for (int k = 0; k < ordlen; k++)
-			{
-				if (feof(file))
-					return -1;
-				fread(&c, sizeof(unsigned char), 1, file);
-				bluePtr[offset*ordlen + k] = (((float)c) / 255.0) * (gmax[k] - gmin[k]) + gmin[k];
+		}
+	}
+	else
+	{
+		for(int j = 0; j < h; j++)
+		{
+			if (cb != NULL)(*cb)(j * 25 / h, text);
+			for(int i = 0; i < w; i++)
+			{				
+				offset = j * w + i;
+				for (int k = 0; k < basisTerm; k++)
+				{
+					if (feof(file))
+						return -1;
+					fread(&c, sizeof(unsigned char), 1, file);
+					redPtr[offset*basisTerm + k] = (((float)c) / 255.0) * gmin[k] + gmax[k];
+				}
+				for (int k = 0; k < basisTerm; k++)
+				{
+					if (feof(file))
+						return -1;
+					fread(&c, sizeof(unsigned char), 1, file);
+					greenPtr[offset*basisTerm + k] = (((float)c) / 255.0) * gmin[k] + gmax[k];
+				}
+				for (int k = 0; k < basisTerm; k++)
+				{
+					if (feof(file))
+						return -1;
+					fread(&c, sizeof(unsigned char), 1, file);
+					bluePtr[offset*basisTerm + k] = (((float)c) / 255.0) * gmin[k] + gmax[k];
+				}
 			}
 		}
 	}
@@ -160,7 +220,7 @@ int Hsh::load(QString name, CallBackPos *cb)
 		int height = mipMapSize[level - 1].height();
 		int width2 = ceil(width / 2.0);
 		int height2 = ceil(height / 2.0);
-		size = width2*height2*ordlen;
+		size = width2*height2*basisTerm;
 		redCoefficients.setLevel(new float[size], size, level);
 		greenCoefficients.setLevel(new float[size], size, level);
 		blueCoefficients.setLevel(new float[size], size, level);
@@ -174,7 +234,7 @@ int Hsh::load(QString name, CallBackPos *cb)
 				int index3 = ((i + 1) * width + j);
 				int index4 = ((i + 1) * width + j + 1);
 				int offset = (i/2 * width2 + j/2);
-				for (int k = 0; k < ordlen; k++)
+				for (int k = 0; k < basisTerm; k++)
 				{
 					redCoefficients.calcMipMapping(level, offset, index1, index2, index3, index4);
 					greenCoefficients.calcMipMapping(level, offset, index1, index2, index3, index4);
@@ -189,7 +249,7 @@ int Hsh::load(QString name, CallBackPos *cb)
 				int index1 = ((i + 1) * width - 1);
 				int index2 = ((i + 2) * width - 1);
 				int offset = ((i/2 + 1) * width2 - 1);
-				for (int k = 0; k < ordlen; k++)
+				for (int k = 0; k < basisTerm; k++)
 				{
 					redCoefficients.calcMipMapping(level, offset, index1, index2);
 					greenCoefficients.calcMipMapping(level, offset, index1, index2);
@@ -204,7 +264,7 @@ int Hsh::load(QString name, CallBackPos *cb)
 				int index1 = ((height - 1) * width + i);
 				int index2 = ((height - 1) * width + i + 1);
 				int offset = ((height2 - 1) * width2 + i/2);
-				for (int k = 0; k < ordlen; k++)
+				for (int k = 0; k < basisTerm; k++)
 				{
 					redCoefficients.calcMipMapping(level, offset, index1, index2);
 					greenCoefficients.calcMipMapping(level, offset, index1, index2);
@@ -216,7 +276,7 @@ int Hsh::load(QString name, CallBackPos *cb)
 		{
 			int index1 = (height*width - 1);
 			int offset = (height2*width2 - 1);
-			for (int k = 0; k < ordlen; k++)
+			for (int k = 0; k < basisTerm; k++)
 			{
 				redCoefficients.calcMipMapping(level, offset, index1);
 				greenCoefficients.calcMipMapping(level, offset, index1);
@@ -225,17 +285,8 @@ int Hsh::load(QString name, CallBackPos *cb)
 		}
 		mipMapSize[level] = QSize(width2, height2);
 	}	
-
-	
-	if (cb != NULL)	(*cb)(99, "Done");
-
-#ifdef PRINT_DEBUG
-	QTime second = QTime::currentTime();
-	double diff = first.msecsTo(second) / 1000.0;
-	printf("HSH Loading: %.5f s\n", diff);
-#endif
-
 	return 0;
+
 }
 
 

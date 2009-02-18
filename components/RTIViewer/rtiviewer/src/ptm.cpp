@@ -113,34 +113,62 @@ int RGBPtm::load(QString name, CallBackPos * cb)
 	setHeight(str.toInt(&error));
 	if (!error) return -1;
 	
-	//Gets scale value
-	str = getLine(file, &eof);
-	if (eof) return -1;
-	QStringList list = str.split(' ',  QString::SkipEmptyParts);
-	if (list.size() != 6)
+	if (loadData(file, w, h, 6, false, cb, QString("Loading RGB PTM...")) != 0)
 		return -1;
-	for (int i = 0; i < 6; i++)
+
+	if (cb != NULL)	(*cb)(99, "Done");
+
+#ifdef PRINT_DEBUG
+	QTime second = QTime::currentTime();
+	double diff = first.msecsTo(second) / 1000.0;
+	printf("RGB PTM  Loading: %.5f s\n", diff);
+#endif
+
+	return 0;
+}
+
+
+int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb, QString& text)
+{
+	w = width;
+	h = height;
+
+	if (!urti)
 	{
-		scale[i] = list[i].toDouble(&error);
-		if (!error) return -1;
+		//Gets scale value
+		bool eof, error; 
+		QString str = getLine(file, &eof);
+		if (eof) return -1;
+		QStringList list = str.split(' ',  QString::SkipEmptyParts);
+		if (list.size() != 6)
+			return -1;
+		for (int i = 0; i < 6; i++)
+		{
+			scale[i] = list[i].toDouble(&error);
+			if (!error) return -1;
+		}
+
+		//Gets bias value
+		str = getLine(file, &eof);
+		if (eof) return -1;
+		list = str.split(' ',  QString::SkipEmptyParts);
+		if (list.size() != basisTerm)
+			return -1;
+		for (int i = 0; i < basisTerm; i++)
+		{
+			bias[i] = list[i].toInt(&error);
+			if (!error) return -1;
+		}
+	}
+	else
+	{
+
 	}
 
-	//Gets bias value
-	str = getLine(file, &eof);
-	if (eof) return -1;
-	list = str.split(' ',  QString::SkipEmptyParts);
-	if (list.size() != 6)
-		return -1;
-	for (int i = 0; i < 6; i++)
-	{
-		bias[i] = list[i].toInt(&error);
-		if (!error) return -1;
-	}	
-
 	//Allocates array for polynomial coefficients
-	int* redCoeff = new int[w*h*6];
-	int* greenCoeff = new int[w*h*6];
-	int* blueCoeff = new int[w*h*6];
+	int* redCoeff = new int[w*h*basisTerm];
+	int* greenCoeff = new int[w*h*basisTerm];
+	int* blueCoeff = new int[w*h*basisTerm];
 	
 	//Reads polynomial coefficients
 	int offset;
@@ -149,21 +177,21 @@ int RGBPtm::load(QString name, CallBackPos * cb)
 	{
 		for (int y = h - 1; y >= 0; y--)
 		{
-			if (cb != NULL)	(*cb)(15*j + (h - y) * 15 / h, "Loading RGB PTM...");
+			if (cb != NULL)	(*cb)(15*j + (h - y) * 15 / h, text);
 			for (int x = 0; x < w; x++)
 			{
 				offset = y * w + x;
-				for (int i = 0; i < 6; i++)
+				for (int i = 0; i < basisTerm; i++)
 				{
 					if(feof(file))
 						return -1;
 					fread(&c, sizeof(unsigned char), 1, file);
 					if (j == 0)
-						redCoeff[offset*6 + i] = static_cast<int>((c - bias[i])*scale[i]);
+						redCoeff[offset*basisTerm + i] = static_cast<int>((c - bias[i])*scale[i]);
 					else if (j == 1)
-						greenCoeff[offset*6 + i] = static_cast<int>((c - bias[i])*scale[i]);
+						greenCoeff[offset*basisTerm + i] = static_cast<int>((c - bias[i])*scale[i]);
 					else
-						blueCoeff[offset*6 + i] = static_cast<int>((c - bias[i])*scale[i]);
+						blueCoeff[offset*basisTerm + i] = static_cast<int>((c - bias[i])*scale[i]);
 				}
 			}
 		}
@@ -172,9 +200,9 @@ int RGBPtm::load(QString name, CallBackPos * cb)
 
 	// Computes mip-mapping-level.
 	mipMapSize[0] = QSize(w, h);
-	redCoefficients.setLevel(redCoeff, w*h*6, 0);
-	greenCoefficients.setLevel(greenCoeff, w*h*6, 0);
-	blueCoefficients.setLevel(blueCoeff, w*h*6, 0);
+	redCoefficients.setLevel(redCoeff, w*h*basisTerm, 0);
+	greenCoefficients.setLevel(greenCoeff, w*h*basisTerm, 0);
+	blueCoefficients.setLevel(blueCoeff, w*h*basisTerm, 0);
 	if (cb != NULL)	(*cb)(45, "Mip mapping generation...");
 	generateMipMap(1, w, h, cb, 45, 15);
 
@@ -195,16 +223,10 @@ int RGBPtm::load(QString name, CallBackPos * cb)
 		}
 		normals.setLevel(tempNormals, lenght, level);
 	}
-	if (cb != NULL)	(*cb)(99, "Done");
-
-#ifdef PRINT_DEBUG
-	QTime second = QTime::currentTime();
-	double diff = first.msecsTo(second) / 1000.0;
-	printf("RGB PTM  Loading: %.5f s\n", diff);
-#endif
 
 	return 0;
 }
+
 
 
 int RGBPtm::save(QString name)
@@ -517,32 +539,60 @@ int LRGBPtm::load(QString name, CallBackPos *cb)
 	setHeight(str.toInt(&error));
 	if (!error) return -1;
 
-	//Gets scale value
-	str = getLine(file, &eof);
-	if (eof) return -1;
-	QStringList list = str.split(' ', QString::SkipEmptyParts);
-	if (list.size() != 6)
+	if (loadData(file, w, h, 6, false, cb, QString("Loading LRGB PTM...")) != 0)
 		return -1;
-	for (int i = 0; i < 6; i++)
+
+	if (cb != NULL)	(*cb)(99, "Done");
+
+#ifdef PRINT_DEBUG
+	QTime second = QTime::currentTime();
+	double diff = first.msecsTo(second) / 1000.0;
+	printf("LRGB PTM Loading: %.5f s\n", diff);
+#endif
+
+	return 0;
+}
+
+
+int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb, QString& text)
+{
+	w = width;
+	h = height;
+
+	if (!urti)
 	{
-		scale[i] = list[i].toDouble(&error);
-		if (!error) return -1;
+		//Gets scale value
+		bool eof, error;
+		QString str = getLine(file, &eof);
+		if (eof) return -1;
+		QStringList list = str.split(' ', QString::SkipEmptyParts);
+		if (list.size() != 6)
+			return -1;
+		for (int i = 0; i < 6; i++)
+		{
+			scale[i] = list[i].toDouble(&error);
+			if (!error) return -1;
+		}
+		
+		//Gets bias value
+		str = getLine(file, &eof);
+		if (eof) return -1;
+		list = str.split(' ',  QString::SkipEmptyParts);
+		if (list.size() != 6)
+			return -1;
+		for (int i = 0; i < 6; i++)
+		{
+			bias[i] = list[i].toInt(&error);
+			if (!error) return -1;
+		}
 	}
-	
-	//Gets bias value
-	str = getLine(file, &eof);
-	if (eof) return -1;
-	list = str.split(' ',  QString::SkipEmptyParts);
-	if (list.size() != 6)
-		return -1;
-	for (int i = 0; i < 6; i++)
+	else
 	{
-		bias[i] = list[i].toInt(&error);
-		if (!error) return -1;
+
 	}
 	
 	//Allocates array for polynomial coefficients and rgb components
-	int* coeffPtr = new int[w*h*6];;
+	int* coeffPtr = new int[w*h*basisTerm];;
 	unsigned char* rgbPtr = new unsigned char[w*h*3];
 
 	int offset;
@@ -551,7 +601,7 @@ int LRGBPtm::load(QString name, CallBackPos *cb)
 	//Reads coefficient and rgb components from file
 	for (int y = h - 1; y >= 0; y--)
 	{
-		if (cb != NULL && (h-y)%100==0)(*cb)((h - y) * 40 / h, "Loading LRGB PTM...");
+		if (cb != NULL && (h-y)%100==0)(*cb)((h - y) * 40 / h, text);
 		for (int x = 0; x < w; x++)
 		{
 			offset = y * w + x;
@@ -561,7 +611,7 @@ int LRGBPtm::load(QString name, CallBackPos *cb)
 				if(feof(file))
 					return -1;
 				fread(&c, sizeof(unsigned char), 1, file);
-				coeffPtr[offset*6 + i] = static_cast<int>((c - bias[i])*scale[i]);
+				coeffPtr[offset*basisTerm + i] = static_cast<int>((c - bias[i])*scale[i]);
 			}
 
 			if (version == "PTM_1.1")
@@ -606,14 +656,6 @@ int LRGBPtm::load(QString name, CallBackPos *cb)
 	if (cb != NULL)	(*cb)(55, "Mip mapping generation...");
 	generateMipMap(1, w, h, cb, 55, 20);
 	calculateNormals(normals, coefficients, true, cb, 75, 20);
-	if (cb != NULL)	(*cb)(99, "Done");
-
-#ifdef PRINT_DEBUG
-	QTime second = QTime::currentTime();
-	double diff = first.msecsTo(second) / 1000.0;
-	printf("LRGB PTM Loading: %.5f s\n", diff);
-#endif
-
 	return 0;
 }
 

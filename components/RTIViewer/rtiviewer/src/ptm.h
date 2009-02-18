@@ -358,7 +358,7 @@ public:
 	  \param name file name.
     */
 	virtual int loadCompressed(QString name) = 0;
-	
+
 	/*!
 	  Loads the specific compressed tile.
 	  \param xinf, yinf, xsup, ysup coordinates of the tile.
@@ -457,6 +457,7 @@ public:
 	virtual QImage* createPreview(int width, int height);
 	virtual int allocateRemoteImage(int width, int height, int maxResLevel);  
 	virtual int loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level); 
+	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0, QString& text = QString());
 
 private:
 	virtual void allocateSubLevel(int level, int w, int h);
@@ -504,7 +505,8 @@ public:
 	virtual int createImage(unsigned char** buffer, int& width, int& height, const vcg::Point3f& light, const QRectF& rect, int level = 0, int mode = 0);
 	virtual QImage* createPreview(int width, int height);
 	virtual int allocateRemoteImage(int width, int height, int maxResLevel);
-	virtual int loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level); 
+	virtual int loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level);
+	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0, QString& text = QString());
 
 private:
 	virtual void allocateSubLevel(int level, int w, int h);
