@@ -131,7 +131,10 @@ RtiBrowser::~RtiBrowser()
 void RtiBrowser::setImage(Rti* rti)
 {
 	if (img)
+	{
 		delete img;
+		img = NULL;
+	}
 
 	if (!rti) return;
 	img = rti;

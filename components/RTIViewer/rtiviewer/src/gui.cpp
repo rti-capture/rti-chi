@@ -155,6 +155,7 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	settings = new QSettings("VCG", "RtiViewer");
 	int tempW = settings->value("maxWindowWidth", 2000).toInt();
 	int tempH = settings->value("maxWindowHeight", 2000).toInt();
+	dir.setPath(settings->value("workingDir", "").toString()); 
 	browser->setMaxWindowSize(tempW, tempH);
 	
 }
@@ -193,12 +194,16 @@ void RtiViewerDlg::about()
 
 int RtiViewerDlg::open()
 {
-	QString path = QFileDialog::getOpenFileName(this, tr("Open File"), "" , tr("All (*.ptm *.hsh *.rti);;Polynamial Texture Maps (*.ptm);; Hemispherical Harmonics Map (*.hsh);; Universal RTI (*.rti)"));
+	QString prova = dir.path();
+	QString path = QFileDialog::getOpenFileName(this, tr("Open File"), dir.path() , tr("All (*.ptm *.hsh *.rti);;Polynamial Texture Maps (*.ptm);; Hemispherical Harmonics Map (*.hsh);; Universal RTI (*.rti)"));
 	if (path == "") return -1;
 	QFileInfo info(path);
 	QFile data(path);
+	dir.setPath(info.path());
+	settings->setValue("workingDir", dir.path());
 	if (data.open(QFile::ReadOnly))
 	{
+		browser->setImage(NULL);
 		if (info.suffix() == "ptm")
 		{
 			LoadingDlg* loading = new LoadingDlg(this);

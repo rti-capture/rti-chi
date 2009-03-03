@@ -33,6 +33,7 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include <QSettings>
+#include <QDir>
 
 //! Main window class.
 /*!
@@ -71,6 +72,8 @@ private:
 	QWaitCondition* infoReady; /*!< Wait condition to synchronize the GUI thread and the HTTP thread. */
 	
 	QSettings* settings; /*!< Application settings. */
+
+	QDir dir; /*!< Current working directory. */
 
 
 public:
