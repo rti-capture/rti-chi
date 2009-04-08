@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lightview", "lightview\lightview.vcproj", "{489E8DBF-9F5C-4B3E-B206-26087296A529}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uitests", "uitests\uitests.vcproj", "{F2A00F22-6B79-4569-829D-659269DE9FC3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{489E8DBF-9F5C-4B3E-B206-26087296A529}.Debug|Win32.ActiveCfg = Debug|Win32
+		{489E8DBF-9F5C-4B3E-B206-26087296A529}.Debug|Win32.Build.0 = Debug|Win32
+		{489E8DBF-9F5C-4B3E-B206-26087296A529}.Release|Win32.ActiveCfg = Release|Win32
+		{489E8DBF-9F5C-4B3E-B206-26087296A529}.Release|Win32.Build.0 = Release|Win32
+		{F2A00F22-6B79-4569-829D-659269DE9FC3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F2A00F22-6B79-4569-829D-659269DE9FC3}.Debug|Win32.Build.0 = Debug|Win32
+		{F2A00F22-6B79-4569-829D-659269DE9FC3}.Release|Win32.ActiveCfg = Release|Win32
+		{F2A00F22-6B79-4569-829D-659269DE9FC3}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
