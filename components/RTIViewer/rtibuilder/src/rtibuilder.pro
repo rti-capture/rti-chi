@@ -37,6 +37,7 @@ HEADERS        = \
 			   ../../rtiviewer/src/dyndetailenhanc.h\
 
 
+mac: LIBS       += ../../compression/src/lib/libjpeg2000.a
 win32-msvc2005: LIBS  += ../../compression/src/lib/jpeg2000.lib
 win32-msvc2008: LIBS  += ../../compression/src/lib/jpeg2000.lib
 win32-g++: LIBS += ../../compression/src/lib/libjpeg2000.a
