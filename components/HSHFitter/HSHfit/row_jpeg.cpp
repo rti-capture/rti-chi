@@ -1,6 +1,3 @@
-// Copyright Cultural Heritage Imaging 2008
-// HSH (Hemi-Spherical Harmonics) fitter
-
 #include "stdafx.h"
 
 #include "highgui.h"

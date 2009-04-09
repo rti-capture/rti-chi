@@ -1,0 +1,256 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\capture.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\capture.ico"
+IDI_ICON_BROWSE         ICON                    "OPENFOLD.ICO"
+IDI_ICON_SAVE           ICON                    "res\\icon1.ico"
+IDI_ICON_OPEN           ICON                    "res\\icon2.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 235, 55
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About capture"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "capture Version 1.0",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2007",IDC_STATIC,40,25,119,8
+    DEFPUSHBUTTON   "OK",IDOK,178,7,50,16,WS_GROUP
+END
+
+IDD_CAPTURE_DIALOG DIALOGEX 0, 0, 407, 385
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "RTI Capture"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Connect Camera",IDC_BUTTON_CONNECTCAMERA,20,20,75,16
+    PUSHBUTTON      "Disconnect Camera",IDC_BUTTON_DISCONNECTCAMERA,117,20,75,16
+    GROUPBOX        "Capture Setup",IDC_STATIC,7,105,211,53
+    LTEXT           "Sequence Size",IDC_STATIC,21,196,53,10
+    LTEXT           "Save Path",IDC_STATIC,21,121,39,11
+    LTEXT           "Root File Prefix",IDC_STATIC,21,135,58,10
+    EDITTEXT        IDC_EDIT_SEQUENCESIZE,85,194,44,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_SAVEPATH,85,120,104,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_ROOTPREFIX,85,133,104,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BUTTON_BROWSE,193,118,18,16,BS_ICON
+    GROUPBOX        "Shoot",IDC_STATIC,232,7,168,61
+    PUSHBUTTON      "Capture RTI",IDC_BUTTON_CAPTUREPTM,241,22,81,37
+    PUSHBUTTON      "Pause",IDC_BUTTON_CAPTUREPAUSE,336,21,55,15
+    PUSHBUTTON      "Cancel",IDC_BUTTON_CAPTURECANCEL,336,41,55,16
+    EDITTEXT        IDC_EDIT_STATUS,231,89,169,265,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL
+    CONTROL         "Verbose",IDC_CHECK_VERBOSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,346,366,54,8
+    GROUPBOX        "Dry Run",IDC_STATIC,7,348,211,30
+    CONTROL         "Camera",IDC_CHECK_CAMERADRYRUN,"Button",BS_AUTOCHECKBOX | BS_BOTTOM | WS_TABSTOP,18,356,56,14
+    CONTROL         "Lights",IDC_CHECK_LIGHTSDRYRUN,"Button",BS_AUTOCHECKBOX | BS_BOTTOM | WS_TABSTOP,76,356,56,14
+    PUSHBUTTON      "Clear",IDC_BUTTON_CLEAR,299,364,30,14,NOT WS_VISIBLE
+    EDITTEXT        IDC_EDIT_CAMERAINFO,16,41,193,53,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY
+    GROUPBOX        "Camera",IDC_STATIC,7,7,210,94
+    EDITTEXT        IDC_EDIT_CONFIGFILE,7,327,131,13,ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "Save",IDC_BUTTON_SAVECONFIG,145,322,21,19,BS_ICON
+    PUSHBUTTON      "Load",IDC_BUTTON_LOADCONFIG,169,322,21,19,BS_ICON
+    LTEXT           "Image Quality",IDC_STATIC,20,43,58,10,NOT WS_VISIBLE
+    COMBOBOX        IDC_COMBO_IMAGEQUALITY,72,41,63,12,CBS_DROPDOWN | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_LIGHT_DELAY,85,211,44,12,ES_AUTOHSCROLL
+    LTEXT           "Lights delay (ms)",IDC_STATIC,20,213,60,10
+    CONTROL         "Turntable",IDC_CHECK_TURNTABLEDRYRUN,"Button",BS_AUTOCHECKBOX | BS_BOTTOM | WS_DISABLED | WS_TABSTOP,138,356,56,14
+    GROUPBOX        "Turntable Setup",IDC_STATIC,7,233,211,81
+    GROUPBOX        "Lights Setup",IDC_STATIC,7,165,211,67
+    EDITTEXT        IDC_EDIT_PORT,85,177,44,12,ES_AUTOHSCROLL
+    LTEXT           "Light Control Port",IDC_STATIC,21,179,62,10
+    LTEXT           "Turntable Port",IDC_STATIC,18,249,68,12
+    LTEXT           "No. of viewpoints",IDC_STATIC,16,262,68,12
+    LTEXT           "Viewpoints Seperation",IDC_STATIC,15,276,75,12
+    LTEXT           "Rotation Delay (ms)",IDC_STATIC,15,291,68,12
+    EDITTEXT        IDC_EDIT_TURNTABLEPORT,90,247,54,13,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT_NUMVIEWPOINTS,89,261,54,13,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT_VIEWSEPERATION,89,275,54,13,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT_ROTATIONDELAY,89,289,54,13,ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "Enable",IDC_CHECK_ENABLETURNTABLE,"Button",BS_AUTOCHECKBOX | BS_BOTTOM | WS_TABSTOP,174,242,38,14
+END
+
+IDD_DIALOG_SELECTCAMERA DIALOGEX 0, 0, 241, 29
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Camera"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Connect",IDOK,184,7,50,14
+    COMBOBOX        IDC_COMBO_CAMERALIST,7,7,169,13,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "UCSC"
+            VALUE "FileDescription", "Camera Capture"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "capture.exe"
+            VALUE "OriginalFilename", "capture.exe"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+
+    IDD_CAPTURE_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 400
+        VERTGUIDE, 356
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 378
+    END
+
+    IDD_DIALOG_SELECTCAMERA, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 234
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 22
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About capture..."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\capture.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

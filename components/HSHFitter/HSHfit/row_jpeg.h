@@ -1,5 +1,3 @@
-// Copyright Cultural Heritage Imaging 2008
-// HSH (Hemi-Spherical Harmonics) fitter
 
 #ifndef _ROW_JPEG_H_
 #define _ROW_JPEG_H_

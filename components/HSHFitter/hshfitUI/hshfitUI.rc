@@ -1,0 +1,229 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\hshfitUI.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\hshfitUI.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 235, 55
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About hshfitUI"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "hshfitUI Version 1.0",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2008",IDC_STATIC,40,25,119,8
+    DEFPUSHBUTTON   "OK",IDOK,178,7,50,16,WS_GROUP
+END
+
+IDD_HSHFITUI_DIALOG DIALOGEX 0, 0, 378, 337
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "HSH fitter UI v0.9"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDIT_MAIN_PATH,78,20,196,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BUTTON_BROWSE_FOLDER,276,18,16,16
+    EDITTEXT        IDC_EDIT_PREFIX,78,38,122,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_LIGHT_FILE,79,75,121,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BUTTON_LIGHT_FILE,208,73,16,16
+    EDITTEXT        IDC_EDIT_CORRECTION_FILE,79,92,121,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BUTTON_CORRECTION_FILE,208,91,16,16
+    EDITTEXT        IDC_EDIT_VIEWS,77,149,32,13,ES_AUTOHSCROLL
+    CONTROL         "",IDC_SPIN_VIEWS,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS | WS_TABSTOP,110,148,14,14
+    EDITTEXT        IDC_EDIT_LIGHTS,171,147,27,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_HSH_ORDER,76,165,33,12,ES_AUTOHSCROLL | NOT WS_TABSTOP
+    CONTROL         "",IDC_SPIN_HSHORDER,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS,110,164,14,14
+    CONTROL         "Process images row by row",IDC_CHECK_ROW_BY_ROW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,76,181,118,14
+    EDITTEXT        IDC_EDIT_OUTPUT_FILENAME,77,198,73,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Scan",IDC_BUTTON_SCAN,304,20,42,34
+    PUSHBUTTON      "Validate",IDC_BUTTON_VALIDATE2,259,82,42,34,WS_DISABLED
+    PUSHBUTTON      "Process",IDC_BUTTON_PROCESS,306,151,45,35,WS_DISABLED
+    LTEXT           "Path",IDC_STATIC,53,23,20,11
+    LTEXT           "Prefix",IDC_STATIC,50,39,20,11
+    LTEXT           "Light Positions",IDC_STATIC,25,76,49,12
+    LTEXT           "Color Correction",IDC_STATIC,20,93,56,12
+    LTEXT           "HSH order",IDC_STATIC,37,166,35,12
+    LTEXT           "Output file suffix",IDC_STATIC,21,200,55,12
+    EDITTEXT        IDC_EDIT_STATUS,7,261,364,69,ES_MULTILINE | ES_AUTOHSCROLL | ES_OEMCONVERT | ES_READONLY | ES_WANTRETURN | WS_VSCROLL
+    LTEXT           "Viewpoints",IDC_STATIC,33,150,37,11
+    LTEXT           "Lights",IDC_STATIC,149,149,22,9
+    LTEXT           "Axis Rectification",IDC_STATIC,20,111,58,13
+    EDITTEXT        IDC_EDIT_RECTIFY_FILE,80,110,120,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BUTTON_RECTIFY_FILE,208,110,16,14
+    PUSHBUTTON      "Rectify",IDC_BUTTON_RECTIFY,306,82,41,34,WS_DISABLED
+    GROUPBOX        "Files",IDC_STATIC,7,7,364,55
+    GROUPBOX        "Light positions and Rectification",IDC_STATIC,7,64,364,67
+    GROUPBOX        "HSH Fitting",IDC_STATIC,7,133,364,83
+    GROUPBOX        "Additional Options",IDC_STATIC,7,220,364,36
+    PUSHBUTTON      "Generate MRTI (tar) file",IDC_BUTTON_MRTI,249,230,104,16,WS_DISABLED
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "TODO: <Company name>"
+            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "hshfitUI.exe"
+            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "OriginalFilename", "hshfitUI.exe"
+            VALUE "ProductName", "TODO: <Product name>"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+
+    IDD_HSHFITUI_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 371
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 330
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About hshfitUI..."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\hshfitUI.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

@@ -1,5 +1,3 @@
-// Copyright Cultural Heritage Imaging 2008
-// HSH (Hemi-Spherical Harmonics) fitter
 
 #ifndef _HSH_FITTER_H_
 #define _HSH_FITTER_H_
@@ -12,6 +10,7 @@
 
 using namespace std;
 
+static const double pi = 3.141592653589793238462643383279502884197; 
 
 class LitImage {
 public:
@@ -35,6 +34,8 @@ public:
 	void set_output_filename (string str_output_filename) {this->str_output_filename = str_output_filename;};
 	void set_row_by_row(bool is_row_by_row) {this->is_row_by_row = is_row_by_row;};
 	void set_compressed(bool is_compressed) {this->is_compressed = is_compressed;};
+
+	string get_main_path() {return str_main_path;} 
 
 	ostream *output;		//  stream for capturing console text output
 private:
@@ -89,5 +90,7 @@ private:
 	vector<float> min_term, max_term; // (min, max) for each term, used for generating 'compressed' HSHs
 
 };
+
+int find_file( const string & str_path, const string & prefix, list<string> & filenames, bool return_fullpath);          
 
 #endif/*_HSH_FITTER_H_*/

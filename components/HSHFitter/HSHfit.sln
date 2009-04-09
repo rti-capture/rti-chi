@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HSHfit", "HSHfit\HSHfit.vcproj", "{C8E219D2-458E-44BF-8771-0337EF792FDB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hshfitUI", "hshfitUI\hshfitUI.vcproj", "{74C8DBB1-E7D2-41FD-A9FC-EA012C276F9D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C8E219D2-458E-44BF-8771-0337EF792FDB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C8E219D2-458E-44BF-8771-0337EF792FDB}.Debug|Win32.Build.0 = Debug|Win32
+		{C8E219D2-458E-44BF-8771-0337EF792FDB}.Release|Win32.ActiveCfg = Release|Win32
+		{C8E219D2-458E-44BF-8771-0337EF792FDB}.Release|Win32.Build.0 = Release|Win32
+		{74C8DBB1-E7D2-41FD-A9FC-EA012C276F9D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{74C8DBB1-E7D2-41FD-A9FC-EA012C276F9D}.Debug|Win32.Build.0 = Debug|Win32
+		{74C8DBB1-E7D2-41FD-A9FC-EA012C276F9D}.Release|Win32.ActiveCfg = Release|Win32
+		{74C8DBB1-E7D2-41FD-A9FC-EA012C276F9D}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

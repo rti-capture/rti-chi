@@ -1,6 +1,3 @@
-// Copyright Cultural Heritage Imaging 2008
-// HSH (Hemi-Spherical Harmonics) fitter
-
 #include "stdafx.h"
 
 #include "cv.h"
@@ -46,7 +43,7 @@ HshFitter::HshFitter(string str_main_path, string str_prefix, string str_lights_
 /* return the number and names of the files matching the given prefix at the given path */
 /* this is left as an independent utility method										*/
 
-int find_file( const string & str_path, const string & prefix, list<string> & filenames)          
+int find_file( const string & str_path, const string & prefix, list<string> & filenames, bool return_fullpath)          
 {
   path dir_path(str_path);
   int filecount = 0;	
@@ -58,10 +55,16 @@ int find_file( const string & str_path, const string & prefix, list<string> & fi
   {
     if ( !is_directory(itr->status()) )
 	{
-		if (itr->leaf().compare(0,prefix.length(),prefix) == 0) 
+		string ex = extension(itr->path());
+		if ((extension(itr->path()).compare(".jpg")==0 || extension(itr->path()).compare(".png")==0 
+			|| extension(itr->path()).compare(".JPG")==0 || extension(itr->path()).compare(".PNG")==0)
+			&& (itr->leaf().compare(0,prefix.length(),prefix) == 0) )
 		{
 			//cout << " ** ";
-			filenames.push_back(itr->path().string());
+			if (return_fullpath) 
+				filenames.push_back(itr->path().string());
+			else 
+				filenames.push_back(itr->leaf());
 			filecount++;
 		}
       
@@ -79,18 +82,27 @@ int HshFitter::read_light_positions()
 {
 	ifstream lights_file((str_main_path + str_lights_filename).c_str());
 
-	double lx, ly, lz, mag;
-	lights_file >> lx >> ly >> lz; // get the first dummy line out of the way.
-	for (int i=0; i<num_files; i++)
+	if (lights_file.is_open()) 
 	{
-		lights_file >> lx >> ly >> lz;
-		mag = sqrt(lx*lx + ly*ly + lz*lz);
-		lit_images[i].lx = lx/mag;
-		lit_images[i].ly = ly/mag;
-		lit_images[i].lz = lz/mag;
+		double lx, ly, lz, mag;
+		int n;
+		string s;
+		lights_file >> n;
+		//lights_file >> lx >> ly >> lz; // get the first dummy line out of the way.
+		int i;
+		for (i=0; i<num_files && !lights_file.eof(); i++)
+		{
+			lights_file >> s >> lx >> ly >> lz;
+			mag = sqrt(lx*lx + ly*ly + lz*lz);
+			lit_images[i].lx = lx/mag;
+			lit_images[i].ly = ly/mag;
+			lit_images[i].lz = lz/mag;
+		}
+		lights_file.close();
+		return i;
 	}
-	lights_file.close();
-	return 0;
+	else
+		return 0;
 }
 
 
@@ -123,9 +135,13 @@ int HshFitter::read_color_correction()
 	return count_used;
 }
 
+/* 1) Finds the list of files that are in str_main_path and have the prefix str_prefix		*/
+/* 2) Reads the light positions file and the color corrections file							*/
+/* 3) Filters out the files that are unused, after checking the color corrections file		*/
+/* 4) Loads a single image (first one in list) to get the image dimensions					*/
 bool HshFitter::read_inputs()
 {
-	num_files = find_file(str_main_path,str_prefix,filenames);
+	num_files = find_file(str_main_path,str_prefix,filenames,true);
 
 	if (!num_files) 
 		return false;
@@ -143,7 +159,15 @@ bool HshFitter::read_inputs()
 		count++;
 	}
 
-	read_light_positions();
+	int num_light_positions = read_light_positions();
+
+	if (num_light_positions != num_files)
+	{
+		*output << " Light positions on file (" << num_light_positions << ") does not match the number of files for viewpoint ("
+			<< num_files << ") \r\n";
+		return false;
+	}
+
 	
 	num_used = read_color_correction();
 	//cout << "Number used : " << num_used << endl;
@@ -163,7 +187,10 @@ bool HshFitter::read_inputs()
 	IplImage * sample = cvLoadImage(lit_images[0].filename.c_str(),1);
 	
 	if (!sample)
+	{
+		*output << " Error opening sample image " << lit_images[0].filename.c_str() << "! \r\n";
 		return false;
+	}
 
 	height = sample->height;
 	width = sample->width;			// do something if width is not a multiple of 4, otherwise the byte alignment is going to mess you up.
@@ -184,7 +211,8 @@ bool HshFitter::read_inputs()
 }
 
 
-
+/* Loads all the images in one go to a large matrix  */
+/* Used only if the 'row_by_row' option is unchecked */
 void HshFitter::stack_all_images() 
 {
 
@@ -216,6 +244,7 @@ void HshFitter::stack_all_images()
 	}
 }
 
+/* Prepares all the jpeg files to be read in one row at a time	*/
 bool HshFitter::open_all_readers()
 {
 	for (int i=0; i<num_used; i++) 
@@ -223,7 +252,8 @@ bool HshFitter::open_all_readers()
 		lit_images[i].reader = new RowJpegReader(lit_images[i].filename.c_str());
 		if (lit_images[i].reader->ReadHeader())
 		{
-			lit_images[i].reader->StartReading(lit_images[i].reader->IsColor());
+			cout << lit_images[i].filename.c_str() <<" " << lit_images[i].reader->GetHeight() << " " << lit_images[i].reader->GetWidth() << " " << lit_images[i].reader->GetDepth() << endl;
+  			lit_images[i].reader->StartReading(lit_images[i].reader->IsColor());
 		}
 		else
 		{
@@ -234,6 +264,7 @@ bool HshFitter::open_all_readers()
 	return true;
 }
 
+/* Closes all the jpeg file readers */
 void HshFitter::close_all_readers()
 {
 	for (int i=0; i<num_used; i++) 
@@ -242,6 +273,9 @@ void HshFitter::close_all_readers()
 	}
 }
 
+/* Stacks the current row across all images						 */
+/* This is used instead of 'stack_all_images when the row_by_row */
+/* option is used */
 void HshFitter::stack_all_rows() 
 {
 
@@ -268,6 +302,7 @@ void HshFitter::stack_all_rows()
 	//return matrix;
 }
 
+/* Converts a byte matrix to a float matrix */
 void HshFitter::matrix_char_to_float() 
 {
 	int height = mat_byte_images->height;
@@ -293,7 +328,7 @@ void HshFitter::matrix_char_to_float()
 }
 
 
-
+/* Debug utility method, display a matrix */
 void show_matrix(CvMat* mat) 
 {
 	cout << " --------------------------------------------------- " << endl;
@@ -308,8 +343,8 @@ void show_matrix(CvMat* mat)
 	cout << endl;
 }
 
-static const double pi = 3.141592653589793238462643383279502884197; 
 
+/* Compose the HSH coefficients matrix for a given order */
 CvMat* HshFitter::make_hsh_matrix()
 {
 	int terms = order * order;
@@ -368,7 +403,8 @@ CvMat* HshFitter::make_hsh_matrix()
 
 
 
-
+/* Utility method, find the minimum and the maximum values along a certain row */
+/* in a given matrix */
 void find_min_max(CvMat * matrix, int row, float& min, float&max) 
 {
 	int height = matrix->height;
@@ -455,6 +491,9 @@ bool HshFitter::hsh_save(ofstream &savefile, CvMat *hsh_matrix)
 	int terms = hsh_matrix->height;
 	int pixels = hsh_matrix->width;
 
+	ifstream ift;
+	
+	cout << terms << " " << pixels << " ";
 	for (int i=0; i<terms; i++) 
 	{
 		find_min_max(hsh_matrix,i,min_term[i],max_term[i]);
@@ -479,15 +518,22 @@ bool HshFitter::hsh_save(ofstream &savefile, CvMat *hsh_matrix)
 	savefile << terms << " " << 2 << " " << 1 << "\r\n"; // basis_terms, basis_type == RGB seperate, element_size = 1 byte
 
 
+	cout << endl;
 	//write scaling values for each term
 	for (int i=0; i<terms; i++) 
 	{
 		float diff = max_term[i]-min_term[i];
+		cout <<  diff << " , " ;
 		savefile.write((char *)&diff,sizeof(float)); // scale
 	}
-	for (int i=0; i<terms; i++) 
+	
+	cout << endl << endl;
+	for (int i=0; i<terms; i++)
+	{
+		cout << min_term[i] << " , " ;
 		savefile.write((char *)&min_term[i],sizeof(float)); // bias
-
+	}
+	cout << endl;
 
 	for (int t=0; t<terms; t++) 
 	{
@@ -605,8 +651,8 @@ void HshFitter::compute_loop()
 		outfile.open(str_output_filename.c_str(),ios::binary);
 	}
 
-	if (is_compressed)  // initialize minimum and maximum bounds for 'compressed' format
-	{
+	//if (is_compressed)  // initialize minimum and maximum bounds for 'compressed' format
+	//{
 		min_term.resize(order*order);
 		max_term.resize(order*order);
 		for (int i=0;i<order*order;i++) 
@@ -614,7 +660,7 @@ void HshFitter::compute_loop()
 			min_term[i] = FLT_MAX;
 			max_term[i] = -FLT_MAX;
 		}
-	}
+	//}
 
 	term_ptr.resize(order*order); // used to track term blocks when saving HSHs
 
