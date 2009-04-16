@@ -22,6 +22,7 @@
 #include "ptm.h"
 #include "hsh.h"
 #include "universalrti.h"
+#include "multiviewrti.h"
 #include "httpthread.h"
 
 // Qt headers
@@ -74,6 +75,9 @@ private:
 	QSettings* settings; /*!< Application settings. */
 
 	QDir dir; /*!< Current working directory. */
+
+	const QString title;
+	const QString filterStr;
 
 
 public:
