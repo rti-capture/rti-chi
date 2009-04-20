@@ -142,7 +142,7 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 	{
 		for(int j = 0; j < h; j++)
 		{
-			if (cb != NULL)(*cb)(j * 70.0 / h, text);
+			if (cb != NULL && j % 50 == 0)(*cb)(j * 70.0 / h, text);
 			for(int i = 0; i < w; i++)
 			{				
 				offset = j * w + i;
@@ -174,7 +174,7 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 	{
 		for(int j = 0; j < h; j++)
 		{
-			if (cb != NULL)(*cb)(j * 25 / h, text);
+			if (cb != NULL && j % 50 == 0)(*cb)(j * 25 / h, text);
 			for(int i = 0; i < w; i++)
 			{				
 				offset = j * w + i;
@@ -226,7 +226,7 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 		blueCoefficients.setLevel(new float[size], size, level);
 		for (int i = 0; i < height - 1; i+=2)
 		{
-			if (cb != NULL)	(*cb)(70 + (level-1)*10 + i*10.0/height, "Mip mapping generation...");
+			if (cb != NULL && i % 50 == 0)	(*cb)(70 + (level-1)*10 + i*10.0/height, "Mip mapping generation...");
 			for (int j = 0; j < width - 1; j+=2)
 			{
 				int index1 = (i * width + j);
@@ -342,6 +342,13 @@ int Hsh::createImage(unsigned char** buffer, int& width, int& height, const vcg:
 	height = ceil(rect.height());
 	int offx = rect.x();
 	int offy = rect.y();
+	for (int i = 0; i < level; i++)
+	{
+		width = ceil(width/2.0);
+		height = ceil(height/2.0);
+		offx = offx/2;
+		offy = offy/2;
+	}
 	(*buffer) = new unsigned char[width*height*4];
 	int offsetBuf = 0;
 	

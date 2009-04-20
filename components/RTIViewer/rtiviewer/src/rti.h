@@ -12,8 +12,9 @@
 #ifndef RTI_H
 #define RTI_H
 
-#include "renderingmode.h"
 #include "util.h"
+#include "renderingmode.h"
+
 
 #include <vcg/space/point3.h>
 

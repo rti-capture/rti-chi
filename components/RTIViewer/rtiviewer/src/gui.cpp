@@ -310,9 +310,9 @@ int RtiViewerDlg::open()
 				//Sets the browser image
 				browser->setImage(image);
 				//Sets the navigator image
-				//navigator->setImage(image->createPreview(360, 240), image->width(), image->height());
+				navigator->setImage(image->createPreview(360, 240), image->width(), image->height());
 				QApplication::restoreOverrideCursor();
-				//rendDlg->setRenderingMode(browser->getRenderingMode(), browser->getCurrentRendering());
+				rendDlg->setRenderingMode(browser->getRenderingMode(), browser->getCurrentRendering());
 				loading->close();
 				//Sets file info
 				filename->setText(path);

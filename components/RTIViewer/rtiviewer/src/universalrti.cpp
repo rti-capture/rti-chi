@@ -65,28 +65,14 @@ int UniversalRti::load(QString name, CallBackPos *cb)
 
 	unsigned char c;
 
-	//parse comments		
-	c = fgetc(file);
-	if (feof(file))
-		return -1;
-	while(c=='#')		
-	{
-		while (c != '\n')
-		{
-			c = fgetc(file);
-			if (feof(file))
-				return -1;
-		}
-		c = fgetc(file);
-	}
-	if (feof(file))
-		return -1;
-	//rewind one character
-	fseek(file, -1, SEEK_CUR);
-
 	bool eof, error;
-	QString str = getLine(file, &eof);
-	if (eof) return -1;
+	QString str;
+	do
+	{
+		str = getLine(file, &eof);
+		if (eof) return -1;
+	} while (str.startsWith("#"));
+
 	int rtiType = str.toInt(&error);
 	if (!error) return -1;
 	

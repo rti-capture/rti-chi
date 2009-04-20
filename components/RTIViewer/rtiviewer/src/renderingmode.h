@@ -85,7 +85,7 @@ public:
 	/*!
 	  Returns info about the application of the rendering mode when a remote RTI image is opened.
 	  \return \a true if the mode can be apply throughout the opening of a remote RTI image, \a false otherwise.
-				When all tiles of remote RTI image is received the mode can be apply again, even if the method returns \a false.
+				When all tiles of remote RTI image is received the mode can be applied again, even if the method returns \a false.
 	*/
 	virtual bool supportRemoteView() = 0;
 

@@ -177,7 +177,7 @@ int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti
 	{
 		for (int y = h - 1; y >= 0; y--)
 		{
-			if (cb != NULL)	(*cb)(15*j + (h - y) * 15 / h, text);
+			if (cb != NULL && (y % 50) == 0) (*cb)(15*j + (h - y) * 15 / h, text);
 			for (int x = 0; x < w; x++)
 			{
 				offset = y * w + x;
@@ -602,7 +602,7 @@ int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urt
 	//Reads coefficient and rgb components from file
 	for (int y = h - 1; y >= 0; y--)
 	{
-		if (cb != NULL && (h-y)%100==0)(*cb)((h - y) * 40 / h, text);
+		if (cb != NULL && (y % 50 == 0))(*cb)((h - y) * 40 / h, text);
 		for (int x = 0; x < w; x++)
 		{
 			offset = y * w + x;
@@ -1315,7 +1315,7 @@ int JPEGLRGBPtm::load(QString name, CallBackPos *cb)
 	{
 		for (int x = 0; x < w; x++)
 		{
-			if (cb != NULL && (h -y)%100 == 0)(*cb)(41 + (h-y)*29/h, "Loading JPEG-LRGB PTM...");
+			if (cb != NULL && (y % 100 == 0))(*cb)(41 + (h-y)*29/h, "Loading JPEG-LRGB PTM...");
 			offset = w * y + x;
 			for (int i = 0; i < 6; i++)
 				coeffPtr[offset*6 + i] = static_cast<int>((coef[i][offset] - bias[i])*scale[i]);

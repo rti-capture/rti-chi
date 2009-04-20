@@ -37,28 +37,6 @@ public:
 	virtual ~UniversalRti();
 
 
-private:
-
-	/*!
-	  Reads from the file a line ended by char '\n'
-	  \param file file pointer.
-	  \param eof flag for the end of file.
-	  \return returns the readed line.
-	*/
-	QString getLine(FILE* file, bool* eof)
-	{
-		char c;
-		QString str = "";
-		*eof = false;
-		while(!feof(file) && fread(&c, sizeof(char), 1, file)!=0 && c!='\n')
-			str.append(c);
-		if (feof(file))
-			*eof = true;
-		return str;
-	}
-
-	
-	
 public:
 
 	virtual int load(CallBackPos * cb = 0);
