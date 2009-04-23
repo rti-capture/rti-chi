@@ -58,7 +58,7 @@ SpecularEnhancement::SpecularEnhancement() :
 	ks(0.7f),
 	exp(75),
 	minKd(0.0f),
-	maxKd(2.0f),
+	maxKd(1.0f),
 	minKs(0.0f),
 	maxKs(1.0f),
 	minExp(1),
@@ -176,6 +176,7 @@ void SpecularEnhancement::applyPtmRGB(const PyramidCoeff& redCoeff, const Pyrami
 			h += info.light;
 			h /= 2;
 			h.Normalize();
+			
 			double nDotH = h * normalsPtr[offset];
 			if (nDotH < 0) 
 				nDotH = 0.0;
@@ -187,10 +188,15 @@ void SpecularEnhancement::applyPtmRGB(const PyramidCoeff& redCoeff, const Pyrami
 				nDotL = 0.0;
 			else if (nDotL > 1)
 				nDotL = 1.0;
-			double lum =  kd * nDotL + ks*2*nDotH;
-			buffer[offsetBuf + 0] = tobyte(evalPoly(&redPtr[offset*6], info.light.X(), info.light.Y()) * lum);
-			buffer[offsetBuf + 1] = tobyte(evalPoly(&greenPtr[offset*6], info.light.X(), info.light.Y()) * lum);
-			buffer[offsetBuf + 2] = tobyte(evalPoly(&bluePtr[offset*6], info.light.X(), info.light.Y()) * lum);
+			double r, g ,b;
+			r = evalPoly(&redPtr[offset*6], info.light.X(), info.light.Y());
+			g = evalPoly(&greenPtr[offset*6], info.light.X(), info.light.Y());
+			b = evalPoly(&bluePtr[offset*6], info.light.X(), info.light.Y());
+			double temp = (r + g + b)/3;
+			double lum =  temp * ks * 2 * nDotH;
+			buffer[offsetBuf + 0] = tobyte( r * kd + lum);
+			buffer[offsetBuf + 1] = tobyte( g * kd + lum );
+			buffer[offsetBuf + 2] = tobyte( b * kd + lum );
 			buffer[offsetBuf + 3] = 255;
 			offsetBuf += 4;
 		}

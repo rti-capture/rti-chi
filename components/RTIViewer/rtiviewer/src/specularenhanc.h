@@ -127,6 +127,7 @@ signals:
 	  Emitted to refresh the image in the browser.
 	*/
 	void refreshImage();
+
 };
 
 #endif /* SPECULARENHANCEMENT_H */
