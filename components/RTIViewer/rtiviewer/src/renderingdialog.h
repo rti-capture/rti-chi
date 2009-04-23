@@ -78,6 +78,11 @@ signals:
 	*/
 	void updateImage();
 
+	/*!
+	  Emitted to indicate the finish of the downloading of a remote RTI.
+	*/
+	void resetRemote();
+
 //accessor
 public:
 	

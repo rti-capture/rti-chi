@@ -208,8 +208,8 @@ int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti
 
 	// Computes the normals
 	calculateNormals(normals, redCoefficients, true, cb, 60, 10);
-	calculateNormals(normals, greenCoefficients, true, cb, 70, 10);
-	calculateNormals(normals, blueCoefficients, true, cb, 80, 10);
+	calculateNormals(normals, greenCoefficients, false, cb, 70, 10);
+	calculateNormals(normals, blueCoefficients, false, cb, 80, 10);
 	for(int level = 0; level < MIP_MAPPING_LEVELS; level++)
 	{
 		int lenght = normals.getLevelLenght(level);
@@ -964,6 +964,7 @@ int LRGBPtm::allocateRemoteImage(int width, int height, int maxResLevel)
 {
 	if (width <= 0 || height <= 0 || maxResLevel <= 0)
 		return -1;
+	((DefaultRenderingPtm*)list->at(NORMAL))->setRemote(true);
 	w = width;
 	h = height;
 	remote = true;

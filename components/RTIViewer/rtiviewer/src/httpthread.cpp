@@ -56,6 +56,12 @@ bool HttpWorker::errorState()
 }
 
 
+void HttpWorker::resetErrorState()
+{
+	httpError = false;
+}
+
+
 void HttpWorker::httpRequestFinished(int id, bool error)
 {
 	if (aborted) return;

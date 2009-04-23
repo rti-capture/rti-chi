@@ -94,14 +94,14 @@ void RenderingDialog::setRenderingMode(QVector<RenderingMode*>* l, int currRende
 		delete control;
 		control = c;
 		update();
-	}
-	
+	}	
 }
 
 
 void RenderingDialog::updateRenderingList(int currRendering, bool remote)
 {
 	modeList->clear();
+	emit resetRemote();
 	if (list)
 	{
 		int selected = currRendering;

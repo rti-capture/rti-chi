@@ -115,6 +115,11 @@ public:
 	  Checks if an HTTP error occurred.
 	*/
 	bool errorState();
+
+	/*!
+	  Reset the HTTP error state.
+	*/
+	void resetErrorState();
 	
 private:
 	
@@ -303,6 +308,14 @@ public:
 	bool checkHttpError()
 	{
 		return worker->errorState();
+	}
+
+	/*!
+	  Reset the HTTP error state.
+	*/
+	void resetHttpError()
+	{
+		worker->resetErrorState();
 	}
 
 signals:

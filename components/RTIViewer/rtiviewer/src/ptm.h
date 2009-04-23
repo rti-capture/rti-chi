@@ -34,8 +34,13 @@
 #include <QFile>
 #include <QImage>
 #include <QVector>
+#include <QTimer>
+#include <QWidget>
+#include <QLabel>
+#include <QVBoxLayout>
 
 #include <vcg/math/base.h>
+
 
 /*!
   Rendering mode for PTM image.
@@ -53,18 +58,73 @@ enum RenderingPtm
 	DYN_DETAIL_ENHANCEMENT,
 };
 
+/*!
+  Widget to show the progress of the downloading of a remote RTI
+*/
+class LoadRemoteWidget : public QWidget
+{
+	Q_OBJECT
+private:
+
+	QLabel* string;
+	int i;
+	
+public:
+
+	LoadRemoteWidget(bool remote, QWidget* parent = 0) : QWidget(parent)
+	{
+		i = 0;
+		if (remote)
+		{
+			
+			QVBoxLayout* layout = new QVBoxLayout;
+			string = new QLabel("Downloading remote RTI ");
+			layout->addWidget(string, 0, Qt::AlignVCenter);
+			setLayout(layout);
+			startTimer(500);
+		}
+	}
+	
+protected:
+
+	void timerEvent(QTimerEvent * event)
+	{
+		i++;
+		i = i % 10;
+		QString point = "";
+		for (int j = 0; j < i; j++)
+			point.append(".");
+		string->setText(tr("Downloading remote RTI ").append(point));
+	}
+};
+
 
 //! Defaut Rending for PTM image.
 /*!
   The class defines the default rendering for PTM image.
 */
-class DefaultRenderingPtm : public RenderingMode
+class DefaultRenderingPtm : public QObject, public RenderingMode
 {
+	Q_OBJECT
+
+private:
+	bool remote;
 
 public:
+
+	DefaultRenderingPtm(): remote(false){}
+	void setRemote(bool flag) {remote = flag;}
 	
 	QString getTitle() {return "Default";}
-	QWidget* getControl(QWidget* parent) {return new QWidget(parent);}
+	
+	QWidget* getControl(QWidget* parent)
+	{
+		LoadRemoteWidget* control = new LoadRemoteWidget(remote, parent);
+		disconnect(parent, SIGNAL(resetRemote()), 0, 0);
+		connect(parent, SIGNAL(resetRemote()), this, SLOT(resetRemote())); 
+		return control;
+	}
+	
 	bool isLightInteractive() {return true;}
 	bool supportRemoteView()  {return true;}
 	bool enabledLighting() {return true;}
@@ -110,6 +170,14 @@ public:
 		}
 
 	}
+
+public slots:
+
+	void resetRemote()
+	{
+		remote =  false;
+	}
+
 };
 
 
@@ -199,7 +267,7 @@ protected:
 		}
 		else
 		{
-			double length2d = lx * lx + ly * lx;
+			double length2d = lx * lx + ly * ly;
 			int maxfound;
 			if (4 * a[0] * a[1] - a[2] * a[2] > zerotol && a[0] < -zerotol)
 				maxfound = 1;
@@ -412,6 +480,9 @@ private:
 	PyramidCoeff blueCoefficients; /*!< Coefficients for blue component. */
 
 	PyramidNormals normals; /*!< Normals. */
+	PyramidNormals normalsR;
+	PyramidNormals normalsG;
+	PyramidNormals normalsB;
 
 // constructors
 public:

@@ -77,7 +77,7 @@ RtiBrowser::RtiBrowser(int w, int h, Rti *image, int maxZ, QWidget *parent): QGL
 	currentMode = DEFAULT_MODE;
 
 	// custom settings
-	setMinimumSize(700, 700);
+	setMinimumSize(650, 650);
 	setWindowFlags(Qt::SubWindow);
 
 	// signal-slot connections
