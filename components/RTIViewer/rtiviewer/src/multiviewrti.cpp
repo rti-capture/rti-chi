@@ -23,33 +23,28 @@ ViewpointControl::ViewpointControl(int initValueX, int nViewX, bool enableFlow, 
 	QLabel* label = new QLabel("Horizontal shift");
 	viewpointSlider = new QSlider(Qt::Horizontal);
 	viewpointSlider->setTickPosition(QSlider::TicksBothSides);
-	viewpointSlider->setTracking(false);
 	snapNearest = new QCheckBox("Nearest viewpoint");
+	viewpointSlider->setRange(0, 100*(maxViewX - 1));
+	viewpointSlider->setTickInterval(100);
+	viewpointSlider->setValue(initValueX * 100);
 	if (!enableFlow)
 	{
-		viewpointSlider->setRange(0, maxViewX - 1);
-		viewpointSlider->setValue(initValueX);
+		viewpointSlider->setRange(0, (maxViewX - 1));
 		viewpointSlider->setTickInterval(1);
+		viewpointSlider->setValue(initValueX);
 		snapNearest->setCheckState(Qt::Checked);
 		snapNearest->setDisabled(true);
 	}
+	else if (useFlow)
+	{
+		snapNearest->setCheckState(Qt::Unchecked);
+	}
 	else
 	{
-		if (useFlow)
-		{
-			viewpointSlider->setRange(0, 100*(maxViewX - 1));
-			viewpointSlider->setValue(100*(initValueX));
-			viewpointSlider->setTickInterval(100);
- 			snapNearest->setCheckState(Qt::Unchecked);
-		}
-		else
-		{
-			viewpointSlider->setRange(0, maxViewX - 1);
-			viewpointSlider->setValue(initValueX);
-			viewpointSlider->setTickInterval(1);
-			snapNearest->setCheckState(Qt::Checked);
-		}
+		snapNearest->setCheckState(Qt::Checked);
 	}
+	this->useFlow = useFlow;
+	connect(viewpointSlider, SIGNAL(sliderReleased()), this, SLOT(sliderReleased())); 
 	connect(viewpointSlider, SIGNAL(valueChanged(int)), this, SIGNAL(viewpointChanged(int)));
 	connect(snapNearest, SIGNAL(stateChanged(int)), this, SLOT(updateSlider(int)));
 	
@@ -118,7 +113,7 @@ int MultiviewRti::load(QString name, CallBackPos *cb)
 	{
 		line = stream.readLine();
 	} while (line.startsWith("#"));
-	QStringList strList = line.split(" ", QString::SplitBehavior::SkipEmptyParts);
+	QStringList strList = line.split(' ',  QString::SkipEmptyParts);
 	if (strList.count() < 3)
 		return -1;
 	maxViewX = strList.at(0).toInt(&error);
@@ -129,18 +124,16 @@ int MultiviewRti::load(QString name, CallBackPos *cb)
 	if (!error) return -1;
 
 	line = stream.readLine();
-	strList = line.split(" ", QString::SplitBehavior::SkipEmptyParts);
+	strList = line.split(' ',  QString::SkipEmptyParts);
 	if (strList.count() < 2)
 		return -1;
 	startX = strList.at(0).toInt(&error);
 	if (!error) return -1;
 	startY = strList.at(1).toInt(&error);
 	if (!error) return -1;
-	//posX = startX - 1;
-	//posY = startY - 1;
-	
+		
 	line = stream.readLine();
-	strList = line.split(" ", QString::SplitBehavior::SkipEmptyParts);
+	strList = line.split(' ',  QString::SkipEmptyParts);
 	if (strList.count() < 4)
 		return -1;
 	int temp = strList.at(0).toInt(&error);
@@ -158,7 +151,7 @@ int MultiviewRti::load(QString name, CallBackPos *cb)
 	{
 		if (cb != NULL)(*cb)(i * 60 / nViewpoint, "Loading RTI file...");
 		line = stream.readLine();
-		strList = line.split(" ", QString::SplitBehavior::SkipEmptyParts);
+		strList = line.split(' ',  QString::SkipEmptyParts);
 		if (strList.count() < 2)
 			return -1;
 		QFile image(QString("%1/%2").arg(info.absolutePath()).arg(strList.at(1)));
@@ -175,7 +168,7 @@ int MultiviewRti::load(QString name, CallBackPos *cb)
 	for (int i = 0; i < maxViewY; i++)
 	{
 		line = stream.readLine();
-		strList = line.split(" ", QString::SplitBehavior::SkipEmptyParts);
+		strList = line.split(' ',  QString::SkipEmptyParts);
 		if (strList.count() < maxViewX)
 			return -1;
 		for (int j = 0; j < maxViewX; j++)
@@ -201,7 +194,7 @@ int MultiviewRti::load(QString name, CallBackPos *cb)
 		{
 			if (cb != NULL)(*cb)(60 + i * 40 / nViewpoint, "Loading Optical flow data ...");
 			line = stream.readLine();
-			strList = line.split(" ", QString::SplitBehavior::SkipEmptyParts);
+			strList = line.split(' ',  QString::SkipEmptyParts);
 			if (strList.count() < 5)
 				return -1;
 			for (int j = 0; j < 4; j++)
@@ -273,7 +266,7 @@ int MultiviewRti::loadFlowData(const QString &path, std::vector<float>** output)
 		if (eof) return -1;
 	} while (str.startsWith("#"));
 
-	QStringList strList = str.split(" ", QString::SplitBehavior::SkipEmptyParts);
+	QStringList strList = str.split(' ',  QString::SkipEmptyParts);
 	if (strList.count() < 2) return -1;
 	int width = strList.at(0).toInt(&error);
 	if (!error) return -1;
@@ -282,7 +275,7 @@ int MultiviewRti::loadFlowData(const QString &path, std::vector<float>** output)
 
 	str = getLine(file, &eof);
 	if (eof) return -1;
-	strList = str.split(" ", QString::SplitBehavior::SkipEmptyParts);
+	strList = str.split(' ',  QString::SkipEmptyParts);
 	if (strList.count() < 3) return -1;
 	int elementSize = strList.at(0).toInt(&error);
 	if (!error) return -1;
@@ -291,7 +284,7 @@ int MultiviewRti::loadFlowData(const QString &path, std::vector<float>** output)
 	float bias = strList.at(2).toFloat(&error);
 	if (!error) return -1;
 	*output = new std::vector<float>(width*height);
-
+	
 	void* temp;
 	unsigned char c;
 	short s;
@@ -309,11 +302,7 @@ int MultiviewRti::loadFlowData(const QString &path, std::vector<float>** output)
 				default: fread(&c, sizeof(unsigned char), 1, file);
 			}
 			f = f * scale + bias;
-			(*output)->at((height - j - 1)*width + i) = f;
-			/*if (f - floor(f) < 0.5)
-				(*output)->at((height - j - 1)*width + i) = floor(f);
-			else
-				(*output)->at((height - j - 1)*width + i) = ceil(f);*/
+			(*output)->at(j*width + i) = f;
 		}
 	}
 	fclose(file);
@@ -377,151 +366,165 @@ int MultiviewRti::createImage(unsigned char** buffer, int& width, int& height, c
 	DefaultMRti* rend = (DefaultMRti*)list->at(NORMAL_MULTIVIEW);
 	float newPosX = rend->getCurrentPosX();
 	float newPosY = rend->getCurrentPosY();
-	bool flag =	rend->useFlowData();
-	//if (newPosX != posX || newPosY != posY)
-	//{
-		if (flag)
+		
+	if (useFlow)
+	{
+		//with optical flow
+		int tempW, tempH;
+		int left, right, up, down;
+		int newLeft, newRight, newUp, newDown;
+		
+		left = floorf(posX);
+		right = ceilf(posX);
+		up = floorf(posY);
+		down = ceilf(posY);
+
+		newLeft = floorf(newPosX);
+		newRight = ceilf(newPosX);
+		newUp = floorf(newPosY);
+		newDown = ceilf(newPosY);
+
+		float distX = newPosX - newLeft;
+		float distY = newPosY - newDown;
+		
+		if (newLeft != newRight && newUp != newDown)
 		{
-			//with optical flow
-			int tempW, tempH;
-			int left, right, up, down;
-			int newLeft, newRight, newUp, newDown;
+
+		}
+		else if( newLeft == newRight && newUp != newDown)
+		{
+
+		}
+		else if( newLeft != newRight && newUp == newDown)
+		{
+			leftUpImage.valid = false;
+			rightUpImage.valid = false;
+			int leftIndex = (*viewpointLayout)[newDown][newLeft];
+			if (leftImage.buffer)
+				delete[] leftImage.buffer;
+			images[leftIndex]->createImage(&leftImage.buffer, tempW, tempH, light, QRectF(0,0,w,h));
+			leftImage.valid = true;
+			unsigned char* tLeft = new unsigned char[tempW*tempH*4];
+			int rightIndex = (*viewpointLayout)[newDown][newRight];
+			if (rightImage.buffer)
+				delete[] rightImage.buffer;
+			images[rightIndex]->createImage(&rightImage.buffer, tempW, tempH, light, QRectF(0,0,w,h));
+			rightImage.valid = true;
+			unsigned char* tRight = new unsigned char[tempW*tempH*4];
+
+			applyOpticalFlow(leftImage.buffer, *flow[leftIndex].right, distX, tLeft, leftImage.hFlow);
+			applyOpticalFlow(rightImage.buffer, *flow[rightIndex].left, 1.0 - distX, tRight, rightImage.hFlow);
 			
-			left = floorf(posX);
-			right = ceilf(posX);
-			up = floorf(posY);
-			down = ceilf(posY);
+			width = ceil(rect.width());
+			height = ceil(rect.height()); 
+			int offx = rect.x();
+			int offy = rect.y();
 
-			newLeft = floorf(newPosX);
-			newRight = ceilf(newPosX);
-			newUp = floorf(newPosY);
-			newDown = ceilf(newPosY);
-
-			float distX = newPosX - newLeft;
-			float distY = newPosY - newDown;
-
-			if (newLeft != newRight && newUp != newDown)
+			(*buffer) = new unsigned char[width*height*4];
+			unsigned char* ptrBuffer = (*buffer);
+			
+			int offsetBuf = 0;
+			for (int y = offy; y < offy + height; y++)
 			{
-
-			}
-			else if( newLeft == newRight && newUp != newDown)
-			{
-
-			}
-			else if( newLeft != newRight && newUp == newDown)
-			{
-				leftUpImage.valid = false;
-				rightUpImage.valid = false;
-				int leftIndex = (*viewpointLayout)[newDown][newLeft];
-				if (leftImage.buffer)
-					delete[] leftImage.buffer;
-				images[leftIndex]->createImage(&leftImage.buffer, tempW, tempH, light, QRectF(0,0,w,h));
-				leftImage.valid = true;
-				unsigned char* tLeft = new unsigned char[tempW*tempH*4];
-				int rightIndex = (*viewpointLayout)[newDown][newRight];
-				if (rightImage.buffer)
-					delete[] rightImage.buffer;
-				images[rightIndex]->createImage(&rightImage.buffer, tempW, tempH, light, QRectF(0,0,w,h));
-				rightImage.valid = true;
-				unsigned char* tRight = new unsigned char[tempW*tempH*4];
-
-				applyOpticalFlow(leftImage.buffer, (*flow[leftIndex].right), distX, tLeft, leftImage.hFlow);
-				applyOpticalFlow(rightImage.buffer, (*flow[rightIndex].left), 1.0 - distX, tRight, rightImage.hFlow);
-				
-				/*QImage provaleft(leftImage.buffer, w, h, QImage::Format_RGB32);
-				provaleft.save("left.jpg");
-				QImage provaright(rightImage.buffer, w, h, QImage::Format_RGB32);
-				provaright.save("right.jpg");
-				QImage provaleft2(tLeft, w, h, QImage::Format_RGB32);
-				provaleft2.save("leftT.jpg");
-				QImage provaright2(tRight, w, h, QImage::Format_RGB32);
-				provaright2.save("rightT.jpg");*/
-
-				width = ceil(rect.width());
-				height = ceil(rect.height());
-				int offx = rect.x();
-				int offy = rect.y();
-
-				(*buffer) = new unsigned char[width*height*4];
-				unsigned char* ptrBuffer = (*buffer);
-
-				int offsetBuf = 0;
-				for (int y = offy; y < offy + height; y++)
+				for (int x = offx; x < offx + width; x++)
 				{
-					for (int x = offx; x < offx + width; x++)
+					int offset = y * w + x;
+					int offset4 = offset*4;
+					if (leftImage.hFlow[offset] < 1 && rightImage.hFlow[offset] < 1)
+					{ 
+						for (int i = 0; i < 3; i++)
+							ptrBuffer[i] = tobyte(tLeft[offset4 + i]*(1.0 - distX) + tRight[offset4 + i]*distX);
+						ptrBuffer[3] = 255;
+					}
+					else if(leftImage.hFlow[offset] < 1)
 					{
-						int offset = y * w + x;
-						if (leftImage.hFlow[offset] < 1 && rightImage.hFlow[offset] < 1)
+						for (int i = 0; i < 3; i++)
+							ptrBuffer[i] = tLeft[offset4 + i];
+						ptrBuffer[3] = 255;
+					}
+					else if (rightImage.hFlow[offset] < 1) 
+					{
+						for (int i = 0; i < 3; i++)
+							ptrBuffer[i] = tRight[offset4 + i];
+						ptrBuffer[3] = 255;
+					}
+					else if(leftImage.hFlow[offset] < rightImage.hFlow[offset])
+					{
+						for (int i = 0; i < 3; i++)
+							ptrBuffer[i] = tLeft[offset4 + i];
+						ptrBuffer[3] = 255;
+					}
+					else if (leftImage.hFlow[offset] > rightImage.hFlow[offset])
+					{
+						for (int i = 0; i < 3; i++)
+							ptrBuffer[i] = tRight[offset4 + i];
+						ptrBuffer[3] = 255;
+					}
+					else 
+					{
+						for (int i = 0; i < 3; i++)
+							ptrBuffer[i] = 0;
+						ptrBuffer[3] = 0;
+					}
+					ptrBuffer += 4;
+				}
+			}
+
+			ptrBuffer = (*buffer);
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 1; x < width - 1; x++)
+				{
+					int offset = y * width + x;
+					if (ptrBuffer[offset*4 + 3] == 0)
+					{
+						int startX = x - 1;
+						while (ptrBuffer[offset*4 + 3] == 0 && x < width)
 						{
-							if (distX <= 0.5)
+							offset++;
+							x++;
+						}
+						if (x < width)
+						{
+							int stopX = x;
+							unsigned char* leftPx = &ptrBuffer[(y * width + startX) * 4];
+							unsigned char* rightPx = &ptrBuffer[(y * width + stopX) * 4];
+							for (int i = startX + 1; i < stopX; i++)
 							{
-								for (int i = 0; i < 3; i++)
-									ptrBuffer[offsetBuf + i] = tLeft[offset*4 + i];
-							}
-							else
-							{
-								for (int i = 0; i < 3; i++)
-									ptrBuffer[offsetBuf + i] = tRight[offset*4 + i];
+								unsigned char* ptr = &ptrBuffer[(y*width + i)*4];
+								for (int j  = 0; j < 3; j++)
+									ptr[j] = leftPx[j] + (i - startX) * (rightPx[j] - leftPx[j]) / (stopX - startX);
+								ptr[3] = 255;
 							}
 
-							/*for (int i = 0; i < 3; i++)
-								ptrBuffer[offsetBuf + i] = tobyte(tLeft[offset*4  + i]*distX + tRight[offset*4 + i]*(1.0 - distX));*/
 						}
-						else if(leftImage.hFlow[offset] < 1 || leftImage.hFlow[offset] < rightImage.hFlow[offset])
-						{
-							for (int i = 0; i < 3; i++)
-								ptrBuffer[offsetBuf + i] = tLeft[offset*4 + i];
-						}
-						else if (rightImage.hFlow[offset] < 1 || leftImage.hFlow[offset] > rightImage.hFlow[offset])
-						{
-							for (int i = 0; i < 3; i++)
-								ptrBuffer[offsetBuf + i] = tRight[offset*4 + i];
-						}
-						else 
-						{
-							for (int i = 0; i < 3; i++)
-								ptrBuffer[offsetBuf + i] = 0;
-						}
-						ptrBuffer[offsetBuf + 3] = 255;
-						offsetBuf += 4;
+
 					}
 				}
-
-				QImage provaleft((*buffer), w, h, QImage::Format_RGB32);
-				provaleft.save("prova.jpg");
-
-				delete[] tLeft;
-				delete[] tRight;
 			}
-			else if( newLeft == newRight && newUp == newDown)
-			{
-				leftImage.valid = false;
-				rightImage.valid = false;
-				leftUpImage.valid = false;
-				rightUpImage.valid = false;
-				images[(*viewpointLayout)[newDown][newLeft]]->createImage(buffer, width, height, light, rect);
-			}
+			delete[] tLeft;
+			delete[] tRight;
 		}
-		else
+		else if( newLeft == newRight && newUp == newDown)
 		{
-			//without optical flow
 			leftImage.valid = false;
 			rightImage.valid = false;
 			leftUpImage.valid = false;
 			rightUpImage.valid = false;
-			images[(*viewpointLayout)[(int)newPosY][(int)newPosX]]->createImage(buffer, width, height, light, rect, level, mode);
+			images[(*viewpointLayout)[newDown][newLeft]]->createImage(buffer, width, height, light, rect);
 		}
-		posX = newPosX;
-		posY = newPosY;
-
-	//}
-	//else
-	//{
-	//	//si è aggiornato la luce o si è eseguito pan o zoom;
-
-	//}
-
-	
+	}
+	else
+	{
+		//without optical flow
+		leftImage.valid = false;
+		rightImage.valid = false;
+		leftUpImage.valid = false;
+		rightUpImage.valid = false;
+		images[(*viewpointLayout)[(int)newPosY][(int)newPosX]]->createImage(buffer, width, height, light, rect, level, mode);
+	}
+	posX = newPosX;
+	posY = newPosY;
 
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
@@ -540,16 +543,14 @@ void MultiviewRti::applyOpticalFlow(const unsigned char* image, const std::vecto
 	int offset = 0;
 	for (int y = 0; y < h; y++)
 		for (int x = 0; x < w; x++)
-			outFlow[offset++] = 30;
+			outFlow[offset++] = 50;
 
-	float* tempImg = new float[w*h*4];
-	memset(tempImg, 0, sizeof(float)*w*h*4);
-	float* contrib = new float[w*h];
-	memset(contrib, 0, sizeof(float)*w*h);
+	double* tempImg = new double[w*h*4];
+	memset(tempImg, 0, sizeof(double)*w*h*4);
+	double* contrib = new double[w*h];
+	memset(contrib, 0, sizeof(double)*w*h);
 
-	int lastMap = 0;
-	bool continuos = false;
-	
+	const unsigned char* ptrImage = image;
 	offset = 0;
 	for (int y = 0; y < h; y++)
 	{
@@ -561,13 +562,14 @@ void MultiviewRti::applyOpticalFlow(const unsigned char* image, const std::vecto
 			{
 				if (x + shift < w && x + shift >= 0)
 				{
-					float value = shift * dist;
+					double value = shift * dist;
 					int left = floor(value);
 					int right = ceil(value);
+					double* ptrTemp = &tempImg[(offset+left)*4];
 					if (left != right)
 					{
-						float leftRem = abs(value - left);
-						float rightRem = abs(value - right);
+						double leftRem = vcg::math::Abs(value - left);
+						double rightRem = vcg::math::Abs(value - right);
 						int leftIndex = offset + left;
 						contrib[leftIndex] += rightRem;
 						if (outFlow[leftIndex] > leftRem)
@@ -579,58 +581,33 @@ void MultiviewRti::applyOpticalFlow(const unsigned char* image, const std::vecto
 								outFlow[leftIndex + 1] = rightRem;
 							for (int i = 0; i < 3; i++)
 							{
-								tempImg[(offset + left)*4 + i] += image[offset*4 + i] * rightRem;
-								tempImg[(offset + left + 1)*4 + i] += image[offset*4 + i] * leftRem;
+								ptrTemp[i] += ptrImage[i] * rightRem;
+								ptrTemp[i + 4] += ptrImage[i] * leftRem;
 							}
 						}
 						else
 						{
 							for (int i = 0; i < 3; i++)
-								tempImg[(offset + left)*4 + i] += image[offset*4 + i] * rightRem;
+								ptrTemp[i] += ptrImage[i] * rightRem;
 						}
 					}
 					else
 					{
-						float fraction = abs(value - left);
+						float fraction = vcg::math::Abs(value - left);
 						if (outFlow[offset + left] > fraction)
 						{
 							outFlow[offset + left] = fraction;
 							contrib[offset + left] = 1;
 							for (int i = 0; i < 3; i++)
-								tempImg[(offset + left)*4 + i] = image[offset*4 + i];
+								ptrTemp[i] += ptrImage[i];
 						}
 					}
-
-					int gap = x + left - lastMap;
-					if (continuos && gap > 1 && gap < 15)
-					{
-						for (int i = lastMap + 1; i < x + left; i++)
-						{
-							int currentPx = y*w + i;
-							if (outFlow[currentPx] > gap)
-							{
-								int leftPx = y*w + lastMap;
-								int rightPx = offset + left;
-								float leftColor[3] = {tempImg[leftPx*4]/contrib[leftPx], tempImg[leftPx*4 + 1]/contrib[leftPx], tempImg[leftPx*4 + 2]/contrib[leftPx]};
-								float rightColor[3] = {tempImg[rightPx*4]/contrib[rightPx], tempImg[rightPx*4 + 1]/contrib[rightPx], tempImg[rightPx*4 + 2]/contrib[rightPx]};
-								outFlow[currentPx] = gap;
-								contrib[currentPx] = 1;
-								for (int j = 0; j < 3; j++)
-									tempImg[currentPx*4 + j] = leftColor[j] + (i - lastMap)*(rightColor[j] - leftColor[j]) / gap;
-							}
-						}
-
-					}
-					continuos = true;
-					lastMap = x + right;
 				}
 			}
-			else
-				continuos = true;
+			ptrImage += 4;
 		}
-		continuos = false;
 	}
-							
+	
 	for (int y = 0; y < h; y++)
 	{
 		for (int x = 0; x < w; x++)
@@ -649,9 +626,6 @@ void MultiviewRti::applyOpticalFlow(const unsigned char* image, const std::vecto
 		}
 	}
 	
-	//QImage provaleft2(outImg, w, h, QImage::Format_RGB32);
-	//provaleft2.rgbSwapped().save("prova.jpg");
-
 	delete[] contrib;
 	delete[] tempImg;
 }
@@ -661,122 +635,17 @@ void MultiviewRti::applyOpticalFlow(const unsigned char* image, const std::vecto
 
 QImage* MultiviewRti::createPreview(int width, int height)
 {
-	
 	return images[2]->createPreview(width, height);
 }
 
 
 int MultiviewRti::allocateRemoteImage(int width, int height, int maxResLevel)
 {
-	
 	return 0;
 }
 
 
 int MultiviewRti::loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level)
 {
-	
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-/*if (newLeft == left && newDown == down)
-				{
-					if (!leftImage)
-						images[(*viewpointLayout)[newDown][newLeft]]->createImage(&leftImage, tempW, tempH, light, rect);
-					if (!rightImage)
-						images[(*viewpointLayout)[newDown][newRight]]->createImage(&rightImage, tempW, tempH, light, rect);
-				}
-				else if (newLeft == left && newDown == up)
-				{
-					if (leftImage)
-						delete[] leftImage;
-					if (leftUpImage)
-					{
-						leftImage = leftUpImage;
-						delete[] leftUpImage;
-						leftUpImage = NULL;
-					}
-					else
-						images[(*viewpointLayout)[newDown][newLeft]]->createImage(&leftImage, tempW, tempH, light, rect);
-					if (rightImage)
-						delete[] rightImage;
-					if (rightUpImage)
-					{
-						rightImage = rightUpImage;
-						delete[] rightUpImage;
-						leftUpImage = NULL;
-					}
-					else
-						images[(*viewpointLayout)[newDown][newRight]]->createImage(&rightImage, tempW, tempH, light, rect);
-				}
-				else if (newLeft == right && newDown == down)
-				{
-					if(leftImage)
-						delete[] leftImage;
-					if (rightImage)
-					{
-						leftImage = rightImage;
-						delete[] rightImage;
-					}
-					else
-						images[(*viewpointLayout)[newDown][newLeft]]->createImage(&leftImage, tempW, tempH, light, rect);
-					images[(*viewpointLayout)[newDown][newRight]]->createImage(&rightImage, tempW, tempH, light, rect); 
-				}
-				else if (newLeft == right && newDown == up)
-				{
-					if (leftImage)
-						delete[] leftImage;
-					if (rightUpImage)
-					{
-						leftImage = rightUpImage;
-						delete[] rightUpImage;
-						rightUpImage = NULL;
-					}
-					else
-						images[(*viewpointLayout)[newDown][newLeft]]->createImage(&leftImage, tempW, tempH, light, rect);
-					if (rightImage)
-						delete[] rightImage;
-					images[(*viewpointLayout)[newDown][newRight]]->createImage(&rightImage, tempW, tempH, light, rect); 	
-				}
-				else if (newRight == left && newDown == down)
-				{
-					if (rightImage)
-						delete[] rightImage;
-					if (leftImage)
-					{
-						rightImage = leftImage;
-						delete[] leftImage;
-					}
-					else
-						images[(*viewpointLayout)[newDown][newRight]]->createImage(&rightImage, tempW, tempH, light, rect);
-					images[(*viewpointLayout)[newDown][newLeft]]->createImage(&leftImage, tempW, tempH, light, rect);
-				}
-				else if (newRight == left && newDown == up)
-				{
-					if (rightImage)
-						delete[] rightImage;
-					if (leftUpImage)
-					{
-						rightImage = leftUpImage;
-						delete[] leftUpImage;
-						leftUpImage = NULL;
-					}
-					else
-						images[(*viewpointLayout)[newDown][newRight]]->createImage(&rightImage, tempW, tempH, light, rect);
-					if (leftImage)
-						delete[] leftImage;
-					images[(*viewpointLayout)[newDown][newLeft]]->createImage(&leftImage, tempW, tempH, light, rect);
-				}
-				else
-				{
-					images[(*viewpointLayout)[newDown][newRight]]->createImage(&rightImage, tempW, tempH, light, rect);
-					images[(*viewpointLayout)[newDown][newLeft]]->createImage(&leftImage, tempW, tempH, light, rect);
-				}*/

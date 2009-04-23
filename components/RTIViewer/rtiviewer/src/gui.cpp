@@ -28,7 +28,6 @@
 
 #include <vcg/space/point3.h>
 
-//static const char *TITLE = "Rti Viewer 0.1 - VCLab (C) 2008";
 
 RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	QWidget(parent),
@@ -40,7 +39,7 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	browserFrame = new QFrame(this);
 	browserFrame->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	browserFrame->setLineWidth(3);
-	browser = new RtiBrowser(700, 700, NULL, 3.0, browserFrame);
+	browser = new RtiBrowser(650, 650, NULL, 3.0, browserFrame);
 	QHBoxLayout* browserLayout = new QHBoxLayout;
 	browserLayout->setContentsMargins(0, 0, 0, 0);
 	browserLayout->addWidget(browser);
@@ -56,6 +55,7 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	navLayout->addWidget(navigator);
 	navFrame->setFixedSize(366, 246);
 	navFrame->setLayout(navLayout);
+	
 
 	connect(browser, SIGNAL(sizeChanged(int, int)), navigator, SLOT(updateBrowserSize(int, int)));
 	connect(browser, SIGNAL(viewChanged(QRectF)), navigator, SLOT(updateSelection(QRectF)));
@@ -69,7 +69,8 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	snapshotAct = new QAction(QIcon(":images/snapshot.png"), tr("Snapshot"), this);
 
 	toolBar = new QToolBar(this);
-	toolBar->setIconSize(QSize(50,50));
+	toolBar ->setOrientation(Qt::Vertical);
+	toolBar->setIconSize(QSize(48,48));
 	toolBar->addAction(openLocalAct);
 	connect(openLocalAct, SIGNAL(triggered()), this, SLOT(open()));
 	toolBar->addAction(openRemoteAct);
@@ -120,22 +121,28 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	infoLayout->addWidget(fileformat, 1, 3);
 	infoGroup->setLayout(infoLayout);
 
+	QGridLayout* toolLight = new QGridLayout;
+	toolLight->setColumnMinimumWidth(1, 300);
+	toolLight->addWidget(toolBar, 0, 0, 1, 1, Qt::AlignTop);
+	toolLight->addWidget(light, 0, 1, 1, 1, Qt::AlignCenter);
+
 	//Main window layout
 	QGridLayout* layout = new QGridLayout;
-	layout->setColumnStretch(0, 4);
+	layout->setContentsMargins(5, 5, 5 ,5);
+	layout->setColumnStretch(0, 5);
 	layout->setColumnStretch(1, 0);
-	layout->setRowStretch(0, 0);
-	layout->setRowStretch(1, 3);
-	layout->setRowStretch(2, 2);
-	layout->setRowStretch(3, 1);
-	layout->setRowStretch(4, 3);
-	layout->addWidget(browserFrame, 0, 0, 5, 1);
-	layout->addWidget(toolBar, 0, 1, 1, 1, Qt::AlignTop);
-	layout->addWidget(light, 1, 1, 1, 1, Qt::AlignCenter);
-	layout->addWidget(rendGroup, 2, 1, 1, 1, Qt::AlignTop | Qt::AlignHCenter);
-	layout->addWidget(infoGroup, 3, 1, 1, 1);
-	layout->addWidget(navFrame, 4, 1, 1, 1, Qt::AlignBottom | Qt::AlignHCenter);
-
+		
+	layout->setRowStretch(0, 3);
+	layout->setRowStretch(1, 2);
+	layout->setRowStretch(2, 1);
+	layout->setRowStretch(3, 3);
+	 
+	layout->addWidget(browserFrame, 0, 0, 4, 1);
+	layout->addLayout(toolLight, 0, 1, 1, 1, Qt::AlignTop | Qt::AlignHCenter);
+	layout->addWidget(rendGroup, 1, 1, 1, 1, Qt::AlignCenter);
+	layout->addWidget(infoGroup, 2, 1, 1, 1, Qt::AlignCenter);
+	layout->addWidget(navFrame, 3, 1, 1, 1, Qt::AlignBottom | Qt::AlignHCenter);
+	
 	setLayout(layout);
 	
 	
@@ -206,16 +213,50 @@ int RtiViewerDlg::open()
 	settings->setValue("workingDir", dir.path());
 	if (data.open(QFile::ReadOnly))
 	{
+		Rti* image;
+		LoadingDlg* loading;
 		browser->setImage(NULL);
+		bool flag = false;
 		if (info.suffix() == "ptm")
 		{
-			LoadingDlg* loading = new LoadingDlg(this);
+			loading = new LoadingDlg(this);
 			loading->show();
 			QTextStream input(&data);
-			Rti* image = Ptm::getPtm(input);
+			image = Ptm::getPtm(input);
 			data.close();
 			image->setFileName(path);
 			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+			flag = true;	
+		}
+		else if (info.suffix() == "hsh")
+		{
+			loading = new LoadingDlg(this);
+			loading->show();
+			image = new Hsh();
+			image->setFileName(path);
+			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+			flag = true;
+		}
+		else if (info.suffix() == "rti")
+		{
+			loading = new LoadingDlg(this);
+			loading->show();
+			image = new UniversalRti();
+			image->setFileName(path);
+			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+			flag = true;
+		}
+		else if (info.suffix() == "mview")
+		{
+			loading = new LoadingDlg(this);
+			loading->show();
+			image = new MultiviewRti();
+			image->setFileName(path);
+			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+			flag = true;
+		}
+		if (flag)
+		{
 			if (image->load(LoadingDlg::QCallBack)== 0) //Loads the image info
 			{
 				//Sets the browser image
@@ -235,99 +276,9 @@ int RtiViewerDlg::open()
 			{
 				loading->close();
 				QApplication::restoreOverrideCursor();
-				QMessageBox::critical(this, tr("Opening error"), tr("The file: \n%1\n is invalid.\n Internal format unknown.").arg(path));
+				QMessageBox::critical(this, tr("Opening error"), tr("The file2: \n%1\n is invalid.\n Internal format unknown.").arg(path));
 			}
 			delete loading;
-		}
-		else if (info.suffix() == "hsh")
-		{
-			LoadingDlg* loading = new LoadingDlg(this);
-			loading->show();
-			Rti* image = new Hsh();
-			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-			if (image->load(path, LoadingDlg::QCallBack)== 0) //Loads the image info
-			{
-				//Sets the browser image
-				browser->setImage(image);
-				//Sets the navigator image
-				navigator->setImage(image->createPreview(360, 240), image->width(), image->height());
-				QApplication::restoreOverrideCursor();
-				rendDlg->setRenderingMode(browser->getRenderingMode(), browser->getCurrentRendering());
-				loading->close();
-				//Sets file info
-				filename->setText(path);
-				filesize->setText(tr("%1 x %2").arg(image->width()).arg(image->height()));
-				fileformat->setText(image->typeFormat());
-				light->setInteractive(true);
-			}
-			else
-			{
-				loading->close();
-				QApplication::restoreOverrideCursor();
-				QMessageBox::critical(this, tr("Opening error"), tr("The file: \n%1\n is invalid.\n Internal format unknown.").arg(path));
-			}
-			delete loading;
-			
-		}
-		else if (info.suffix() == "rti")
-		{
-			LoadingDlg* loading = new LoadingDlg(this);
-			loading->show();
-			Rti* image = new UniversalRti();
-			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-			if (image->load(path, LoadingDlg::QCallBack)== 0) //Loads the image info
-			{
-				//Sets the browser image
-				browser->setImage(image);
-				//Sets the navigator image
-				navigator->setImage(image->createPreview(360, 240), image->width(), image->height());
-				QApplication::restoreOverrideCursor();
-				rendDlg->setRenderingMode(browser->getRenderingMode(), browser->getCurrentRendering());
-				loading->close();
-				//Sets file info
-				filename->setText(path);
-				filesize->setText(tr("%1 x %2").arg(image->width()).arg(image->height()));
-				fileformat->setText(image->typeFormat());
-				light->setInteractive(true);
-			}
-			else
-			{
-				loading->close();
-				QApplication::restoreOverrideCursor();
-				QMessageBox::critical(this, tr("Opening error"), tr("The file: \n%1\n is invalid.\n Internal format unknown.").arg(path));
-			}
-			delete loading;
-
-		}
-		else if (info.suffix() == "mview")
-		{
-			LoadingDlg* loading = new LoadingDlg(this);
-			loading->show();
-			Rti* image = new MultiviewRti();
-			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-			if (image->load(path, LoadingDlg::QCallBack)== 0) //Loads the image info
-			{
-				//Sets the browser image
-				browser->setImage(image);
-				//Sets the navigator image
-				navigator->setImage(image->createPreview(360, 240), image->width(), image->height());
-				QApplication::restoreOverrideCursor();
-				rendDlg->setRenderingMode(browser->getRenderingMode(), browser->getCurrentRendering());
-				loading->close();
-				//Sets file info
-				filename->setText(path);
-				filesize->setText(tr("%1 x %2").arg(image->width()).arg(image->height()));
-				fileformat->setText(image->typeFormat());
-				light->setInteractive(true);
-			}
-			else
-			{
-				loading->close();
-				QApplication::restoreOverrideCursor();
-				QMessageBox::critical(this, tr("Opening error"), tr("The file: \n%1\n is invalid.\n Internal format unknown.").arg(path));
-			}
-			delete loading;
-
 		}
 		else
 		{
@@ -363,6 +314,7 @@ int RtiViewerDlg::openRemote()
 			info.close();
 			if (getter->checkHttpError()) 
 			{
+				getter->resetHttpError();
 				QApplication::restoreOverrideCursor();
 				return -1;
 			}
@@ -383,7 +335,8 @@ int RtiViewerDlg::openRemote()
 			thumb.close();
 			if (getter->checkHttpError()) 
 			{
-				QApplication::restoreOverrideCursor();	
+				QApplication::restoreOverrideCursor();
+				getter->resetHttpError();
 				return -1;
 			}
 			QImage* image = new QImage();
@@ -439,5 +392,6 @@ bool RtiViewerDlg::parseXml(QBuffer* b, int& level, int& w, int& h)
 
 void RtiViewerDlg::httpErrorOccurred(QString error)
 {
+	getter->resetHttpError();
 	QMessageBox::critical(this, "HTTP Error", error);
 }

@@ -41,6 +41,10 @@ enum RenderingMRti
 };
 
 
+//! Widget to change the viewpoint.
+/*!
+  The class defines the widget to change the viewpoint of the RTI.
+*/
 class ViewpointControl: public QWidget
 {
 	Q_OBJECT
@@ -48,14 +52,18 @@ class ViewpointControl: public QWidget
 private:
 		
 	QSlider* viewpointSlider; /*!< Slider to set the viewpoint. */
-	QCheckBox* snapNearest;
-	int maxViewX;
+	QCheckBox* snapNearest; /*!< Checkbox to anable the use of the optical flow data. */
+	int maxViewX; /*!< Max number of view on X-axis. */
+	bool useFlow;
 
 public:
 
 	//! Constructor
 	/*!
-	  \param initValue value for the gain parameter.
+	  \param initValueX value for the x-position.
+	  \param nViewX max number of view on x-axix.
+	  \param enableFlow enable the use of optical flow.
+	  \param useFlow state of the optical flow data.
 	  \param parent
 	*/
 	ViewpointControl(int initValueX, int nViewX, bool enableFlow, bool useFlow, QWidget *parent = 0);
@@ -74,24 +82,34 @@ signals:
 
 private slots:
 
+	/*!
+	  Update the viewpoint position.
+	*/
 	void updateSlider(int value)
 	{
-		emit snapModeChanged(value);
-		if (value == Qt::Checked)
+		useFlow = (value != Qt::Checked);
+		if (!useFlow)
 		{
-			float temp, newpos;
-			temp = modf((float)viewpointSlider->value()/100.0, &newpos);
-			if (temp > 0.5)
-				newpos++;
-			viewpointSlider->setValue(newpos);
-			viewpointSlider->setRange(0, (maxViewX - 1));
-			viewpointSlider->setTickInterval(1);
+			int rest = viewpointSlider->value() % 100;
+			int div = viewpointSlider->value() / 100;
+			if (rest < 50)
+				viewpointSlider->setValue(div*100);
+			else
+				viewpointSlider->setValue((div + 1)*100);
 		}
-		else
+	}
+
+
+	void sliderReleased()
+	{
+		if (!useFlow)
 		{
-			viewpointSlider->setRange(0, 100*(maxViewX - 1));
-			viewpointSlider->setValue(100*viewpointSlider->value());
-			viewpointSlider->setTickInterval(100);
+			int rest = viewpointSlider->value() % 100;
+			int div = viewpointSlider->value() / 100;
+			if (rest < 50)
+				viewpointSlider->setValue(div*100);
+			else
+				viewpointSlider->setValue((div + 1)*100);
 		}
 	}
 };
@@ -126,9 +144,8 @@ public:
 
 	QWidget* getControl(QWidget* parent)
 	{
-		ViewpointControl* control = new ViewpointControl(currentPosX, maxViewX,enableFlow, useFlow, parent) ;
+		ViewpointControl* control = new ViewpointControl(currentPosX, maxViewX, enableFlow, useFlow, parent) ;
 		connect(control, SIGNAL(viewpointChanged(int)), this, SLOT(setPosX(int)));
-		connect(control, SIGNAL(snapModeChanged(int)), this, SLOT(useFlowData(int)));
 		disconnect(this, SIGNAL(refreshImage()), 0, 0);
 		connect(this, SIGNAL(refreshImage()), parent, SIGNAL(updateImage()));
 		return control;
@@ -154,8 +171,7 @@ public:
 
 	float getCurrentPosX() {return currentPosX;}
 	float getCurrentPosY() {return currentPosY;}
-	bool useFlowData() {return useFlow;}
-
+	
 public slots:
 
 	/*!
@@ -163,7 +179,7 @@ public slots:
 	*/
 	void setPosX(int value)
 	{
-		if (enableFlow && useFlow)
+		if (enableFlow)
 			currentPosX = float(value)/100.0;
 		else
 			currentPosX = value;
@@ -176,20 +192,10 @@ public slots:
 	*/
 	void setPosY(int value)
 	{
-		if (enableFlow && useFlow)
+		if (enableFlow)
 			currentPosY = float(value)/100.0;
 		else
 			currentPosY = value;
-		emit refreshImage();
-	}
-
-
-	/*!
-	  Enables the use of the optical flow.
-	*/
-	void useFlowData(int value)
-	{
-		useFlow = (value == Qt::Unchecked);
 		emit refreshImage();
 	}
 
@@ -230,7 +236,7 @@ public:
 	
 	~ViewpointImage()
 	{
-		if (buffer)
+ 		if (buffer)
 			delete[] buffer;
 		if (hFlow)
 			delete[] hFlow;
@@ -241,7 +247,7 @@ public:
 };
 
 
-//! HSH class
+//! Multiview RTI class
 class MultiviewRti : public Rti
 {
 // private data member
