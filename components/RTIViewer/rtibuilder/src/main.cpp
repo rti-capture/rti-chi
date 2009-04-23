@@ -38,7 +38,7 @@ int main( int argc, char ** argv )
 	{
 		cout << std::endl << "Usage:" << endl << endl;
 		cout << "        rtibuilder <input> <level>" << endl << endl;
-		cout << "        <input>  RTI file to decompose." << endl;
+		cout << "        <input>  RTI file to decompose (only LRGB-PTM)." << endl;
 		cout << "        <level>  Levels of resolution (default: 3)." << endl;
 		exit(0);
 	}
@@ -50,10 +50,39 @@ int main( int argc, char ** argv )
 	QString filename = str1;
 	int level = str2.toInt();
 
+	QFileInfo fi(filename);
+	if (fi.suffix() != "ptm")
+	{
+		cout << "Unsupported file format. The tool accepts only LRGB-PTM file." << endl;
+		exit(0);
+	}
+
 	// load rti image
 	//////////////////////////////////////////////////////////////
 
-	LRGBPtm *ptm = new LRGBPtm();
+	QFile data(filename);
+	if (!data.open(QFile::ReadOnly))
+	{
+		cout << "I/0 error." << endl;
+		exit(0);
+	}
+	QTextStream input(&data);
+	Rti *image = Ptm::getPtm(input);
+	data.close();
+	LRGBPtm *ptm;
+	if (dynamic_cast<LRGBPtm*>(image))
+	{
+		ptm = dynamic_cast<LRGBPtm*>(image);
+	}
+	else
+	{
+		cout << "Unsupported file format. The tool accepts only LRGB-PTM file." << endl;
+		exit(0);
+	}
+
+
+
+	//LRGBPtm *ptm = new LRGBPtm();
 	ptm->load(filename);
 
 	int width = ptm->width();
@@ -61,7 +90,7 @@ int main( int argc, char ** argv )
 
 	// folder creation
 
-	QFileInfo fi(filename);
+	
 	QString name = fi.baseName();
 	QString pathname = fi.absoluteFilePath();
 	QDir dir(fi.absolutePath());
