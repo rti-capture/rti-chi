@@ -7,7 +7,7 @@
 !define PRODUCT_WEB_SITE "http://chi-dev.wikidot.com/rtiviewer"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
-!define QT_BASE "C:\Qt\4.4.0"
+!define QT_BASE "C:\Qt\4.5.0"
 
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
@@ -50,6 +50,7 @@ Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite on
   File "..\src\release\rtiviewer.exe"
+  File "..\..\rtibuilder\src\release\rtibuilder.exe"
   
   CreateDirectory "$SMPROGRAMS\RTIViewer"
   CreateShortCut "$SMPROGRAMS\RTIViewer\RTIViewer.lnk" "$INSTDIR\rtiviewer.exe"
