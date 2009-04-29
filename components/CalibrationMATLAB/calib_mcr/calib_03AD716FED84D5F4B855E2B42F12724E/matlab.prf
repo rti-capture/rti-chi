@@ -1,0 +1,19 @@
+#MATLAB Preferences
+#Thu Jan 29 00:52:05 PST 2009
+CommandWindowShowStartupMessage=Bfalse
+FileBrowserFiveColumnOrder=S[0 1 2 3 4]
+MatlabErrorLogReportTime=J4694549782103782644
+CommandWindowClearConfirmation=Btrue
+FileBrowserFiveColumnWidths=S[150 100 75 150 400]
+EditorNamedBufferOption=I2
+MatlabExitConfirm=Bfalse
+EditorMRU9=S
+EditorMRU8=S
+EditorMRU7=S
+PathBrowserWindowBounds=R50 50 500 400
+EditorMRU6=S
+EditorMRU5=S
+EditorMRU4=S
+EditorMRU3=S
+EditorMRU2=SE:\\projects\\testmatlab\\compile_calib.m
+EditorMRU1=SE:\\projects\\toolbox\\matlab\\ext_calib2.m
