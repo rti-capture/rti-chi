@@ -63,6 +63,7 @@ Section "MainSection" SEC01
   
   SetOutPath "$INSTDIR\imageformats"
   File ${QT_BASE}\plugins\imageformats\qjpeg4.dll
+  File ${QT_BASE}\plugins\imageformats\qgif4.dll
   SetOutPath "$INSTDIR"
   File "${QT_BASE}\bin\QtCore4.dll"
   File "${QT_BASE}\bin\QtGui4.dll"
