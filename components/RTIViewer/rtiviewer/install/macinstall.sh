@@ -105,7 +105,9 @@ cd ../install
 #   a) leave it on read/write disk image
 #   b) leave it on Encryption: none
 #   c) Size: select a size somewhat larger than the size of the folder (since the available space is less when formatted).
-#   d) Save As: This is the name for the mounted Image. Choose a good name for your disk image. It can contains spaces, etc., but you will not be # able to change this later (You will only be able to change name of .dmg file).
+#   d) Save As: This is the name for the mounted Image. 
+#      ***** Choose a good VOLUME NAME for your disk image. It can contains spaces, etc., but you will not be # able to change this later 
+#      (You will only be able to change name of .dmg file).
 # 3) Move your folder contents into the empty disk image that you just created (and it automatically mounts after the previous step).
 # 4) From the finder while you are viewing the opened image, Apple-J (View-->Show View Options)
 #   a) Use the icon view, Click the capsule to hide the toolbar.
