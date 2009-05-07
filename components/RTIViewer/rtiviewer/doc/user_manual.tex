@@ -15,7 +15,7 @@
 {\Huge \textbf{RTI Viewer User Manual}}
 \\
 \vspace{1.0cm}
-Version 0.1
+Version 1.0
 \end{center}
 
 \end{titlepage}
@@ -25,9 +25,11 @@ Version 0.1
 \chapter{Introduction}
 In this document we present the main features of RTI Viewer. Especially we describe how the user can interact with the GUI and the effects produced by his actions.
 
-RTI Viewer is a tool to diplay images produced with reflection transformation techniques. The tool supports several image formats: Polynomial Texture Maps (PTM), Adaptive PTM (APTM), Hemispherical Harmonics Maps (HSH) and an universal format that encodes all previous images (URTI).
+RTI Viewer is a tool to diplay images produced with reflection transformation techniques. The tool supports several image formats: Polynomial Texture Maps (PTM), Hemispherical Harmonics Maps (HSH) and an universal format that encodes all previous images (URTI). A feature of the viewer is the possibility to visualize both single-view and multi-view RTI images. A multi-view RTI image is a collection of single-view images and optical flow data to generate the inter-middle view.
 
-The tool permits to open an image or from a local hard disk or from a remote server and to set some parameters of rendering such as the zoom factor, the sub-image to show in the browser, the light direction and only for the PTM format the rendering mode to enhance the perception of shapes and details.
+The tool is capable to visualize an RTI image loading from a local hard disk or from a remote server through HTTP connection. The latter option is supported only for PTMs. In order to handle the remote loading, the original PTM(usually of huge resolution) has to be processed by a command line tool, called RTIBuilder (chapter \ref{rtibuilder}).
+
+The tool permits also to set some parameters of rendering such as the zoom factor, the sub-image to show in the browser, the light direction, the rendering mode to enhance the perception of shapes and details, and, only for the multi-view formats, the viewpoint around the object.
 
 \chapter{GUI}
 RTI Viewer is composed by several widgets that permit to the user to interact using mouse and keyboard. As shown in Figure \ref{fig:rtiviewer}, these widgets are:
@@ -48,38 +50,51 @@ Some information about the open image (path to the file, image size and image fo
   \label{fig:rtiviewer}
 \end{figure}
 
-\section{Browser}
-The Browser permits to display the output of the rendering of the RTI image (see Figure \ref{fig:browser}). The user can use the mouse to pan the image and to set the light direction, and the keyboard for the zoom operations. Especially the dragging with the left button of the mouse permits to move the sub-image in the current view of the browser, while the dragging with the right button permits to move the light direction. The double-click with the left button moves the center of the browser in the point of the click and performs a zoom in operation. Finally the keyboard shortcuts CTRL + `+' and e CTRL + `-' permit respectively the zoom in and the zoom out operations.
+In the case of multi-view RTI images, a simple slider appears in the Rendering Dialog (Figure \ref{fig:multiview}) to allow the user to change the viewpoint only on horizontal axis. The tick marks on the slider show the position that match with an acquired image. The checkbox permits to move the viewpoints only on the tick marks of the slider, without using the optical flow data.
 
 \begin{figure}[htbp!]
   \centering
-  \includegraphics[width=0.7\textwidth]{browser}
+  \includegraphics[width=0.5\textwidth]{multiview}
+  \caption{Control for multi-view RTI.}
+  \label{fig:multiview}
+\end{figure}
+
+\section{Browser}
+The Browser permits to display the output of the rendering of the RTI image (see Figure \ref{fig:browser}). The user can pan the image and set the light direction with the mouse, and can zoom the image with some keyboard shortcuts. Especially the dragging with the left button of the mouse permits to move the sub-image in the current view of the browser, while the dragging with the right button permits to move the light direction. The double-click with the left button moves the center of the browser in the point of the click and performs a zoom in operation. Finally the keyboard shortcuts CTRL + `+' and e CTRL + `-' permit respectively the zoom in and the zoom out operations.
+
+\begin{figure}[htbp!]
+  \centering
+  \includegraphics[width=0.5\textwidth]{browser}
   \caption{Browser.}
   \label{fig:browser}
 \end{figure}
 
 \section{Toolbar}
-The buttons in the toolbar permit, from left to right in Figure \ref{fig:toolbar}:
+The buttons in the toolbar permit, from top to bottom in Figure \ref{fig:toolbar}:
 \begin{itemize}
 \item to open an image from a local hard disk;
-\item to open an image published on a remote server (the user must insert the URL of the image);
+\item to loading an image published on a remote server (the user must insert the URL of the image);
 \item to save a snapshot of the image displayed in current view of the browser;
 \item to modify the settings of the application. The user can only modify the size of the browser (see Figure \ref{fig:appSettings});
-\item to show a window with infomation about the tool.  
+\item to show a window with information about the tool.
 \end{itemize}
 
-\begin{figure}[hb!]
-  \centering
-  \includegraphics[width=0.5\textwidth]{toolbar}
-  \caption{Toolbar.}
-  \label{fig:toolbar}
-\end{figure}
+\begin{figure}
 
-\begin{figure}[hb]
-  \centering
-  \includegraphics[width=0.45\textwidth]{app_settings}
-  \caption{Window to set the application settings.}
-  \label{fig:appSettings}
+\begin{minipage}{0.5\textwidth}
+\centering
+\includegraphics[width=0.24\textwidth]{toolbar}
+\caption{Toolbar.}
+\label{fig:toolbar}
+\end{minipage}
+\hfill
+\begin{minipage}{0.5\textwidth}
+\centering
+\includegraphics[width=0.90\textwidth]{app_settings}
+\caption{Window to set the application settings.}
+\label{fig:appSettings}
+\end{minipage}
+
 \end{figure}
 
 
@@ -108,7 +123,7 @@ The available modes for the PTM are:
 \item Dynamic Detail Enhancement (or Dynamic Multi-light Detail Enhancement).
 \end{itemize}
 
-All methods permit to vary in real-time the light direction except the Detail Enhancement that creates a static image. A more detailed description of the methods can be founded in \ref{} and \ref{}.
+All methods permit to vary in real-time the light direction, except the Detail Enhancement that creates a static image. A more detailed description of the methods can be founded in \cite{ptm} and \cite{enhancement}.
 
 \subsection{Diffuse Gain}
 Diffuse Gain enhances the perception of the surface shape of the object. The user can modify a gain factor to fix the amount of the enhancement (see Figure \ref{fig:diffuseGain}).
@@ -159,7 +174,7 @@ Normal Enhancement applies the classic unsharp masking to the surface normals. T
 \begin{equation}
     I = \vec{N} \cdot \vec{L} + k_{a}
 \end{equation}
-where $\vec{N}$ is the normal, $\vec{L}$ is the light vector and $k_{a}$ is a term to preserve the amount of light received by the surface through inter-reflection and ambient light. The user can modify a gain factor to fix the amount of the enhancement and the term $k_{a}$ (see Figure \ref{fig:normalEnh}).
+where $\vec{N}$ is the normal, $\vec{L}$ is the light vector and $k_{a}$ is a term to preserve the amount of light received by the surface through inter-reflection and ambient lighting. The user can modify a gain factor to fix the amount of the enhancement and the term $k_{a}$ (see Figure \ref{fig:normalEnh}).
 
 \begin{figure}[hbt]
   \centering
@@ -179,7 +194,7 @@ Coefficient Enhancement applies the classic unsharp masking to the coefficients 
 \end{figure}
 
 \subsection{Detail Enhancement}
-Detail Enhancement produces automatically an high-contrast, well-illuminated static image for stand-alone presentation, high-quality printing, or similar purposes. The method has several advanced settings that require a good knowledge of its basis algorithm. 
+Detail Enhancement produces automatically an high-contrast, well-illuminated static image for stand-alone presentation, high-quality printing, or similar purposes. The method has several advanced settings that require a good knowledge of its basis algorithm.
 
 \subsection{Dynamic Detail Enhancement}
 Dynamic Detail Enhancement adapts locally the current light direction to improve the perception of the details on the surface. The user can modify the size of the tile and the maximum offset in degree from the current light direction (see Figure \ref{fig:dynDetail}). The method has several advanced settings that require a good knowledge of its basis algorithm.
@@ -193,7 +208,7 @@ Dynamic Detail Enhancement adapts locally the current light direction to improve
 
 
 \section{Navigator}
-The Navigator permits to the user to move and resize the sub-image in the current view of the browser. The sub-image is shown in the widget with a red rectangle. The user can move the rectangle with the left button of the mouse or can resize the rectangle with the dragging of the triangle in the bottom-right corner (see Figure \ref{fig:navigator}).
+The Navigator permits to the user to move and resize the sub-image in the current view of the browser. The sub-image is shown in the widget into a red rectangle. The user can move the rectangle with the left button of the mouse or can resize the rectangle with the dragging of the triangle in the bottom-right corner (see Figure \ref{fig:navigator}).
 
 \begin{figure}[hbt]
   \centering
@@ -202,4 +217,18 @@ The Navigator permits to the user to move and resize the sub-image in the curren
   \label{fig:navigator}
 \end{figure}
 
-\end{document} 
+
+\chapter{RTIBuilder}\label{rtibuilder}
+RTIBuider is a command line tool to convert a PTM images into a more compact format that permits the remote loading through HTTP connection. The tool gets two arguments: the filepath of the image, and the number of resolution level in which the images has to be decomposed. For example:
+ \begin{verbatim}
+    >RTIBuilder ..\rtiImage\prova.ptm 3
+ \end{verbatim}
+The output of the tool is a folder that can be copy on the server. The URL of the image is the URL of the folder followed by the extension \emph{.ptm}.
+
+\begin{thebibliography}{100}
+\bibitem{ptm} T. Malzbender, D. Gelb, H. Wolters, \emph{Polynomial texture maps}, Siggraph 2001.
+\bibitem{enhancement} G. Palma, M. Corsini, P. Cignoni, R. Scopigno, M. Mudge, \emph{Dynamic Shading Enhancement for Reflection Transformation Imaging}, submitted to the ACM Journal of Computing and Cultural Heritage.
+\end{thebibliography}
+\end{document}
+
+
