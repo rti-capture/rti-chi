@@ -65,7 +65,7 @@ public:
 	/*!
 	  Returns the list of rendering mode of the current RTI image.
 	*/
-	QVector<RenderingMode*>* getRenderingMode();
+	QMap<int, RenderingMode*>* getRenderingMode();
 
 	/*!
 	  Return the index of the rendering mode applied in the browser.

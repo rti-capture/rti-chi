@@ -13,7 +13,7 @@
 
 #include <QVBoxLayout>
 
-RenderingDialog::RenderingDialog(QVector<RenderingMode*>* l, int currRendering, QWidget *parent, bool remote) : QWidget(parent) 
+RenderingDialog::RenderingDialog(QMap<int, RenderingMode*>* l, int currRendering, QWidget *parent, bool remote) : QWidget(parent) 
 {
 	list = l;
 	modeList = new QComboBox(this);
@@ -21,20 +21,29 @@ RenderingDialog::RenderingDialog(QVector<RenderingMode*>* l, int currRendering, 
 	if (l)
 	{
 		int selected = currRendering;
-		for (int i = 0; i < list->size(); i++)
+		QMapIterator<int, RenderingMode*> iter(*list);
+		int i = 0;
+		while (iter.hasNext())
 		{
+			iter.next();
 			if (remote)
 			{
-				if (list->at(i)->supportRemoteView()) // If the mode supported remote view is added to combobox.
-					modeList->addItem(list->at(i)->getTitle(), QVariant(i));
-				else if (currRendering > i)
-					selected--;
+				if ((iter.value())->supportRemoteView())
+				{	
+					modeList->addItem((iter.value())->getTitle(), QVariant(iter.key()));
+					if (currRendering == iter.key())
+						selected = i;
+					i++;
+				}
 			}
 			else
-				modeList->addItem(list->at(i)->getTitle(), QVariant(i));
+			{
+				modeList->addItem((iter.value())->getTitle(), QVariant(iter.key()));
+				i++;
+			}
 		}
 		modeList->setCurrentIndex(selected);
-		control = list->at(currRendering)->getControl(this);
+		control = list->value(currRendering)->getControl(this);
 	}
 	else
 		control = new QWidget(this);
@@ -50,7 +59,7 @@ RenderingDialog::RenderingDialog(QVector<RenderingMode*>* l, int currRendering, 
 void RenderingDialog::renderingModeUpdate(int index)
 {
 	int idx = modeList->itemData(index).toInt();
-	QWidget* c = list->at(idx)->getControl(this);
+	QWidget* c = list->value(idx)->getControl(this);
 	c->setMinimumHeight(80);
 	QBoxLayout* layout =(QBoxLayout*) this->layout();
 	layout->removeWidget(control);
@@ -62,24 +71,34 @@ void RenderingDialog::renderingModeUpdate(int index)
 	update();
 }
 
-void RenderingDialog::setRenderingMode(QVector<RenderingMode*>* l, int currRendering, bool remote)
+
+void RenderingDialog::setRenderingMode(QMap<int, RenderingMode*>* l, int currRendering, bool remote)
 {
 	modeList->clear();
 	list = l;
 	if (l)
 	{
 		int selected = currRendering;
-		for (int i = 0; i < list->size(); i++)
+		QMapIterator<int, RenderingMode*> iter(*list);
+		int i = 0;
+		while (iter.hasNext())
 		{
+			iter.next();
 			if (remote)
 			{
-				if (list->at(i)->supportRemoteView())
-					modeList->addItem(list->at(i)->getTitle(), QVariant(i));
-				else if (currRendering > i)
-					selected--;
+				if ((iter.value())->supportRemoteView())
+				{	
+					modeList->addItem((iter.value())->getTitle(), QVariant(iter.key()));
+					if (currRendering == iter.key())
+						selected = i;
+					i++;
+				}
 			}
 			else
-				modeList->addItem(list->at(i)->getTitle(), QVariant(i));
+			{
+				modeList->addItem((iter.value())->getTitle(), QVariant(iter.key()));
+				i++;
+			}
 		}
 		modeList->setCurrentIndex(selected);
 		renderingModeUpdate(selected);
@@ -105,17 +124,26 @@ void RenderingDialog::updateRenderingList(int currRendering, bool remote)
 	if (list)
 	{
 		int selected = currRendering;
-		for (int i = 0; i < list->size(); i++)
+		QMapIterator<int, RenderingMode*> iter(*list);
+		int i = 0;
+		while (iter.hasNext())
 		{
+			iter.next();
 			if (remote)
 			{
-				if (list->at(i)->supportRemoteView())
-					modeList->addItem(list->at(i)->getTitle(), QVariant(i));
-				else if (currRendering > i)
-					selected--;
+				if ((iter.value())->supportRemoteView())
+				{	
+					modeList->addItem((iter.value())->getTitle(), QVariant(iter.key()));
+					if (currRendering == iter.key())
+						selected = i;
+					i++;
+				}
 			}
 			else
-				modeList->addItem(list->at(i)->getTitle(), QVariant(i));
+			{
+				modeList->addItem((iter.value())->getTitle(), QVariant(iter.key()));
+				i++;
+			}
 		}
 		modeList->setCurrentIndex(selected);
 		renderingModeUpdate(selected);

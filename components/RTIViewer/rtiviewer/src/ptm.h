@@ -21,6 +21,7 @@
 #include "rti.h"
 #include "pyramid.h"
 #include "renderingmode.h"
+#include "defaultrendering.h"
 #include "diffusegain.h"
 #include "specularenhanc.h"
 #include "normalenhanc.h"
@@ -34,151 +35,8 @@
 #include <QFile>
 #include <QImage>
 #include <QVector>
-#include <QTimer>
-#include <QWidget>
-#include <QLabel>
-#include <QVBoxLayout>
 
 #include <vcg/math/base.h>
-
-
-/*!
-  Rendering mode for PTM image.
-*/
-enum RenderingPtm
-{
-	NORMAL,
-	DIFFUSE_GAIN,
-	SPECULAR_ENHANCEMENT,
-	NORMAL_ENHANCEMENT,
-	UNSHARP_MASKING_IMG,
-	UNSHARP_MASKING_LUM,
-	COEFF_ENHANCEMENT,
-	DETAIL_ENHANCEMENT,
-	DYN_DETAIL_ENHANCEMENT,
-};
-
-/*!
-  Widget to show the progress of the downloading of a remote RTI
-*/
-class LoadRemoteWidget : public QWidget
-{
-	Q_OBJECT
-private:
-
-	QLabel* string;
-	int i;
-	
-public:
-
-	LoadRemoteWidget(bool remote, QWidget* parent = 0) : QWidget(parent)
-	{
-		i = 0;
-		if (remote)
-		{
-			
-			QVBoxLayout* layout = new QVBoxLayout;
-			string = new QLabel("Downloading remote RTI ");
-			layout->addWidget(string, 0, Qt::AlignVCenter);
-			setLayout(layout);
-			startTimer(500);
-		}
-	}
-	
-protected:
-
-	void timerEvent(QTimerEvent * event)
-	{
-		i++;
-		i = i % 10;
-		QString point = "";
-		for (int j = 0; j < i; j++)
-			point.append(".");
-		string->setText(tr("Downloading remote RTI ").append(point));
-	}
-};
-
-
-//! Defaut Rending for PTM image.
-/*!
-  The class defines the default rendering for PTM image.
-*/
-class DefaultRenderingPtm : public QObject, public RenderingMode
-{
-	Q_OBJECT
-
-private:
-	bool remote;
-
-public:
-
-	DefaultRenderingPtm(): remote(false){}
-	void setRemote(bool flag) {remote = flag;}
-	
-	QString getTitle() {return "Default";}
-	
-	QWidget* getControl(QWidget* parent)
-	{
-		LoadRemoteWidget* control = new LoadRemoteWidget(remote, parent);
-		disconnect(parent, SIGNAL(resetRemote()), 0, 0);
-		connect(parent, SIGNAL(resetRemote()), this, SLOT(resetRemote())); 
-		return control;
-	}
-	
-	bool isLightInteractive() {return true;}
-	bool supportRemoteView()  {return true;}
-	bool enabledLighting() {return true;}
-	
-	void applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& rgb, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
-	{
-		int offsetBuf = 0;
-		const int* coeffPtr = coeff.getLevel(info.level);
-		const unsigned char* rgbPtr = rgb.getLevel(info.level);
-		int tempW = mipMapSize[info.level].width();
-		for (int y = info.offy; y < info.offy + info.height; y++)
-		{
-			for (int x = info.offx; x < info.offx + info.width; x++)
-			{
-				int offset= y * tempW + x;
-				double lum = evalPoly(&coeffPtr[offset*6], info.light.X(), info.light.Y()) / 255.0;
-				for (int i = 0; i < 3; i++)
-					buffer[offsetBuf + i] = tobyte(rgbPtr[offset*3 + i] * lum);
-				buffer[offsetBuf + 3] = 255;
-				offsetBuf += 4;
-			}
-		}
-	}
-
-
-	void applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCoeff& greenCoeff, const PyramidCoeff& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
-	{
-		int offsetBuf = 0;
-		const int* redPtr = redCoeff.getLevel(info.level);
-		const int* greenPtr = greenCoeff.getLevel(info.level);
-		const int* bluePtr = blueCoeff.getLevel(info.level);
-		for (int y = info.offy; y < info.offy + info.height; y++)
-		{
-			for (int x = info.offx; x < info.offx + info.width; x++)
-			{
-				int offset= y * mipMapSize[info.level].width() + x;
-				buffer[offsetBuf + 0] = tobyte(evalPoly(&redPtr[offset*6], info.light.X(), info.light.Y()));
-				buffer[offsetBuf + 1] = tobyte(evalPoly(&greenPtr[offset*6], info.light.X(), info.light.Y()));
-				buffer[offsetBuf + 2] = tobyte(evalPoly(&bluePtr[offset*6], info.light.X(), info.light.Y()));
-				buffer[offsetBuf + 3] = 255;
-				offsetBuf += 4;
-			}
-		}
-
-	}
-
-public slots:
-
-	void resetRemote()
-	{
-		remote =  false;
-	}
-
-};
 
 
 //! PTM abstract class
@@ -199,18 +57,18 @@ public:
 	//! Constructor.
 	Ptm(): Rti()
 	{
-		currentRendering = NORMAL;
+		currentRendering = DEFAULT;
 		// Create list of supported rendering mode.
-		list = new QVector<RenderingMode*>();
-		list->append(new DefaultRenderingPtm());
-		list->append(new DiffuseGain());
-		list->append(new SpecularEnhancement());
-		list->append(new NormalEnhancement());
-		list->append(new UnsharpMasking(0));
-		list->append(new UnsharpMasking(1));
-		list->append(new CoeffEnhancement());
-		list->append(new DetailEnhancement());
-		list->append(new DynamicDetailEnh());
+		list = new QMap<int, RenderingMode*>();
+		list->insert(DEFAULT, new DefaultRendering());
+		list->insert(DIFFUSE_GAIN, new DiffuseGain());
+		list->insert(SPECULAR_ENHANCEMENT, new SpecularEnhancement());
+		list->insert(NORMAL_ENHANCEMENT, new NormalEnhancement());
+		list->insert(UNSHARP_MASKING_IMG, new UnsharpMasking(0));
+		list->insert(UNSHARP_MASKING_LUM, new UnsharpMasking(1));
+		list->insert(COEFF_ENHANCEMENT, new CoeffEnhancement());
+		list->insert(DETAIL_ENHANCEMENT, new DetailEnhancement());
+		list->insert(DYN_DETAIL_ENHANCEMENT, new DynamicDetailEnh());
 	};
 
 	//! Deconstructor.
@@ -480,10 +338,7 @@ private:
 	PyramidCoeff blueCoefficients; /*!< Coefficients for blue component. */
 
 	PyramidNormals normals; /*!< Normals. */
-	PyramidNormals normalsR;
-	PyramidNormals normalsG;
-	PyramidNormals normalsB;
-
+	
 // constructors
 public:
 

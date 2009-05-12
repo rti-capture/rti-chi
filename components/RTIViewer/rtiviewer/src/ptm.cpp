@@ -345,8 +345,8 @@ int RGBPtm::createImage(unsigned char** buffer, int& width, int& height, const v
 	else
 	{
 		// Applies the current rendering mode.
-		RenderingInfo info = {offx, offy, height, width, level, mode, light};
-		list->at(currentRendering)->applyPtmRGB(redCoefficients, greenCoefficients, blueCoefficients, mipMapSize, normals, info, (*buffer));
+		RenderingInfo info = {offx, offy, height, width, level, mode, light, 6};
+		list->value(currentRendering)->applyPtmRGB(redCoefficients, greenCoefficients, blueCoefficients, mipMapSize, normals, info, (*buffer));
 	}
 	
 #ifdef PRINT_DEBUG
@@ -356,7 +356,7 @@ int RGBPtm::createImage(unsigned char** buffer, int& width, int& height, const v
 	{
 		switch(currentRendering)
 		{
-			case NORMAL: printf("Default rendering: %.5f s\n", diff); break;
+			case DEFAULT: printf("Default rendering: %.5f s\n", diff); break;
 			case DIFFUSE_GAIN: printf("Diffuse gain: %.5f s\n", diff); break;
 			case SPECULAR_ENHANCEMENT: printf("Specular enhancement: %.5f s\n", diff); break;
 			case NORMAL_ENHANCEMENT: printf("Normal enhancement: %.5f s\n", diff); break;
@@ -889,8 +889,8 @@ int LRGBPtm::createImage(unsigned char** buffer, int& width, int& height, const 
 	else
 	{
 		// Applies the current rendering mode.
-		RenderingInfo info = {offx, offy, height, width, level, mode, light};
-		list->at(currentRendering)->applyPtmLRGB(coefficients, rgb, mipMapSize, normals, info, (*buffer));
+		RenderingInfo info = {offx, offy, height, width, level, mode, light, 6};
+		list->value(currentRendering)->applyPtmLRGB(coefficients, rgb, mipMapSize, normals, info, (*buffer));
 	}
 
 #ifdef PRINT_DEBUG
@@ -900,7 +900,7 @@ int LRGBPtm::createImage(unsigned char** buffer, int& width, int& height, const 
 	{
 		switch(currentRendering)
 		{
-			case NORMAL: printf("Default rendering: %.5f s\n", diff); break;
+			case DEFAULT: printf("Default rendering: %.5f s\n", diff); break;
 			case DIFFUSE_GAIN: printf("Diffuse gain: %.5f s\n", diff); break;
 			case SPECULAR_ENHANCEMENT: printf("Specular enhancement: %.5f s\n", diff); break;
 			case NORMAL_ENHANCEMENT: printf("Normal enhancement: %.5f s\n", diff); break;
@@ -964,7 +964,7 @@ int LRGBPtm::allocateRemoteImage(int width, int height, int maxResLevel)
 {
 	if (width <= 0 || height <= 0 || maxResLevel <= 0)
 		return -1;
-	((DefaultRenderingPtm*)list->at(NORMAL))->setRemote(true);
+	((DefaultRendering*)list->value(DEFAULT))->setRemote(true);
 	w = width;
 	h = height;
 	remote = true;

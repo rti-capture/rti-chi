@@ -61,9 +61,9 @@ MultiviewRti::MultiviewRti(): Rti(),
 	posX(-1),
 	posY(-1)
 {
-	currentRendering = NORMAL_MULTIVIEW;
+	currentRendering = DEFAULT;
 	// Create list of supported rendering mode.
-	list = new QVector<RenderingMode*>();
+	list = new QMap<int, RenderingMode*>();
 }
 
 MultiviewRti::~MultiviewRti()
@@ -144,7 +144,7 @@ int MultiviewRti::load(QString name, CallBackPos *cb)
 	separationY = strList.at(3).toInt(&error);
 	if (!error) return -1;
 
-	list->append(new DefaultMRti(startX, startY, maxViewX, maxViewY, useFlow, true));
+	list->insert(DEFAULT, new DefaultMRti(startX, startY, maxViewX, maxViewY, useFlow, true));
 	QFileInfo info(filename);
 	images = std::vector<UniversalRti*>(nViewpoint);
 	for (int i = 0; i < nViewpoint; i++)
@@ -363,7 +363,7 @@ int MultiviewRti::createImage(unsigned char** buffer, int& width, int& height, c
 	QTime first = QTime::currentTime();
 #endif
 
-	DefaultMRti* rend = (DefaultMRti*)list->at(NORMAL_MULTIVIEW);
+	DefaultMRti* rend = (DefaultMRti*)list->value(DEFAULT);
 	float newPosX = rend->getCurrentPosX();
 	float newPosY = rend->getCurrentPosY();
 		

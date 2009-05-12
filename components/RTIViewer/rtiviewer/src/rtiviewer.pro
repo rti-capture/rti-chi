@@ -59,7 +59,8 @@ HEADERS        = \
 				pyramid.h\
 				hsh.h\
 				universalrti.h\
-				multiviewrti.h
+				multiviewrti.h\
+				defaultrendering.h
 				
                
 

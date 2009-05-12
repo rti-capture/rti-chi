@@ -10,15 +10,18 @@
 
 #include "hsh.h"
 
+#include <vcg/math/matrix33.h>
+
 #include <QTime>
 
 Hsh::Hsh() :
 	Rti()
 {
-	currentRendering = NORMAL_HSH;
+	currentRendering = DEFAULT;
 	// Create list of supported rendering mode.
-	list = new QVector<RenderingMode*>();
-	list->append(new DefaultRenderingHsh());
+	list = new QMap<int, RenderingMode*>();
+	list->insert(DEFAULT, new DefaultRendering());
+	list->insert(SPECULAR_ENHANCEMENT ,new SpecularEnhancement());
 }
 
 
@@ -142,7 +145,7 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 	{
 		for(int j = 0; j < h; j++)
 		{
-			if (cb != NULL && j % 50 == 0)(*cb)(j * 70.0 / h, text);
+			if (cb != NULL && j % 50 == 0)(*cb)(j * 50.0 / h, text);
 			for(int i = 0; i < w; i++)
 			{				
 				offset = j * w + i;
@@ -174,7 +177,7 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 	{
 		for(int j = 0; j < h; j++)
 		{
-			if (cb != NULL && j % 50 == 0)(*cb)(j * 25 / h, text);
+			if (cb != NULL && j % 50 == 0)(*cb)(j * 50 / h, text);
 			for(int i = 0; i < w; i++)
 			{				
 				offset = j * w + i;
@@ -211,8 +214,20 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 	greenCoefficients.setLevel(greenPtr, size, 0);
 	blueCoefficients.setLevel(bluePtr, size, 0);
 	
+	/*QImage image(width, height, QImage::Format_RGB32);
+	for (int y = 0; y < mipMapSize[0].height(); y++)
+	{
+		for (int x = 0; x < mipMapSize[0].width(); x++)
+		{
+			offset = y * w + x;
+			QRgb rgb = qRgb(redPtr[y * w + x], greenPtr[y * w + x], bluePtr[y * w + x]);
+			image.setPixel(x, y, rgb);
+		}
+	}
+	image.save("prova.jpg");*/
+
 	// Computes mip-mapping.
-	if (cb != NULL)	(*cb)(70, "Mip mapping generation...");
+	if (cb != NULL)	(*cb)(50, "Mip mapping generation...");
 	
 	for (int level = 1; level < MIP_MAPPING_LEVELS; level++)
 	{
@@ -226,7 +241,7 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 		blueCoefficients.setLevel(new float[size], size, level);
 		for (int i = 0; i < height - 1; i+=2)
 		{
-			if (cb != NULL && i % 50 == 0)	(*cb)(70 + (level-1)*10 + i*10.0/height, "Mip mapping generation...");
+			if (cb != NULL && i % 50 == 0)	(*cb)(50 + (level-1)*8 + i*8.0/height, "Mip mapping generation...");
 			for (int j = 0; j < width - 1; j+=2)
 			{
 				int index1 = (i * width + j);
@@ -284,7 +299,64 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 			}
 		}
 		mipMapSize[level] = QSize(width2, height2);
-	}	
+	}
+
+	//Compute normals.
+	if (cb != NULL) (*cb)(75 , "Mip mapping generation...");
+	vcg::Point3d l0(sin(M_PI/4)*cos(M_PI/6), sin(M_PI/4)*sin(M_PI/6), cos(M_PI/4));
+	vcg::Point3d l1(sin(M_PI/4)*cos(5*M_PI / 6), sin(M_PI/4)*sin(5*M_PI / 6), cos(M_PI/4));
+	vcg::Point3d l2(sin(M_PI/4)*cos(3*M_PI / 2), sin(M_PI/4)*sin(3*M_PI / 2), cos(M_PI/4));
+	double hweights0[9], hweights1[9], hweights2[9];
+	getHSH(M_PI / 4, M_PI / 6, hweights0);
+	getHSH(M_PI / 4, 5*M_PI / 6, hweights1);
+	getHSH(M_PI / 4, 3*M_PI / 2, hweights2);
+	vcg::Matrix33d L, LInverse;
+	L.SetRow(0, l0);
+	L.SetRow(1, l1);
+	L.SetRow(2, l2);
+	LInverse = vcg::Inverse<double>(L);
+
+	for (int level = 0; level < MIP_MAPPING_LEVELS; level++)
+	{
+		const float* rPtr = redCoefficients.getLevel(level);
+		const float* gPtr = greenCoefficients.getLevel(level);
+		const float* bPtr = blueCoefficients.getLevel(level);
+		vcg::Point3f* temp = new vcg::Point3f[mipMapSize[level].width()*mipMapSize[level].height()];
+		if (cb != NULL) (*cb)(75 + level*6, "Mip mapping generation...");
+		for (int y = 0; y < mipMapSize[level].height(); y++)
+		{
+			for (int x = 0; x < mipMapSize[level].width(); x++)
+			{
+				int offset= y * mipMapSize[level].width() + x;
+				vcg::Point3d f(0, 0, 0);
+				for (int k = 0; k < ordlen; k++)
+				{
+					f[0] += rPtr[offset*ordlen + k] * hweights0[k];
+					f[1] += rPtr[offset*ordlen + k] * hweights1[k];
+					f[2] += rPtr[offset*ordlen + k] * hweights2[k];
+				}
+				for (int k = 0; k < ordlen; k++)
+				{
+					f[0] += gPtr[offset*ordlen + k] * hweights0[k];
+					f[1] += gPtr[offset*ordlen + k] * hweights1[k];
+					f[2] += gPtr[offset*ordlen + k] * hweights2[k];
+				}
+				for (int k = 0; k < ordlen; k++)
+				{
+					f[0] += bPtr[offset*ordlen + k] * hweights0[k];
+					f[1] += bPtr[offset*ordlen + k] * hweights1[k];
+					f[2] += bPtr[offset*ordlen + k] * hweights2[k];
+				}
+				f /= 3;
+				vcg::Point3d normal = LInverse * f;
+				temp[offset] = vcg::Point3f(normal.X(), normal.Y(), normal.Z());
+				temp[offset].Normalize();
+			}
+		}
+		normals.setLevel(temp, mipMapSize[level].width()*mipMapSize[level].height(), level);
+	}
+	
+
 	return 0;
 
 }
@@ -352,48 +424,27 @@ int Hsh::createImage(unsigned char** buffer, int& width, int& height, const vcg:
 	(*buffer) = new unsigned char[width*height*4];
 	int offsetBuf = 0;
 	
-	const float* redPtr = redCoefficients.getLevel(level);
-	const float* greenPtr = greenCoefficients.getLevel(level);
-	const float* bluePtr = blueCoefficients.getLevel(level);
-	int tempW = mipMapSize[level].width();
-	float hweights[9];
-	vcg::Point3d temp(light.X(), light.Y(), light.Z());
-	temp.Normalize();
-	double phi = atan2(temp.Y(), temp.X());
-	double theta = acos(temp.Z()/temp.Norm());
-	if (theta > 1.52)
-		theta = 1.52;
-	int offset = 0;
-	hweights[0] = 1/sqrt(2*M_PI);
-	hweights[1] = sqrt(6/M_PI)      *  (cos(phi)*sqrt(cos(theta)-cos(theta)*cos(theta)));
-	hweights[2] = sqrt(3/(2*M_PI))  *  (-1. + 2.*cos(theta));
-	hweights[3] = sqrt(6/M_PI)      *  (sqrt(cos(theta) - cos(theta)*cos(theta))*sin(phi));
-	hweights[4] = sqrt(30/M_PI)     *  (cos(2.*phi)*(-cos(theta) + cos(theta)*cos(theta)));
-	hweights[5] = sqrt(30/M_PI)     *  (cos(phi)*(-1. + 2.*cos(theta))*sqrt(cos(theta) - cos(theta)*cos(theta)));
-	hweights[6] = sqrt(5/(2*M_PI))  *  (1 - 6.*cos(theta) + 6.*cos(theta)*cos(theta));
-	hweights[7] = sqrt(30/M_PI)     *  ((-1 + 2.*cos(theta))*sqrt(cos(theta) - cos(theta)*cos(theta))*sin(phi));
-	hweights[8] = sqrt(30/M_PI)     *  ((-cos(theta) + cos(theta)*cos(theta))*sin(2.*phi));
-
-	for (int y = offy; y < offy + height; y++)
+	if (mode == NORMALS_MODE)
 	{
-		for (int x = offx; x < offx + width; x++)
+		// Creates the maps of normals.
+		const vcg::Point3f* normalsLevel = normals.getLevel(level);
+		for (int y = offy; y < offy + height; y++)
 		{
-			int offset= y * tempW + x;
-			double val = 0;
-			for (int k = 0; k < ordlen; k++)
-				val += redPtr[offset*ordlen + k] * hweights[k];
-			(*buffer)[offsetBuf + 0] = tobyte(val*255);
-			val = 0;
-			for (int k = 0; k < ordlen; k++)
-				val += greenPtr[offset*ordlen + k] * hweights[k];
-			(*buffer)[offsetBuf + 1] = tobyte(val*255);
-			val = 0;
-			for (int k = 0; k < ordlen; k++)
-				val += bluePtr[offset*ordlen + k] * hweights[k];
-			(*buffer)[offsetBuf + 2] = tobyte(val*255);
-			(*buffer)[offsetBuf + 3] = 255;
-			offsetBuf += 4;
+			for (int x = offx; x < offx + width; x++)
+			{
+				int offset = y * mipMapSize[level].width() + x;
+				for (int i = 0; i < 3; i++)
+					(*buffer)[offsetBuf + i] = toColor(normalsLevel[offset][i]);
+				(*buffer)[offsetBuf + 3] = 255;
+				offsetBuf += 4;
+			}
 		}
+	}
+	else
+	{
+		// Applies the current rendering mode.
+		RenderingInfo info = {offx, offy, height, width, level, mode, light, ordlen};
+		list->value(currentRendering)->applyHSH(redCoefficients, greenCoefficients, blueCoefficients, mipMapSize, normals, info, (*buffer));
 	}
 
 #ifdef PRINT_DEBUG
@@ -410,7 +461,7 @@ int Hsh::createImage(unsigned char** buffer, int& width, int& height, const vcg:
 QImage* Hsh::createPreview(int width, int height)
 {
 	// Computes the height and the width of the preview.
-	int level = MIP_MAPPING_LEVELS;
+	int level = MIP_MAPPING_LEVELS - 1;
 	int imageH = mipMapSize[level].height();
 	int imageW = mipMapSize[level].width();
 	for (int i = 0; i < 4; i++)
@@ -434,20 +485,12 @@ QImage* Hsh::createPreview(int width, int height)
 	const float* greenPtr = greenCoefficients.getLevel(level);
 	const float* bluePtr = blueCoefficients.getLevel(level);
 	int tempW = mipMapSize[level].width();
-	float hweights[9];
-	float phi = 0.0f;
-	float theta = acos(1.0);
+	double hweights[9];
+	double phi = 0.0f;
+	double theta = acos(1.0);
+	getHSH(theta, phi, hweights);
 	int offset = 0;
-	hweights[0] = 1/sqrt(2*M_PI);
-	hweights[1] = sqrt(6/M_PI)      *  (cos(phi)*sqrt(cos(theta)-cos(theta)*cos(theta)));
-	hweights[2] = sqrt(3/(2*M_PI))  *  (-1. + 2.*cos(theta));
-	hweights[3] = sqrt(6/M_PI)      *  (sqrt(cos(theta) - cos(theta)*cos(theta))*sin(phi));
-	hweights[4] = sqrt(30/M_PI)     *  (cos(2.*phi)*(-cos(theta) + cos(theta)*cos(theta)));
-	hweights[5] = sqrt(30/M_PI)     *  (cos(phi)*(-1. + 2.*cos(theta))*sqrt(cos(theta) - cos(theta)*cos(theta)));
-	hweights[6] = sqrt(5/(2*M_PI))  *  (1 - 6.*cos(theta) + 6.*cos(theta)*cos(theta));
-	hweights[7] = sqrt(30/M_PI)     *  ((-1 + 2.*cos(theta))*sqrt(cos(theta) - cos(theta)*cos(theta))*sin(phi));
-	hweights[8] = sqrt(30/M_PI)     *  ((-cos(theta) + cos(theta)*cos(theta))*sin(2.*phi));
-	
+		
 	for (int y = 0; y < imageH; y++)
 	{
 		for (int x = 0; x < imageW; x++)

@@ -183,11 +183,6 @@ void SpecularEnhancement::applyPtmRGB(const PyramidCoeff& redCoeff, const Pyrami
 			else if (nDotH > 1)
 				nDotH = 1.0;
 			nDotH = pow(nDotH, exp);
-			double nDotL = normalsPtr[offset] * info.light;
-			if (nDotL < 0) 
-				nDotL = 0.0;
-			else if (nDotL > 1)
-				nDotL = 1.0;
 			double r, g ,b;
 			r = evalPoly(&redPtr[offset*6], info.light.X(), info.light.Y());
 			g = evalPoly(&greenPtr[offset*6], info.light.X(), info.light.Y());
@@ -201,4 +196,61 @@ void SpecularEnhancement::applyPtmRGB(const PyramidCoeff& redCoeff, const Pyrami
 			offsetBuf += 4;
 		}
 	}
+}
+
+
+void SpecularEnhancement::applyHSH(const PyramidCoeffF& redCoeff, const PyramidCoeffF& greenCoeff, const PyramidCoeffF& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
+{
+	const float* redPtr = redCoeff.getLevel(info.level);
+	const float* greenPtr = greenCoeff.getLevel(info.level);
+	const float* bluePtr = blueCoeff.getLevel(info.level);
+	const vcg::Point3f* normalsPtr = normals.getLevel(info.level);
+	int tempW = mipMapSize[info.level].width();
+	double hweights[9];
+	vcg::Point3d temp(info.light.X(), info.light.Y(), info.light.Z());
+	temp.Normalize();
+	double phi = atan2(temp.Y(), temp.X());
+	double theta = acos(temp.Z()/temp.Norm());
+	int offsetBuf = 0;
+	getHSH(theta, phi, hweights);
+	
+	for (int y = info.offy; y < info.offy + info.height; y++)
+	{
+		for (int x = info.offx; x < info.offx + info.width; x++)
+		{
+			int offset= y * tempW + x;
+			double red = 0, green = 0, blue = 0;
+			for (int k = 0; k < info.ordlen; k++)
+			{
+				red += redPtr[offset*info.ordlen + k] * hweights[k];
+				green += greenPtr[offset*info.ordlen + k] * hweights[k];
+				blue += bluePtr[offset*info.ordlen + k] * hweights[k];
+			}
+			red *= 256;
+			green *= 256;
+			blue *= 256;
+			
+			vcg::Point3f h(0, 0, 1);
+			h += info.light;
+			h /= 2;
+			h.Normalize();
+			
+			double nDotH = h * normalsPtr[offset];
+			if (nDotH < 0) 
+				nDotH = 0.0;
+			else if (nDotH > 1)
+				nDotH = 1.0;
+			nDotH = pow(nDotH, exp/5);
+
+			double temp = (red + green + blue)/3;
+			double lum =  temp * ks * 4 * nDotH;
+			buffer[offsetBuf + 0] = tobyte( red * kd + lum);
+			buffer[offsetBuf + 1] = tobyte( green * kd + lum );
+			buffer[offsetBuf + 2] = tobyte( blue * kd + lum );
+			buffer[offsetBuf + 3] = 255;
+			offsetBuf += 4;
+		}
+	}
+
+
 }

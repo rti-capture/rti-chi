@@ -32,7 +32,7 @@ private:
 	
 	QComboBox* modeList; /*!< Combobox to select the rendering mode. */
 	QWidget* control; /*!< Widget to set the parameters of the rendering mode. */
-	QVector<RenderingMode*>* list; /*!< List of rendering modes. */
+	QMap<int, RenderingMode*>* list; /*!< List of rendering modes. */
 
 // construction
 public:
@@ -44,7 +44,7 @@ public:
 	  \param parent
 	  \param remote flag for remote RTI image.
 	*/
-	RenderingDialog(QVector<RenderingMode*>* l, int currRendering, QWidget *parent = 0, bool remote = false);
+	RenderingDialog(QMap<int, RenderingMode*>* l, int currRendering, QWidget *parent = 0, bool remote = false);
 
 
 // private Qt slots
@@ -89,7 +89,7 @@ public:
 	/*!
 	  Sets a new rendering mode list.
 	*/
-	void setRenderingMode(QVector<RenderingMode*>* l, int currRendering, bool remote = false);
+	void setRenderingMode(QMap<int, RenderingMode*>* l, int currRendering, bool remote = false);
 	
 };
 

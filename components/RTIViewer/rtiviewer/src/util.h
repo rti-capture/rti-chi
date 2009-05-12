@@ -68,6 +68,7 @@ struct RenderingInfo
 	int level; /*!< Level of mip-mapping to use for the output texture. */
 	int mode; /*!< Special rendering mode applied by the browser. */
 	const vcg::Point3f& light; /*!< Light vector. */
+	int ordlen; /*< Number of coefficients per channel. */
 };
 
 
@@ -479,6 +480,22 @@ static int computeMaximumOnCircle(double* a, double &lx, double &ly)
 		ly = maxv;
 	}
 	return 1;
+}
+
+/*!
+  Returns the first nine Hemispherical Harmonics computed in the theta and phi.
+*/
+static void getHSH(double theta, double phi, double* hweights)
+{
+	hweights[0] = 1/sqrt(2*M_PI);
+	hweights[1] = sqrt(6/M_PI)      *  (cos(phi)*sqrt(cos(theta)-cos(theta)*cos(theta)));
+	hweights[2] = sqrt(3/(2*M_PI))  *  (-1. + 2.*cos(theta));
+	hweights[3] = sqrt(6/M_PI)      *  (sqrt(cos(theta) - cos(theta)*cos(theta))*sin(phi));
+	hweights[4] = sqrt(30/M_PI)     *  (cos(2.*phi)*(-cos(theta) + cos(theta)*cos(theta)));
+	hweights[5] = sqrt(30/M_PI)     *  (cos(phi)*(-1. + 2.*cos(theta))*sqrt(cos(theta) - cos(theta)*cos(theta)));
+	hweights[6] = sqrt(5/(2*M_PI))  *  (1 - 6.*cos(theta) + 6.*cos(theta)*cos(theta));
+	hweights[7] = sqrt(30/M_PI)     *  ((-1 + 2.*cos(theta))*sqrt(cos(theta) - cos(theta)*cos(theta))*sin(phi));
+	hweights[8] = sqrt(30/M_PI)     *  ((-cos(theta) + cos(theta)*cos(theta))*sin(2.*phi));
 }
 
 #endif  /* UTIL_H */

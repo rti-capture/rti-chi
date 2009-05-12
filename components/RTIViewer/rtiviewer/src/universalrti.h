@@ -59,7 +59,7 @@ public:
 
 	virtual int getCurrentRendering() {return image->getCurrentRendering();}
 
-	virtual QVector<RenderingMode*>* getSupportedRendering() {return image->getSupportedRendering();}
+	virtual QMap<int, RenderingMode*>* getSupportedRendering() {return image->getSupportedRendering();}
 };
 
 #endif //URTI_H

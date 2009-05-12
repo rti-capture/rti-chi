@@ -177,7 +177,7 @@ QSize RtiBrowser::getSize()
 	return QSize(_width, _height);
 }
 
-QVector<RenderingMode*>* RtiBrowser::getRenderingMode()
+QMap<int, RenderingMode*>* RtiBrowser::getRenderingMode()
 {
 	if (img)
 		return img->getSupportedRendering();
@@ -442,14 +442,14 @@ void RtiBrowser::mouseReleaseEvent(QMouseEvent *event)
 		QApplication::restoreOverrideCursor();
 		timer->stop();
 		lightChangedRight = false;
-		if(dynamic_cast<DetailEnhancement*>(img->getSupportedRendering()->at(img->getCurrentRendering())))
+		if(dynamic_cast<DetailEnhancement*>(img->getSupportedRendering()->value(img->getCurrentRendering())))
 		{
 			QPoint point = event->pos();
 			int x = subimg.x() + (point.x() - (_width - viewWidth)/2)/zoom;
 			int y = subimg.y() + (point.y() - (_height - viewHeight)/2)/zoom;
 			if (x >= 0 && y >=0 && x < img->width() && y < img->height())
 			{
-				vcg::Point3f pixelLight = ((DetailEnhancement*) img->getSupportedRendering()->at(img->getCurrentRendering()))->getPixelLight(x, y);
+				vcg::Point3f pixelLight = ((DetailEnhancement*) img->getSupportedRendering()->value(img->getCurrentRendering()))->getPixelLight(x, y);
 				emit setLightDir(pixelLight, false);
 			}
 		}
@@ -716,8 +716,8 @@ void RtiBrowser::updateSubImage(int offx, int offy)
 void RtiBrowser::setRenderingMode(int mode)
 {
 	img->setRenderingMode(mode);
-	QVector<RenderingMode*>* list = img->getSupportedRendering();
-	RenderingMode* rendering = list->at(mode);
+	QMap<int, RenderingMode*>* list = img->getSupportedRendering();
+	RenderingMode* rendering = list->value(mode);
 	emit setInteractiveLight(rendering->isLightInteractive());
 	emit setEnabledLight(rendering->enabledLighting());
 	interactive = rendering->isLightInteractive();

@@ -15,12 +15,12 @@
 #include "util.h"
 #include "renderingmode.h"
 
-
 #include <vcg/space/point3.h>
 
 #include <QTextStream>
 #include <QRect>
 #include <QBuffer>
+#include <QMap>
 
 //! RTI image abstract class.
 /*!
@@ -38,7 +38,7 @@ protected:
 	QString type; /*!< Type of image. */
 
 	int currentRendering; /*!< Current rendering mode applied to the image. */
-	QVector<RenderingMode*>* list; /*!< List of rendering modes to apply to the image. */
+	QMap<int, RenderingMode*>* list; /*!< List of rendering modes to apply to the image. */
 
 	bool remote; /*!< Holds whether the image is loaded by remote disk. */
 	int maxRemoteResolution; /*!< Maximun level of resolution if the image is remote. */
@@ -65,7 +65,7 @@ public:
 		if (list)
 		{
 			for (int i = 0; i < list->size(); i++)
-				delete list->at(i);
+				delete (*list)[i];
 			delete list;
 		}
 		if (tiles)
@@ -193,7 +193,7 @@ public:
 	/*!
 	  Retruns the list of rendering modes supported by the image.
 	*/
-	virtual QVector<RenderingMode*>* getSupportedRendering() {return list;}
+	virtual QMap<int, RenderingMode*>* getSupportedRendering() {return list;}
 
 	/*!
 	  Returns the maximum level of resolution for a remote RTI image.
@@ -241,6 +241,23 @@ public:
 	  The method must be invoked when all tiles are received. 
 	*/
 	void resetRemote(){remote = false;}
+};
+
+
+/*!
+  Rendering mode for RTI image.
+*/
+enum RenderingRTI
+{
+	DEFAULT,
+	DIFFUSE_GAIN,
+	SPECULAR_ENHANCEMENT,
+	NORMAL_ENHANCEMENT,
+	UNSHARP_MASKING_IMG,
+	UNSHARP_MASKING_LUM,
+	COEFF_ENHANCEMENT,
+	DETAIL_ENHANCEMENT,
+	DYN_DETAIL_ENHANCEMENT,
 };
 
 

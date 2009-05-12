@@ -32,14 +32,6 @@
 #include <vcg/math/matrix.h>
 
 
-/*!
-  Rendering mode for Multiview RTI image.
-*/
-enum RenderingMRti
-{
-	NORMAL_MULTIVIEW,
-};
-
 
 //! Widget to change the viewpoint.
 /*!
@@ -168,6 +160,8 @@ public:
 
 	}
 
+
+	void applyHSH(const PyramidCoeffF& redCoeff, const PyramidCoeffF& greenCoeff, const PyramidCoeffF& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer){}
 
 	float getCurrentPosX() {return currentPosX;}
 	float getCurrentPosY() {return currentPosY;}
