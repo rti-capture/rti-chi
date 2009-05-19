@@ -22,6 +22,8 @@ SOURCES        =  \
                ../../rtiviewer/src/coeffenhanc.cpp\
 			   ../../rtiviewer/src/detailenhanc.cpp\
 			   ../../rtiviewer/src/dyndetailenhanc.cpp\
+			   ../../rtiviewer/src/hsh.cpp\
+			   ../../rtiviewer/src/universalrti.cpp\
 
 HEADERS        = \
                zorder.h \
@@ -35,6 +37,9 @@ HEADERS        = \
                ../../rtiviewer/src/coeffenhanc.h\
 			   ../../rtiviewer/src/detailenhanc.h\
 			   ../../rtiviewer/src/dyndetailenhanc.h\
+			   ../../rtiviewer/src/defaultrendering.h\
+			   ../../rtiviewer/src/hsh.h\
+			   ../../rtiviewer/src/universalrti.h\
 
 
 mac: LIBS       += ../../compression/src/lib/libjpeg2000.a

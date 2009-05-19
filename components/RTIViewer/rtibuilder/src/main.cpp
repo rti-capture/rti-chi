@@ -12,6 +12,8 @@
 // Local headers
 #include "rti.h"
 #include "ptm.h"
+#include "hsh.h"
+#include "universalrti.h"
 #include "zorder.h"
 #include <jpeg2000.h>
 
@@ -38,7 +40,7 @@ int main( int argc, char ** argv )
 	{
 		cout << std::endl << "Usage:" << endl << endl;
 		cout << "        rtibuilder <input> <level>" << endl << endl;
-		cout << "        <input>  RTI file to decompose (only LRGB-PTM)." << endl;
+		cout << "        <input>  RTI file to decompose (LRGB-PTM, HSH)." << endl;
 		cout << "        <level>  Levels of resolution (default: 3)." << endl;
 		exit(0);
 	}
@@ -51,42 +53,52 @@ int main( int argc, char ** argv )
 	int level = str2.toInt();
 
 	QFileInfo fi(filename);
-	if (fi.suffix() != "ptm")
-	{
-		cout << "Unsupported file format. The tool accepts only LRGB-PTM file." << endl;
-		exit(0);
-	}
+	
 
 	// load rti image
 	//////////////////////////////////////////////////////////////
 
-	QFile data(filename);
-	if (!data.open(QFile::ReadOnly))
+	Rti *image;
+	if (fi.suffix() == "ptm")
 	{
-		cout << "I/0 error." << endl;
-		exit(0);
+		QFile data(filename);
+		if (!data.open(QFile::ReadOnly))
+		{
+			cout << "I/0 error." << endl;
+			exit(0);
+		}
+		QTextStream input(&data);
+		image = Ptm::getPtm(input);
+		data.close();
+		//LRGBPtm *ptm;
+		if (dynamic_cast<RGBPtm*>(image))
+		{
+			cout << "Unsupported file format. The tool accepts LRGB-PTM or HSH file." << endl;
+			exit(0);
+		}
 	}
-	QTextStream input(&data);
-	Rti *image = Ptm::getPtm(input);
-	data.close();
-	LRGBPtm *ptm;
-	if (dynamic_cast<LRGBPtm*>(image))
+	else if (fi.suffix() == "hsh")
 	{
-		ptm = dynamic_cast<LRGBPtm*>(image);
+		image = new Hsh();
+	}
+	else if (fi.suffix() == "rti")
+	{
+		image = new UniversalRti();
 	}
 	else
 	{
-		cout << "Unsupported file format. The tool accepts only LRGB-PTM file." << endl;
+		cout << "Unsupported file format. The tool accepts LRGB-PTM or HSH images." << endl;
 		exit(0);
 	}
 
+	if (image->load(filename) != 0)
+	{
+		cout << "The file is invalid." << endl;
+		exit(0);
+	}
 
-
-	//LRGBPtm *ptm = new LRGBPtm();
-	ptm->load(filename);
-
-	int width = ptm->width();
-	int height = ptm->height();
+	int width = image->width();
+	int height = image->height();
 
 	// folder creation
 
@@ -119,10 +131,10 @@ int main( int argc, char ** argv )
 	// decomposition and compression
 	//////////////////////////////////////////////////////////////
 
-	float aspect_ratio = static_cast<float>(ptm->height()) / static_cast<float>(ptm->width());
+	float aspect_ratio = static_cast<float>(height) / static_cast<float>(width);
 	int previewWidth = 400;
 	int previewHeight = previewWidth * aspect_ratio;
-	QImage *img = ptm->createPreview(previewWidth, previewHeight);
+	QImage *img = image->createPreview(previewWidth, previewHeight);
 	QString previewname = fi.absolutePath() + QString("/") + name + QString("/") + QString("thumb.jpg");
 	img->save(previewname);
 
@@ -142,7 +154,7 @@ int main( int argc, char ** argv )
 			for (int j = 0; j < size; j++)
 			{
 				QString patchname = fi.absolutePath() + QString("/") + name + QString("/");
-				patchname += QString("tile_lvl%1_%2.ptm").arg(k).arg(zm[j + i * size]);
+				patchname += QString("tile_lvl%1_%2.dat").arg(k).arg(zm[j + i * size]);
 
 				cout << patchname.toStdString() << endl;
 
@@ -154,7 +166,7 @@ int main( int argc, char ** argv )
 				cout << "Tile Size: " << (x2-x1) << " x " << (y2-y1) << endl;
 
 				// save compressed tile
-				ptm->saveCompressed(x1,y1,x2,y2,level-k,patchname);
+				image->saveCompressed(x1,y1,x2,y2,level-k,patchname);
 			}
 
 		delete [] zm;
@@ -163,25 +175,10 @@ int main( int argc, char ** argv )
 	// Save XML information file
 	//////////////////////////////////////////////////////////////
 
-	QDomDocument doc;
-	QDomElement root = doc.createElement("RTIBuilderInfo");
-	doc.appendChild(root);
-
-	QDomElement info = doc.createElement("Info");
-	info.setAttribute(QString("width"), QString("%1").arg(width));
-	info.setAttribute(QString("height"), QString("%1").arg(height));
-	info.setAttribute(QString("levels"), QString("%1").arg(level));
-	root.appendChild(info);
-
-	QString infofilename = fi.absolutePath() + QString("/") + name + QString("/") + QString("info.xml");
-	QFile infofile(infofilename);
-	if (infofile.open(QFile::WriteOnly | QFile::Truncate))
-	{
-		QTextStream out(&infofile);
-		doc.save(out, 2);
-	}
-
-	delete ptm;
+	QString infofilename = fi.absolutePath() + QString("/") + name + QString("/") + QString("%1.%2").arg(name).arg(fi.suffix());
+	image->saveRemoteDescr(infofilename, level);
+	
+	delete image;
 	delete img;
 	return 0;
 }
