@@ -14,6 +14,7 @@
 // Qt headers
 #include <QApplication>
 #include <QObject>
+#include <QString>
 
 
 int main( int argc, char ** argv )
@@ -22,5 +23,7 @@ int main( int argc, char ** argv )
 	
 	RtiViewerDlg *maindlg = new RtiViewerDlg();
 	maindlg->show();
+	if (argc > 1)
+		maindlg->openFile(QString(argv[1]));
 	return app.exec();
 }

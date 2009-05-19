@@ -35,6 +35,8 @@
 #include <QWaitCondition>
 #include <QSettings>
 #include <QDir>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 
 //! Main window class.
 /*!
@@ -76,6 +78,8 @@ private:
 
 	QDir dir; /*!< Current working directory. */
 
+	QUrl lastUrl; /*!< Last URL inserted by the user. */
+
 	const QString title;
 	const QString filterStr;
 
@@ -89,6 +93,8 @@ public:
 	*/
 	RtiViewerDlg(QWidget *parent=0);
 
+	int openFile(QString path);
+
 
 // private methods
 private:
@@ -96,12 +102,9 @@ private:
 	/*!
 	  Parses xml file used in the visualization of remote RTI image.
 	  \param b pointer to file buffer
-	  \param level reference to the destination of image level info.
-	  \param w refecence to the destination of image width info.
-	  \param h reference to the destination of image height info.
-	  \return \a true if the file is valid, \a false otherwise.
+	  \return a pointer to a RTI image.
 	*/
-	bool parseXml(QBuffer* b, int& level, int& w, int& h);
+	Rti* parseXml(const QBuffer* b);
 
 // private Qt slots
 private slots:
@@ -137,6 +140,23 @@ public slots:
 	*/
 	void configure();
 
+protected:
+
+	void dragEnterEvent ( QDragEnterEvent * event )
+	{
+		if (event->mimeData()->hasUrls())
+			event->acceptProposedAction();
+	}
+
+	void dropEvent ( QDropEvent * event )
+	{
+		if (event->mimeData()->hasUrls())
+		{
+			QString path = (event->mimeData()->urls()).at(0).path();
+			path.remove(0, 1);
+			openFile(path);
+		}
+	}
 };
 
 #endif /* RTIVIEWERDLG_H */

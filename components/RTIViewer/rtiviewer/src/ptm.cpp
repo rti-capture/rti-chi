@@ -415,7 +415,7 @@ QImage* RGBPtm::createPreview(int width, int height)
 }
 
 
-int RGBPtm::allocateRemoteImage(int width, int height, int maxResLevel)
+int RGBPtm::allocateRemoteImage(QBuffer* b)
 {
 	return -1;
 }  
@@ -424,6 +424,12 @@ int RGBPtm::allocateRemoteImage(int width, int height, int maxResLevel)
 int RGBPtm::loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level)
 {
 	return -1;
+}
+
+
+void RGBPtm::saveRemoteDescr(QString& filename, int level)
+{
+
 }
 
 
@@ -717,10 +723,18 @@ int LRGBPtm::saveCompressed(int xinf, int yinf, int xsup, int ysup, int reslevel
 	int ww;
 	if (reslevel > 0)
 	{
-		xinf = xinf >> reslevel;
-		yinf = yinf >> reslevel;
-		xsup = xsup >> reslevel;
-		ysup = ysup >> reslevel;
+		if (xinf > 0)
+			xinf = xinf >> reslevel;
+		if (yinf > 0)
+			yinf = yinf >> reslevel;
+		if (xsup == w)
+			xsup = mipMapSize[reslevel].width();
+		else
+			xsup = xsup >> reslevel;
+		if (ysup == h)
+			ysup = mipMapSize[reslevel].height();
+		else
+			ysup = ysup >> reslevel;
 		ww = mipMapSize[reslevel].width();
 	}
 	else
@@ -752,7 +766,7 @@ int LRGBPtm::saveCompressed(int xinf, int yinf, int xsup, int ysup, int reslevel
 
 
 	// Saves as a JPEG2000 image with 9 gray components of 16 bit each
-		Jpeg2000 jpegimage(tilew, tileh, 16, 16, 9, comps, GRAY_CLRSPC, J2K_CFMT);
+	Jpeg2000 jpegimage(tilew, tileh, 16, 16, 9, comps, GRAY_CLRSPC, J2K_CFMT);
 	jpegimage.save(name.toStdString().c_str());
 
 	for (int k = 0; k < 9; k++)
@@ -960,23 +974,46 @@ QImage* LRGBPtm::createPreview(int width, int height)
 }
 
 
-int LRGBPtm::allocateRemoteImage(int width, int height, int maxResLevel)
+int LRGBPtm::allocateRemoteImage(QBuffer* b)
 {
-	if (width <= 0 || height <= 0 || maxResLevel <= 0)
+	if (!b)
+		return -1;
+	QDomDocument doc;
+	doc.setContent(b);
+	QDomNode root = doc.firstChild();
+	QDomElement infoNode = root.firstChildElement("Info");
+	if (infoNode.isNull())
+		return -1;
+	bool error;
+	//level info
+	int maxResLevel = infoNode.attribute("levels").toInt(&error);
+	if (!error)
+		return -1;
+	//width info
+	w = infoNode.attribute("width").toInt(&error);
+	if (!error)
+		return -1;
+	//height info
+	h = infoNode.attribute("height").toInt(&error);
+	if (!error)
 		return -1;
 	((DefaultRendering*)list->value(DEFAULT))->setRemote(true);
-	w = width;
-	h = height;
 	remote = true;
 	maxRemoteResolution = maxResLevel;
 	minRemoteResolution = maxResLevel - 3 > 0 ? maxResLevel - 3 : 1;
+	int width, height;
+	for (int i = 0; i < 6; i++)
+	{
+		scale[i] = 1;
+		bias[i] = 0;
+	}
 	for (int i = maxRemoteResolution; i > maxRemoteResolution - 4; i--)
 	{
 		int n = 1 << (maxRemoteResolution - i);
 		width = ceil(static_cast<double>(w)/static_cast<double>(n));
 		height = ceil(static_cast<double>(h)/static_cast<double>(n));
 		allocateSubLevel(maxRemoteResolution - i, width, height);
-		normals.allocateLevel(maxRemoteResolution - i ,width*height);
+		normals.allocateLevel(maxRemoteResolution - i , width*height);
 		mipMapSize[maxRemoteResolution - i] = QSize(width, height);
 	}
 	int n = 1 << maxRemoteResolution;
@@ -993,10 +1030,19 @@ int LRGBPtm::loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ys
 	unsigned char* stream = (unsigned char*) b->buffer().data();
 	Jpeg2000 jpegimage(stream, b->buffer().length());
 	
-	xinf >>= level;
-	yinf >>= level;
-	xsup >>= level;
-	ysup >>= level;
+	if (xinf > 0)
+		xinf >>= level;
+	if (yinf > 0)
+		yinf >>= level;
+	if (xsup == w)
+		xsup = mipMapSize[level].width();
+	else 
+		xsup = xsup >> level;
+	if (ysup == h)
+		ysup = mipMapSize[level].height();
+	else
+		ysup = ysup >> level;
+
 	int offset,offset2;
 	for (int y = yinf; y < ysup; y++)
 		for (int x = xinf; x < xsup; x++)
@@ -1010,11 +1056,35 @@ int LRGBPtm::loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ys
 			for (int k = 0; k < 6; k++)
 				coefficients.setElement(level, offset * 6 + k, jpegimage.componentData(k+3)[offset2]);
 			
-			// Computes normals
+			// Computes normal
 			normals.setElement(level, offset, calculateNormal(&(coefficients.getLevel(level)[offset*6])));
 		}
 
 	return 0;
+}
+
+
+void LRGBPtm::saveRemoteDescr(QString& filename, int level)
+{
+	QDomDocument doc;
+	QDomElement root = doc.createElement("RemoteRTIInfo");
+	doc.appendChild(root);
+
+	QDomElement info = doc.createElement("Info");
+	info.setAttribute(QString("type"), type); 
+	info.setAttribute(QString("width"), QString("%1").arg(w));
+	info.setAttribute(QString("height"), QString("%1").arg(h));
+	info.setAttribute(QString("levels"), QString("%1").arg(level));
+	info.setAttribute(QString("ordlen"), "6");
+	info.setAttribute(QString("bands"), "3");
+	root.appendChild(info);
+	
+	QFile infofile(filename);
+	if (infofile.open(QFile::WriteOnly | QFile::Truncate))
+	{
+		QTextStream out(&infofile);
+		doc.save(out, 2);
+	}
 }
 
 

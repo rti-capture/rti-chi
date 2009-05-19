@@ -483,7 +483,7 @@ static int computeMaximumOnCircle(double* a, double &lx, double &ly)
 }
 
 /*!
-  Returns the first nine Hemispherical Harmonics computed in the theta and phi.
+  Returns the first nine Hemispherical Harmonics computed in the theta and phi angles.
 */
 static void getHSH(double theta, double phi, double* hweights)
 {

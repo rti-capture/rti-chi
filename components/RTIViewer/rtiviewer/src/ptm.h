@@ -217,8 +217,7 @@ protected:
 				int index3 = ((i + 1) * width + j);
 				int index4 = ((i + 1) * width + j + 1);
 				int offset = (i/2 * width2 + j/2);
-				for (int k = 0; k < 6; k++)
-					calculateMipMap(offset, level, index1, index2, index3, index4);
+				calculateMipMap(offset, level, index1, index2, index3, index4);
 			}
 		}
 		if (width2 % 2 != 0)
@@ -228,8 +227,7 @@ protected:
 				int index1 = ((i + 1) * width - 1);
 				int index2 = ((i + 2) * width - 1);
 				int offset = ((i/2 + 1) * width2 - 1);
-				for (int k = 0; k < 6; k++)
-					calculateMipMap(offset, level, index1, index2);
+				calculateMipMap(offset, level, index1, index2);
 			}
 		}
 		if (height % 2 != 0)
@@ -239,14 +237,12 @@ protected:
 				int index1 = ((height - 1) * width + i);
 				int index2 = ((height - 1) * width + i + 1);
 				int offset = ((height2 - 1) * width2 + i/2);
-				for (int k = 0; k < 6; k++)
-					calculateMipMap(offset, level, index1, index2);
+				calculateMipMap(offset, level, index1, index2);
 			}
 		}
 		if (height % 2 != 0 && width % 2 != 0)
 		{
-			for (int k = 0; k < 6; k++)
-				calculateMipMap((height2*width2 - 1), level, (height * width -1));
+			calculateMipMap((height2*width2 - 1), level, (height * width -1));
 		}
 		mipMapSize[level] = QSize(width2, height2);
 		generateMipMap(level+1, width2, height2, cb, offset + limit/2.0, limit/2.0);
@@ -255,37 +251,7 @@ protected:
 // public methods
 public:
 
-	/*!
-	  Loads the compressed image.
-	*/
-	virtual int loadCompressed() = 0;
-
-	/*!
-	  Loads the specific compressed image.
-	  \param name file name.
-    */
-	virtual int loadCompressed(QString name) = 0;
-
-	/*!
-	  Loads the specific compressed tile.
-	  \param xinf, yinf, xsup, ysup coordinates of the tile.
-	  \param name file name.
-	*/
-	virtual int loadCompressed(int xinf, int yinf, int xsup, int ysup, QString name) = 0;
 	
-	/*!
-	  Saves the compressed image.
-	  \param name file name.
-	*/
-	virtual int saveCompressed(QString name) = 0;
-
-	/*!
-	  Saves a compressed tiles.
-	  \param xinf, yinf, xsup, ysup coordinates of the tile.
-	  \param reslevel mip-mapping level.
-	  \param name file name.
-	*/
-	virtual int saveCompressed(int xinf, int yinf, int xsup, int ysup, int reslevel, QString name) = 0;
 	
 private:
 
@@ -362,9 +328,10 @@ public:
 	virtual int saveCompressed(int xinf, int yinf, int xsup, int ysup, int reslevel, QString name);
 	virtual int createImage(unsigned char** buffer, int& width, int& height, const vcg::Point3f& light, const QRectF& rect, int level = 0, int mode = 0);
 	virtual QImage* createPreview(int width, int height);
-	virtual int allocateRemoteImage(int width, int height, int maxResLevel);  
+	virtual int allocateRemoteImage(QBuffer* b);  
 	virtual int loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level); 
 	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0, QString& text = QString());
+	virtual void saveRemoteDescr(QString& filename, int level);
 
 private:
 	virtual void allocateSubLevel(int level, int w, int h);
@@ -411,9 +378,10 @@ public:
 	virtual int saveCompressed(int xinf, int yinf, int xsup, int ysup, int reslevel, QString name);
 	virtual int createImage(unsigned char** buffer, int& width, int& height, const vcg::Point3f& light, const QRectF& rect, int level = 0, int mode = 0);
 	virtual QImage* createPreview(int width, int height);
-	virtual int allocateRemoteImage(int width, int height, int maxResLevel);
+	virtual int allocateRemoteImage(QBuffer* b);
 	virtual int loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level);
 	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0, QString& text = QString());
+	virtual void saveRemoteDescr(QString& filename, int level);
 
 private:
 	virtual void allocateSubLevel(int level, int w, int h);

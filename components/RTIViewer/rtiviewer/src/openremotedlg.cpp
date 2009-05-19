@@ -18,9 +18,12 @@
 OpenRemoteDlg::OpenRemoteDlg(QUrl& u, QWidget *parent) : QDialog(parent),
 	url(u)
 {
-	QLabel* info = new QLabel("Insert the url of the file you want to load");
+	QLabel* info = new QLabel("Insert the url of the file to load");
 	QLabel* label = new QLabel("URL");
-	input = new QLineEdit("http://");
+	if (url.isEmpty())
+		input = new QLineEdit("http://");
+	else
+		input = new QLineEdit(url.toString());
 	input->setMinimumWidth(500);
 	
 	okBtn = new QPushButton("OK");
@@ -59,9 +62,9 @@ void OpenRemoteDlg::okPressed()
 	else
 	{
 		QString path = url.path();
-		if (!path.endsWith(".ptm", Qt::CaseInsensitive))
-			QMessageBox::critical(this, tr("Error"), tr("Unkwon file type. Insert a valid url\n(Example: http://host/filename.ptm)"));
-		else
-			done(QDialog::Accepted);
+		/*if (!path.endsWith(".rrti", Qt::CaseInsensitive))
+			QMessageBox::critical(this, tr("Error"), tr("Unkwon file type. Insert a valid url\n(Example: http://host/filename.rrti)"));
+		else*/
+		done(QDialog::Accepted);
 	}
 }

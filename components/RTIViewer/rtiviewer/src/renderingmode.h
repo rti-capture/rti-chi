@@ -119,7 +119,16 @@ public:
 	*/
 	virtual void applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCoeff& greenCoeff, const PyramidCoeff& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer) = 0;
 
-
+	/*!
+	  Applies the rendering mode to a HSH image.
+	  \param redCoeff coefficients of the red component.
+	  \param greenCoeff coefficients of the green component.
+	  \param blueCoeff coefficients of the blue component.
+	  \param mipMapSize size in pixel of mip-mapping levels.
+	  \param normals normals per pixel.
+	  \param info several info needed to the rendering(sub-image coordinates, mip-mapping level, light vector).
+	  \param buffer pointer to the buffer to fill with the output of the rendering mode. 
+	*/
 	virtual void applyHSH(const PyramidCoeffF& redCoeff, const PyramidCoeffF& greenCoeff, const PyramidCoeffF& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer) = 0;
 	
 };

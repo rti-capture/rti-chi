@@ -166,8 +166,93 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	int tempW = settings->value("maxWindowWidth", 2000).toInt();
 	int tempH = settings->value("maxWindowHeight", 2000).toInt();
 	dir.setPath(settings->value("workingDir", "").toString()); 
+	lastUrl.setUrl(settings->value("lastUrl", "").toString());
 	browser->setMaxWindowSize(tempW, tempH);
+
+	setAcceptDrops(true);
 	
+}
+
+int RtiViewerDlg::openFile(QString path)
+{
+	if (path == "") return -1;
+	QFileInfo info(path);
+	QFile data(path);
+	dir.setPath(info.path());
+	settings->setValue("workingDir", dir.path());
+	if (info.suffix() != "ptm" && info.suffix() != "hsh" && info.suffix() != "rti" && info.suffix() != "mview")
+	{
+		QMessageBox::critical(this, tr("Opening error"), tr("The file: \n%1\n is invalid.\n Internal format unknown.").arg(path));
+		return 0;
+	}
+	if (data.open(QFile::ReadOnly))
+	{
+		Rti* image;
+		LoadingDlg* loading;
+		if (info.suffix() == "ptm")
+		{
+			loading = new LoadingDlg(this);
+			loading->show();
+			QTextStream input(&data);
+			image = Ptm::getPtm(input);
+			data.close();
+			image->setFileName(path);
+			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+		}
+		else if (info.suffix() == "hsh")
+		{
+			loading = new LoadingDlg(this);
+			loading->show();
+			image = new Hsh();
+			image->setFileName(path);
+			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+		}
+		else if (info.suffix() == "rti")
+		{
+			loading = new LoadingDlg(this);
+			loading->show();
+			image = new UniversalRti();
+			image->setFileName(path);
+			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+		}
+		else if (info.suffix() == "mview")
+		{
+			loading = new LoadingDlg(this);
+			loading->show();
+			image = new MultiviewRti();
+			image->setFileName(path);
+			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+		}
+		browser->setImage(NULL);
+		navigator->setImage(NULL, 0, 0);
+		rendDlg->setRenderingMode(NULL, 0);
+		filename->setText("");
+		filesize->setText("");
+		fileformat->setText("");
+		if (image->load(LoadingDlg::QCallBack)== 0) //Loads the image info
+		{
+			//Sets the browser image
+			browser->setImage(image);
+			//Sets the navigator image
+			navigator->setImage(image->createPreview(360, 240), image->width(), image->height());
+			QApplication::restoreOverrideCursor();
+			rendDlg->setRenderingMode(browser->getRenderingMode(), browser->getCurrentRendering());
+			loading->close();
+			//Sets file info
+			filename->setText(path);
+			filesize->setText(tr("%1 x %2").arg(image->width()).arg(image->height()));
+			fileformat->setText(image->typeFormat());
+			light->setInteractive(true);
+		}
+		else
+		{
+			loading->close();
+			QApplication::restoreOverrideCursor();
+			QMessageBox::critical(this, tr("Opening error"), tr("The file: \n%1\n is invalid.\n Internal format unknown.").arg(path));
+		}
+		delete loading;
+	}
+	return 0;
 }
 
 
@@ -206,187 +291,117 @@ int RtiViewerDlg::open()
 {
 	QString prova = dir.path();
 	QString path = QFileDialog::getOpenFileName(this, tr("Open File"), dir.path() , filterStr);
-	if (path == "") return -1;
-	QFileInfo info(path);
-	QFile data(path);
-	dir.setPath(info.path());
-	settings->setValue("workingDir", dir.path());
-	if (data.open(QFile::ReadOnly))
-	{
-		Rti* image;
-		LoadingDlg* loading;
-		browser->setImage(NULL);
-		bool flag = false;
-		if (info.suffix() == "ptm")
-		{
-			loading = new LoadingDlg(this);
-			loading->show();
-			QTextStream input(&data);
-			image = Ptm::getPtm(input);
-			data.close();
-			image->setFileName(path);
-			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-			flag = true;	
-		}
-		else if (info.suffix() == "hsh")
-		{
-			loading = new LoadingDlg(this);
-			loading->show();
-			image = new Hsh();
-			image->setFileName(path);
-			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-			flag = true;
-		}
-		else if (info.suffix() == "rti")
-		{
-			loading = new LoadingDlg(this);
-			loading->show();
-			image = new UniversalRti();
-			image->setFileName(path);
-			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-			flag = true;
-		}
-		else if (info.suffix() == "mview")
-		{
-			loading = new LoadingDlg(this);
-			loading->show();
-			image = new MultiviewRti();
-			image->setFileName(path);
-			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-			flag = true;
-		}
-		if (flag)
-		{
-			if (image->load(LoadingDlg::QCallBack)== 0) //Loads the image info
-			{
-				//Sets the browser image
-				browser->setImage(image);
-				//Sets the navigator image
-				navigator->setImage(image->createPreview(360, 240), image->width(), image->height());
-				QApplication::restoreOverrideCursor();
-				rendDlg->setRenderingMode(browser->getRenderingMode(), browser->getCurrentRendering());
-				loading->close();
-				//Sets file info
-				filename->setText(path);
-				filesize->setText(tr("%1 x %2").arg(image->width()).arg(image->height()));
-				fileformat->setText(image->typeFormat());
-				light->setInteractive(true);
-			}
-			else
-			{
-				loading->close();
-				QApplication::restoreOverrideCursor();
-				QMessageBox::critical(this, tr("Opening error"), tr("The file2: \n%1\n is invalid.\n Internal format unknown.").arg(path));
-			}
-			delete loading;
-		}
-		else
-		{
-			QMessageBox::critical(this, tr("Opening error"), tr("The file: \n%1\n is invalid.\n Internal format unknown.").arg(path));
-		}
-	}
-	return 0;
+	return openFile(path);
 }
 
 
 int RtiViewerDlg::openRemote()
 {
-	QUrl* url = new QUrl();
-	OpenRemoteDlg dlg(*url, this);
+	//QUrl* url = new QUrl(lastUrl);
+	OpenRemoteDlg dlg(lastUrl, this);
 	if (dlg.exec() == QDialog::Accepted)
 	{
+		settings->setValue("lastUrl", lastUrl.toString());
 		QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-		QString path = url->path();
-		QUrl originalUrl(*url);
-		if (path.endsWith(".ptm", Qt::CaseInsensitive))
+		QString path = lastUrl.path();
+		QUrl* url = new QUrl(lastUrl);
+		Rti* imageRti;
+		getter->closeConnection();
+		QFileInfo pathinfo(path);
+		url->setPath(pathinfo.path() + "/");
+		getter->setUrl(url, pathinfo.fileName());
+		//Gets the xml file
+		QBuffer info;
+		info.open(QIODevice::ReadWrite);
+		getter->getInfo(&info);
+		mutex->lock();
+		infoReady->wait(mutex);
+		mutex->unlock();
+		info.close();
+		if (getter->checkHttpError()) 
 		{
-			getter->closeConnection();
-			path = path.replace(path.lastIndexOf(".ptm", -1, Qt::CaseInsensitive), 4, "/");
-			url->setPath(path);
-			getter->setUrl(url);
-			//Gets the xml file
-			QBuffer info;
-			info.open(QIODevice::ReadWrite);
-			getter->getInfo(&info);
-			mutex->lock();
-			infoReady->wait(mutex);
-			mutex->unlock();
-			info.close();
-			if (getter->checkHttpError()) 
-			{
-				getter->resetHttpError();
-				QApplication::restoreOverrideCursor();
-				return -1;
-			}
-			int level, w, h;
-			if (!parseXml(&info, level, w, h))
-			{
-				QApplication::restoreOverrideCursor();
-				QMessageBox::critical(this, "Error", "Remote file contains invalid xml.");
-				return -1;
-			}
-			//Gets the thumbnail
-			QBuffer thumb;
-			thumb.open(QIODevice::ReadWrite);
-			getter->getThumb(&thumb);
-			mutex->lock();
-			infoReady->wait(mutex);
-			mutex->unlock();
-			thumb.close();
-			if (getter->checkHttpError()) 
-			{
-				QApplication::restoreOverrideCursor();
-				getter->resetHttpError();
-				return -1;
-			}
-			QImage* image = new QImage();
-			if (!image->loadFromData(thumb.buffer()))
-			{
-				QApplication::restoreOverrideCursor();
-				QMessageBox::critical(this, "Error", "Remote thumb-nail invalid.");
-				return -1;
-			}
-			//Allocates image
-			Rti* imageRti = new LRGBPtm();
-			imageRti->allocateRemoteImage(w, h, level);
-			emit getter->setRti(imageRti);
-			browser->setImage(imageRti);
-			navigator->setImage(image, w, h);
-			rendDlg->setRenderingMode(browser->getRenderingMode(), browser->getCurrentRendering(), true);
-			filename->setText(originalUrl.toString());
-			filesize->setText(tr("%1 x %2").arg(imageRti->width()).arg(imageRti->height()));
-			fileformat->setText(imageRti->typeFormat());
-			light->setInteractive(true);
-			//Gets tiles
-			getter->getTiles();
+			getter->resetHttpError();
+			QApplication::restoreOverrideCursor();
+			return -1;
 		}
+		imageRti = parseXml(&info);
+		if (!imageRti)
+		{
+			QApplication::restoreOverrideCursor();
+			QMessageBox::critical(this, "Error", "Remote file contains invalid xml.");
+			return -1;
+		}
+		browser->setImage(NULL);
+		navigator->setImage(NULL, 0, 0);
+		rendDlg->setRenderingMode(NULL, 0);
+		filename->setText("");
+		filesize->setText("");
+		fileformat->setText("");
+		if (imageRti->allocateRemoteImage(&info) != 0)
+		{
+			QApplication::restoreOverrideCursor();
+			QMessageBox::critical(this, "Error", "Remote file contains invalid xml.");
+			return -1;
+		}
+		
+		//Gets the thumbnail
+		QBuffer thumb;
+		thumb.open(QIODevice::ReadWrite);
+		getter->getThumb(&thumb);
+		mutex->lock();
+		infoReady->wait(mutex);
+		mutex->unlock();
+		thumb.close();
+		if (getter->checkHttpError()) 
+		{
+			delete imageRti;
+			QApplication::restoreOverrideCursor();
+			getter->resetHttpError();
+			return -1;
+		}
+		QImage* image = new QImage();
+		if (!image->loadFromData(thumb.buffer()))
+		{
+			delete imageRti;
+			QApplication::restoreOverrideCursor();
+			QMessageBox::critical(this, "Error", "Remote thumb-nail invalid.");
+			return -1;
+		}
+		//Allocates image
+		emit getter->setRti(imageRti);
+		browser->setImage(imageRti);
+		navigator->setImage(image, imageRti->width(), imageRti->height());
+		rendDlg->setRenderingMode(browser->getRenderingMode(), browser->getCurrentRendering(), true);
+		filename->setText(lastUrl.toString());
+		filesize->setText(tr("%1 x %2").arg(imageRti->width()).arg(imageRti->height()));
+		fileformat->setText(imageRti->typeFormat());
+		light->setInteractive(true);
+		//Gets tiles
+		getter->getTiles();
 		QApplication::restoreOverrideCursor();
 	}
 	return 0;
 }
 
-bool RtiViewerDlg::parseXml(QBuffer* b, int& level, int& w, int& h)
+
+Rti* RtiViewerDlg::parseXml(const QBuffer* b)
 {
 	QDomDocument doc;
-	doc.setContent(b);
+	doc.setContent(b->buffer(), false);
 	QDomNode root = doc.firstChild();
 	QDomElement infoNode = root.firstChildElement("Info");
 	if (infoNode.isNull())
-		return false;
+		return NULL;
 	bool error;
-	//level info
-	level = infoNode.attribute("levels").toInt(&error);
-	if (!error)
-		return false;
-	//width info
-	w = infoNode.attribute("width").toInt(&error);
-	if (!error)
-		return false;
-	//height info
-	h = infoNode.attribute("height").toInt(&error);
-	if (!error)
-		return false;
-	return true;
+	//type info
+	QString type = infoNode.attribute("type");
+	if (type.isEmpty())
+		return NULL;
+	if (type == "LRGB PTM" || type == "JPEG-LRGB PTM")
+		return new LRGBPtm();
+	else if (type == "HSH")
+		return new Hsh();
+	return NULL;
 }
 
 

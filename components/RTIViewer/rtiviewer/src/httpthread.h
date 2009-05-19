@@ -98,6 +98,8 @@ private:
 
 	bool aborted; /*!< Holds whether the request is failed. */
 
+	QString filename; /*!< Name of the file to download. */
+
 public:
 	
 	//! Constructor.
@@ -167,7 +169,7 @@ public slots:
 	/*!
 	  Sets the base url for the request.
 	*/
-	void setUrl(QUrl* url);
+	void setUrl(QUrl* url, QString name);
 
 	/*!
 	  Sets the pointer to RTI image.
@@ -255,9 +257,9 @@ public:
 	/*!
 	  Sets the base url.
 	*/
-	void setUrl(QUrl* u)
+	void setUrl(QUrl* u, QString name)
 	{
-		emit urlChanged(u);
+		emit urlChanged(u, name);
 	}
 
 	/*!
@@ -321,7 +323,7 @@ public:
 signals:
 
 	// Signals to comunicate with the HTTP worker.
-	void urlChanged(QUrl* u);
+	void urlChanged(QUrl* u, QString name);
 	void rtiChanged(Rti* rti);
 	void sendRequestInfo(QBuffer* b);
 	void sendRequestThumb(QBuffer* b);

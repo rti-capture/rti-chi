@@ -9,6 +9,7 @@
 ****************************************************************************/
 
 #include "hsh.h"
+#include "../../rtibuilder/src/zorder.h"
 
 #include <vcg/math/matrix33.h>
 
@@ -100,7 +101,7 @@ int Hsh::load(QString name, CallBackPos *cb)
 
 	if (feof(file))
 		return -1;
-				
+	
 	ordlen *= ordlen;
 	
 	QString text = "Loading HSH...";
@@ -121,6 +122,7 @@ int Hsh::load(QString name, CallBackPos *cb)
 
 int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb, QString& text)
 {
+	type = "HSH";
 	w = width;
 	h = height;
 
@@ -214,18 +216,6 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 	greenCoefficients.setLevel(greenPtr, size, 0);
 	blueCoefficients.setLevel(bluePtr, size, 0);
 	
-	/*QImage image(width, height, QImage::Format_RGB32);
-	for (int y = 0; y < mipMapSize[0].height(); y++)
-	{
-		for (int x = 0; x < mipMapSize[0].width(); x++)
-		{
-			offset = y * w + x;
-			QRgb rgb = qRgb(redPtr[y * w + x], greenPtr[y * w + x], bluePtr[y * w + x]);
-			image.setPixel(x, y, rgb);
-		}
-	}
-	image.save("prova.jpg");*/
-
 	// Computes mip-mapping.
 	if (cb != NULL)	(*cb)(50, "Mip mapping generation...");
 	
@@ -244,16 +234,16 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 			if (cb != NULL && i % 50 == 0)	(*cb)(50 + (level-1)*8 + i*8.0/height, "Mip mapping generation...");
 			for (int j = 0; j < width - 1; j+=2)
 			{
-				int index1 = (i * width + j);
-				int index2 = (i * width + j + 1);
-				int index3 = ((i + 1) * width + j);
-				int index4 = ((i + 1) * width + j + 1);
-				int offset = (i/2 * width2 + j/2);
+				int index1 = (i * width + j)*ordlen;
+				int index2 = (i * width + j + 1)*ordlen;
+				int index3 = ((i + 1) * width + j)*ordlen;
+				int index4 = ((i + 1) * width + j + 1)*ordlen;
+				int offset = (i/2 * width2 + j/2)*ordlen;
 				for (int k = 0; k < basisTerm; k++)
 				{
-					redCoefficients.calcMipMapping(level, offset, index1, index2, index3, index4);
-					greenCoefficients.calcMipMapping(level, offset, index1, index2, index3, index4);
-					blueCoefficients.calcMipMapping(level, offset, index1, index2, index3, index4);
+					redCoefficients.calcMipMapping(level, offset + k, index1 + k, index2 + k, index3 + k , index4 + k);
+					greenCoefficients.calcMipMapping(level, offset + k, index1 + k, index2 + k, index3 + k , index4 + k);
+					blueCoefficients.calcMipMapping(level, offset + k, index1 + k, index2 + k, index3 + k , index4 + k);
 				}
 			}
 		}
@@ -261,14 +251,14 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 		{
 			for (int i = 0; i < height - 1; i+=2)
 			{
-				int index1 = ((i + 1) * width - 1);
-				int index2 = ((i + 2) * width - 1);
-				int offset = ((i/2 + 1) * width2 - 1);
+				int index1 = ((i + 1) * width - 1)*ordlen;
+				int index2 = ((i + 2) * width - 1)*ordlen;
+				int offset = ((i/2 + 1) * width2 - 1)*ordlen;
 				for (int k = 0; k < basisTerm; k++)
 				{
-					redCoefficients.calcMipMapping(level, offset, index1, index2);
-					greenCoefficients.calcMipMapping(level, offset, index1, index2);
-					blueCoefficients.calcMipMapping(level, offset, index1, index2);
+					redCoefficients.calcMipMapping(level, offset + k, index1 + k, index2 + k);
+					greenCoefficients.calcMipMapping(level, offset + k, index1 + k, index2 + k);
+					blueCoefficients.calcMipMapping(level, offset + k, index1 + k, index2 + k);
 				}
 			}
 		}
@@ -276,33 +266,33 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 		{
 			for (int i = 0; i < width - 1; i+=2)
 			{
-				int index1 = ((height - 1) * width + i);
-				int index2 = ((height - 1) * width + i + 1);
-				int offset = ((height2 - 1) * width2 + i/2);
+				int index1 = ((height - 1) * width + i)*ordlen;
+				int index2 = ((height - 1) * width + i + 1)*ordlen;
+				int offset = ((height2 - 1) * width2 + i/2)*ordlen;
 				for (int k = 0; k < basisTerm; k++)
 				{
-					redCoefficients.calcMipMapping(level, offset, index1, index2);
-					greenCoefficients.calcMipMapping(level, offset, index1, index2);
-					blueCoefficients.calcMipMapping(level, offset, index1, index2);
+					redCoefficients.calcMipMapping(level, offset + k, index1 + k, index2 + k);
+					greenCoefficients.calcMipMapping(level, offset + k, index1 + k, index2 + k);
+					blueCoefficients.calcMipMapping(level, offset + k, index1 + k, index2 + k);
 				}
 			}
 		}
 		if (height % 2 != 0 && width % 2 != 0)
 		{
-			int index1 = (height*width - 1);
-			int offset = (height2*width2 - 1);
+			int index1 = (height*width - 1)*ordlen;
+			int offset = (height2*width2 - 1)*ordlen;
 			for (int k = 0; k < basisTerm; k++)
 			{
-				redCoefficients.calcMipMapping(level, offset, index1);
-				greenCoefficients.calcMipMapping(level, offset, index1);
-				blueCoefficients.calcMipMapping(level, offset, index1);
+				redCoefficients.calcMipMapping(level, offset + k, index1 + k);
+				greenCoefficients.calcMipMapping(level, offset + k, index1 + k);
+				blueCoefficients.calcMipMapping(level, offset + k, index1 + k);
 			}
 		}
 		mipMapSize[level] = QSize(width2, height2);
 	}
 
 	//Compute normals.
-	if (cb != NULL) (*cb)(75 , "Mip mapping generation...");
+	if (cb != NULL) (*cb)(75 , "Normals generation...");
 	vcg::Point3d l0(sin(M_PI/4)*cos(M_PI/6), sin(M_PI/4)*sin(M_PI/6), cos(M_PI/4));
 	vcg::Point3d l1(sin(M_PI/4)*cos(5*M_PI / 6), sin(M_PI/4)*sin(5*M_PI / 6), cos(M_PI/4));
 	vcg::Point3d l2(sin(M_PI/4)*cos(3*M_PI / 2), sin(M_PI/4)*sin(3*M_PI / 2), cos(M_PI/4));
@@ -386,7 +376,27 @@ int Hsh::loadCompressed(QString name)
 
 int Hsh::loadCompressed(int xinf, int yinf, int xsup, int ysup, QString name)
 {
+	remote = false;
+	Jpeg2000 jpegimage(name.toStdString().c_str());
+	int offset,offset2;
+	const float** coeffPtr = new const float*[ordlen*bands];
+	for (int i = 0; i < ordlen*bands; i++)
+		coeffPtr[i] = (const float*) jpegimage.componentData(i);
 	
+	for (int y = yinf; y < ysup; y++)
+		for (int x = xinf; x < xsup; x++)
+		{
+			offset = x + y * w;
+			offset2 = (x-xinf) + (y-yinf) * w;
+			for (int k = 0; k < ordlen; k++)
+			{
+				redCoefficients.setElement(0, offset*ordlen + k, coeffPtr[k][offset2]);
+				greenCoefficients.setElement(0, offset*ordlen + k, coeffPtr[ordlen + k][offset2]);
+				blueCoefficients.setElement(0, offset*ordlen + k, coeffPtr[ordlen*2 + k][offset2]);
+			}
+		}
+
+	delete [] coeffPtr;
 	return 0;
 }
 
@@ -399,6 +409,61 @@ int Hsh::saveCompressed(QString name)
 
 int Hsh::saveCompressed(int xinf, int yinf, int xsup, int ysup, int reslevel, QString name)
 {
+	// coordinate adjustment
+	int ww;
+	if (reslevel > 0)
+	{
+		if (xinf > 0)
+			xinf = xinf >> reslevel;
+		if (yinf > 0) 
+			yinf = yinf >> reslevel;
+		if (xsup == w)
+			xsup = mipMapSize[reslevel].width();
+		else
+			xsup = xsup >> reslevel;
+		if (ysup == h)
+			ysup = mipMapSize[reslevel].height();
+		else
+			ysup = ysup >> reslevel;
+		ww = mipMapSize[reslevel].width();
+	}
+	else
+		ww = w;
+
+	int tilew = (xsup - xinf);
+	int tileh = (ysup - yinf);
+
+	int **comps = new int *[ordlen*bands];
+	for (int k = 0; k < ordlen*bands; k++)
+		comps[k] = new int[tilew*tileh];
+
+	int offset, offset2;
+	const float* rPtr = redCoefficients.getLevel(reslevel);
+	const float* gPtr = greenCoefficients.getLevel(reslevel);
+	const float* bPtr = blueCoefficients.getLevel(reslevel);
+
+	for (int y = yinf; y < ysup; y++)
+		for (int x = xinf; x < xsup; x++)
+		{
+			offset = x + y * ww;
+			offset2 = (x-xinf) + (y-yinf) * tilew;
+			for (int k = 0; k < ordlen; k++)
+			{
+				comps[k][offset2] = ((rPtr[offset*ordlen + k] - gmax[k])/gmin[k] * 255.0);
+				comps[ordlen + k][offset2] = ((gPtr[offset*ordlen + k]  - gmax[k])/gmin[k] * 255.0);
+				comps[ordlen*2 + k][offset2] = ((bPtr[offset*ordlen + k] - gmax[k])/gmin[k] * 255.0);
+			}
+		}
+
+	// Saves as a JPEG2000 image with 27 gray components of 16 bit each
+	Jpeg2000 jpegimage(tilew, tileh, 16, 16, ordlen*bands, comps, GRAY_CLRSPC, J2K_CFMT);
+	jpegimage.save(name.toStdString().c_str());
+
+	for (int k = 0; k < ordlen*3; k++)
+		delete [] comps[k];
+
+	delete [] comps;
+
 	return 0;
 }
 
@@ -414,6 +479,34 @@ int Hsh::createImage(unsigned char** buffer, int& width, int& height, const vcg:
 	height = ceil(rect.height());
 	int offx = rect.x();
 	int offy = rect.y();
+
+	if (remote)
+	{
+		if (level < maxRemoteResolution - minRemoteResolution)
+		{
+			int size = 1 << maxRemoteResolution;
+			float deltaW = static_cast<float>(w)/static_cast<float>(size);
+			float deltaH = static_cast<float>(h)/static_cast<float>(size);
+			int r1 = static_cast<int>(rect.y() / deltaH);
+			int c1 = static_cast<int>(rect.x() / deltaW);
+			int r2 = static_cast<int>(rect.bottom() / deltaH);
+			int c2 = static_cast<int>(rect.right() / deltaW);
+			int result = 15;
+			for(int i = r1; i <= r2; i++)
+				for (int j = c1; j <= c2; j++)
+					result &= tiles[ZOrder::ZIndex(i, j, maxRemoteResolution)];
+			bool found = false;
+			while(!found && level < maxRemoteResolution - minRemoteResolution)
+			{
+				if (result & (1 << level))
+					found = true;
+				else
+					level++;
+			}
+		}
+		else
+			level = maxRemoteResolution - minRemoteResolution;
+	}
 	for (int i = 0; i < level; i++)
 	{
 		width = ceil(width/2.0);
@@ -517,15 +610,204 @@ QImage* Hsh::createPreview(int width, int height)
 }
 
 
-int Hsh::allocateRemoteImage(int width, int height, int maxResLevel)
+int Hsh::allocateRemoteImage(QBuffer* b)
 {
+	if (!b)
+		return -1;
+	QDomDocument doc;
+	doc.setContent(b);
+	QDomNode root = doc.firstChild();
+	QDomElement infoNode = root.firstChildElement("Info");
+	if (infoNode.isNull())
+		return -1;
+	bool error;
+	//level info
+	int maxResLevel = infoNode.attribute("levels").toInt(&error);
+	if (!error)
+		return -1;
+	//width info
+	w = infoNode.attribute("width").toInt(&error);
+	if (!error)
+		return -1;
+	//height info
+	h = infoNode.attribute("height").toInt(&error);
+	if (!error)
+		return -1;
+	ordlen = infoNode.attribute("ordlen").toInt(&error);
+	if (!error)
+		return -1;
+	bands = infoNode.attribute("bands").toInt(&error);
+	if (!error)
+		return -1;
 	
+	QDomElement scaleNode = root.firstChildElement("ScaleInfo");
+	if (scaleNode.isNull())
+		return -1;
+	QStringList scaleList = scaleNode.text().split(" ", QString::SkipEmptyParts);
+	if (scaleList.size() < ordlen)
+		return -1;
+	for (int i = 0; i < ordlen; i++)
+	{
+		gmin[i] = scaleList.at(i).toDouble(&error);
+		if (!error)
+			return -1;
+	}
+	
+	QDomElement biasNode = root.firstChildElement("BiasInfo");
+	if (biasNode.isNull())
+		return -1;
+	QStringList biasList = biasNode.text().split(" ", QString::SkipEmptyParts);
+	if (biasList.size() < ordlen)
+		return -1;
+	for (int i = 0; i < ordlen; i++)
+	{
+		gmax[i] = biasList.at(i).toDouble(&error);
+		if (!error)
+			return -1;
+	}
+	
+	((DefaultRendering*)list->value(DEFAULT))->setRemote(true);
+	remote = true;
+	maxRemoteResolution = maxResLevel;
+	minRemoteResolution = maxResLevel - 3 > 0 ? maxResLevel - 3 : 1;
+	int width, height;
+	for (int i = maxRemoteResolution; i > maxRemoteResolution - 4; i--)
+	{
+		int n = 1 << (maxRemoteResolution - i);
+		width = ceil(static_cast<double>(w)/static_cast<double>(n));
+		height = ceil(static_cast<double>(h)/static_cast<double>(n));
+		int size = width * height * ordlen;
+		redCoefficients.allocateLevel(maxRemoteResolution - i, size);
+		greenCoefficients.allocateLevel(maxRemoteResolution - i, size);
+		blueCoefficients.allocateLevel(maxRemoteResolution - i, size);
+		normals.allocateLevel(maxRemoteResolution - i ,width*height);
+		mipMapSize[maxRemoteResolution - i] = QSize(width, height);
+	}
+	int n = 1 << maxRemoteResolution;
+	tiles = new unsigned int [n*n];
+	for(int i = 0; i <n*n; i++)
+		tiles[i] = 0;
+	type = "HSH";
 	return 0;
 }
 
 
 int Hsh::loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level)
 {
+	unsigned char* stream = (unsigned char*) b->buffer().data();
+	Jpeg2000 jpegimage(stream, b->buffer().length());
 	
+	if (xinf > 0)
+		xinf >>= level;
+	if (yinf > 0)
+		yinf >>= level;
+	
+	if (xsup == w)
+		xsup = mipMapSize[level].width();
+	else
+		xsup = xsup >> level;
+	if (ysup == h)
+		ysup = mipMapSize[level].height();
+	else
+		ysup = ysup >> level;
+	
+	int offset,offset2;
+	
+	int** coeffPtr = new int*[ordlen*bands];
+	for (int i = 0; i < ordlen*bands; i++)
+		coeffPtr[i] = jpegimage.componentData(i);
+	
+
+	for (int y = yinf; y < ysup; y++)
+		for (int x = xinf; x < xsup; x++)
+		{
+			offset = x + y * mipMapSize[level].width();
+			offset2 = (x-xinf) + (y-yinf) * (xsup - xinf);
+			for (int k = 0; k < ordlen; k++)
+			{
+				redCoefficients.setElement(level, offset*ordlen + k, ((float)coeffPtr[k][offset2] / 255.0) * gmin[k] + gmax[k]);
+				greenCoefficients.setElement(level, offset*ordlen + k, ((float)coeffPtr[ordlen + k][offset2] / 255.0) * gmin[k] + gmax[k]);
+				blueCoefficients.setElement(level, offset*ordlen + k, ((float)coeffPtr[ordlen*2 + k][offset2] / 255.0) * gmin[k] + gmax[k]);
+			}
+
+			//Computes normal
+			vcg::Point3d l0(sin(M_PI/4)*cos(M_PI/6), sin(M_PI/4)*sin(M_PI/6), cos(M_PI/4));
+			vcg::Point3d l1(sin(M_PI/4)*cos(5*M_PI / 6), sin(M_PI/4)*sin(5*M_PI / 6), cos(M_PI/4));
+			vcg::Point3d l2(sin(M_PI/4)*cos(3*M_PI / 2), sin(M_PI/4)*sin(3*M_PI / 2), cos(M_PI/4));
+			double hweights0[9], hweights1[9], hweights2[9];
+			getHSH(M_PI / 4, M_PI / 6, hweights0);
+			getHSH(M_PI / 4, 5*M_PI / 6, hweights1);
+			getHSH(M_PI / 4, 3*M_PI / 2, hweights2);
+			vcg::Matrix33d L, LInverse;
+			L.SetRow(0, l0);
+			L.SetRow(1, l1);
+			L.SetRow(2, l2);
+			LInverse = vcg::Inverse<double>(L);
+
+			vcg::Point3d f(0, 0, 0);
+			for (int k = 0; k < ordlen; k++)
+			{
+				f[0] += redCoefficients.getLevel(level)[offset*ordlen + k] * hweights0[k];
+				f[1] += redCoefficients.getLevel(level)[offset*ordlen + k] * hweights1[k];
+				f[2] += redCoefficients.getLevel(level)[offset*ordlen + k] * hweights2[k];
+			}
+			for (int k = 0; k < ordlen; k++)
+			{
+				f[0] += greenCoefficients.getLevel(level)[offset*ordlen + k] * hweights0[k];
+				f[1] += greenCoefficients.getLevel(level)[offset*ordlen + k] * hweights1[k];
+				f[2] += greenCoefficients.getLevel(level)[offset*ordlen + k] * hweights2[k];
+			}
+			for (int k = 0; k < ordlen; k++)
+			{
+				f[0] += blueCoefficients.getLevel(level)[offset*ordlen + k] * hweights0[k];
+				f[1] += blueCoefficients.getLevel(level)[offset*ordlen + k] * hweights1[k];
+				f[2] += blueCoefficients.getLevel(level)[offset*ordlen + k] * hweights2[k];
+			}
+			f /= 3;
+			vcg::Point3d normal = LInverse * f;
+			normals.setElement(level, offset, vcg::Point3f(normal.X(), normal.Y(), normal.Z()).Normalize());
+
+		}
 	return 0;
+}
+
+
+void Hsh::saveRemoteDescr(QString& filename, int level)
+{
+	QDomDocument doc;
+	QDomElement root = doc.createElement("RemoteRTIInfo");
+	doc.appendChild(root);
+
+	QDomElement info = doc.createElement("Info");
+	info.setAttribute(QString("type"), type); 
+	info.setAttribute(QString("width"), QString("%1").arg(w));
+	info.setAttribute(QString("height"), QString("%1").arg(h));
+	info.setAttribute(QString("levels"), QString("%1").arg(level));
+	info.setAttribute(QString("ordlen"), QString("%1").arg(ordlen));
+	info.setAttribute(QString("bands"), QString("%1").arg(bands));
+	root.appendChild(info);
+
+	QDomElement scaleNode = doc.createElement("ScaleInfo");
+	QString str;
+	for (int i = 0; i < ordlen; i++)
+		str.append(QString("%1 ").arg(gmin[i], 0, 'E', 10));
+	QDomText scaleInfo = doc.createTextNode(str);
+	scaleNode.appendChild(scaleInfo);
+	root.appendChild(scaleNode);
+
+	QDomElement biasNode = doc.createElement("BiasInfo");
+	str = "";
+	for (int i = 0; i < ordlen; i++)
+		str.append(QString("%1 ").arg(gmax[i], 0, 'E', 10));
+	QDomText biasInfo = doc.createTextNode(str);
+	biasNode.appendChild(biasInfo);
+	root.appendChild(biasNode);
+
+	QFile infofile(filename);
+	if (infofile.open(QFile::WriteOnly | QFile::Truncate))
+	{
+		QTextStream out(&infofile);
+		doc.save(out, 2);
+	}
+
 }

@@ -21,6 +21,7 @@
 #include <QRect>
 #include <QBuffer>
 #include <QMap>
+#include <QDomElement>
 
 //! RTI image abstract class.
 /*!
@@ -97,6 +98,39 @@ public:
 	*/
 	virtual int save(QString str) = 0;
 
+
+	/*!
+	  Loads the compressed image.
+	*/
+	virtual int loadCompressed() = 0;
+
+	/*!
+	  Loads the specific compressed image.
+	  \param name file name.
+    */
+	virtual int loadCompressed(QString name) = 0;
+
+	/*!
+	  Loads the specific compressed tile.
+	  \param xinf, yinf, xsup, ysup coordinates of the tile.
+	  \param name file name.
+	*/
+	virtual int loadCompressed(int xinf, int yinf, int xsup, int ysup, QString name) = 0;
+	
+	/*!
+	  Saves the compressed image.
+	  \param name file name.
+	*/
+	virtual int saveCompressed(QString name) = 0;
+
+	/*!
+	  Saves a compressed tiles.
+	  \param xinf, yinf, xsup, ysup coordinates of the tile.
+	  \param reslevel mip-mapping level.
+	  \param name file name.
+	*/
+	virtual int saveCompressed(int xinf, int yinf, int xsup, int ysup, int reslevel, QString name) = 0;
+
 	/*!
 	  Creates the texture to display in the browser.
 	  \param buffer pointer to the buffer of the texture.
@@ -122,12 +156,10 @@ public:
 
 	/*!
 	  Allocates the data for a remote RTI image.
-	  \param width width of the image.
-	  \param height height of the image.
-	  \param maxResLevel maximum level of resolution.
-	  \return returns 0.
+	  \param b pointer to the binary data of the XML descriptor of remote RTI 
+	  \return returns 0 if the binary data is correct, -1 otherwise.
 	*/
-	virtual int allocateRemoteImage(int width, int height, int maxResLevel) = 0;
+	virtual int allocateRemoteImage(QBuffer* b) = 0;
 	
 	
 	/*!
@@ -152,6 +184,14 @@ public:
 	  \return returns 0 if the coefficients were successfully loaded, returns -1 otherwise.
 	*/
 	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0, QString& text = QString()) = 0;
+
+	
+	/*!
+	  Saves the xml descriptor of the remote RTI.
+	  \param filename path of the file.
+	  \param level number of resolution levels.
+	*/
+	virtual void saveRemoteDescr(QString& filename, int level) = 0;
 
 public:
 

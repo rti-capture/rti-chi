@@ -167,6 +167,12 @@ void Navigator::setImage(QImage* img, int rtiW, int rtiH)
 {
 	if(image)
 		delete image;
+	if(!img)
+	{
+		image = NULL;
+		update();
+		return;
+	}
 	image = img;
 	rtiWidth = rtiW;
 	rtiHeight = rtiH;

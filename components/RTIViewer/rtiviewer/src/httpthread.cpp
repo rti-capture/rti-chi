@@ -73,7 +73,9 @@ void HttpWorker::httpRequestFinished(int id, bool error)
 			if (error)
 			{
 				httpError = true;
-				emit errorOccurred(tr("Connection failed:\n%1.").arg(http->errorString()));
+				QUrl errorUrl(*url);
+				errorUrl = errorUrl.resolved(http->currentRequest().path());
+				emit errorOccurred(tr("Connection failed:\n%1.\n%2").arg(http->errorString()).arg(errorUrl.toString()));
 			}
 			mutex.lock();
 			infoReady.wakeAll();
@@ -179,7 +181,11 @@ void HttpWorker::readResponseHeader(const QHttpResponseHeader & responseHeader)
 	{
 		httpError = true;
 		if (syncRequest)
-			emit errorOccurred(tr("Connection failed:\n%1 %2.").arg(responseHeader.statusCode()).arg(responseHeader.reasonPhrase()));
+		{
+			QUrl errorUrl(*url);
+			errorUrl = errorUrl.resolved(http->currentRequest().path());
+			emit errorOccurred(tr("Connection failed:\n%1 %2\n%3").arg(responseHeader.statusCode()).arg(responseHeader.reasonPhrase()).arg(errorUrl.toString()));
+		}
 	}
 }
 
@@ -190,16 +196,17 @@ void HttpWorker::sendRequestTiles()
 	if (received)
 	{
 		received = false;
-		QString tilename = tr("./tile_lvl%1_%2.ptm").arg(current->level).arg(current->zIndex);
+		QString tilename = tr("./tile_lvl%1_%2.dat").arg(current->level).arg(current->zIndex);
 		QUrl relativeUrl(tilename);
 		idReq = http->get(url->resolved(relativeUrl).path(), current->buffer);
 	}
 }
 
-void HttpWorker::setUrl(QUrl* u)
+void HttpWorker::setUrl(QUrl* u, QString name)
 {
 	if (u)
 	{
+		filename = name;
 		aborted = false;
 		syncRequest = true;
 		if (url)
@@ -228,7 +235,7 @@ void HttpWorker::requestInfo(QBuffer* b)
 	if (url)
 	{
 		syncRequest = true;
-		QUrl relativeUrl("./info.xml");
+		QUrl relativeUrl("./" + filename);
 		idReq = http->get(url->resolved(relativeUrl).path(), b);
 	}
 
@@ -371,7 +378,7 @@ HttpThread::HttpThread(QMutex& m, QWaitCondition& w):
 {
 	worker = new HttpWorker(m, w);
 	worker->moveToThread(this);
-	connect(this, SIGNAL(urlChanged(QUrl*)), worker, SLOT(setUrl(QUrl*)), Qt::QueuedConnection);
+	connect(this, SIGNAL(urlChanged(QUrl*, QString)), worker, SLOT(setUrl(QUrl*, QString)), Qt::QueuedConnection);
 	connect(this, SIGNAL(rtiChanged(Rti*)), worker, SLOT(setRti(Rti*)), Qt::QueuedConnection);
 	connect(this, SIGNAL(sendRequestInfo(QBuffer*)), worker, SLOT(requestInfo(QBuffer*)), Qt::QueuedConnection);
 	connect(this, SIGNAL(sendRequestThumb(QBuffer*)), worker, SLOT(requestThumb(QBuffer*)), Qt::QueuedConnection);

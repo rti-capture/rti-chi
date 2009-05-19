@@ -27,6 +27,12 @@ ViewpointControl::ViewpointControl(int initValueX, int nViewX, bool enableFlow, 
 	viewpointSlider->setRange(0, 100*(maxViewX - 1));
 	viewpointSlider->setTickInterval(100);
 	viewpointSlider->setValue(initValueX * 100);
+	QLabel* label1 = new QLabel("Vertical shift");
+	vertical = new QSlider(Qt::Vertical);
+	vertical->setTickPosition(QSlider::TicksBothSides);
+	vertical->setRange(0, 1000);
+	vertical->setTickInterval(100);
+	vertical->setValue(200);
 	if (!enableFlow)
 	{
 		viewpointSlider->setRange(0, (maxViewX - 1));
@@ -38,10 +44,14 @@ ViewpointControl::ViewpointControl(int initValueX, int nViewX, bool enableFlow, 
 	else if (useFlow)
 	{
 		snapNearest->setCheckState(Qt::Unchecked);
+		viewpointSlider->setPageStep(10);
+		viewpointSlider->setSingleStep(5);
 	}
 	else
 	{
 		snapNearest->setCheckState(Qt::Checked);
+		viewpointSlider->setPageStep(100);
+		viewpointSlider->setSingleStep(100);
 	}
 	this->useFlow = useFlow;
 	connect(viewpointSlider, SIGNAL(sliderReleased()), this, SLOT(sliderReleased())); 
@@ -49,12 +59,16 @@ ViewpointControl::ViewpointControl(int initValueX, int nViewX, bool enableFlow, 
 	connect(snapNearest, SIGNAL(stateChanged(int)), this, SLOT(updateSlider(int)));
 	
 	QGridLayout* layout = new QGridLayout;
-	layout->addWidget(label, 0, 0, 1 ,1);
+	layout->addWidget(label, 0, 0, 1 , 1);
 	layout->addWidget(viewpointSlider, 0, 1, 1, 1);
 	layout->addWidget(snapNearest, 1, 1, 1, 1);
+	/*layout->addWidget(label, 0, 0, 1 , 1, Qt::AlignHCenter);
+	layout->addWidget(label1, 0, 1, 1, 1);
+	layout->addWidget(viewpointSlider, 1, 0, 1, 1);
+	layout->addWidget(vertical, 1, 1, 1, 1, Qt::AlignHCenter);
+	layout->addWidget(snapNearest, 2, 0, 1, 2, Qt::AlignHCenter);*/
 	setLayout(layout);
 }
-
 
 
 MultiviewRti::MultiviewRti(): Rti(),
@@ -639,7 +653,7 @@ QImage* MultiviewRti::createPreview(int width, int height)
 }
 
 
-int MultiviewRti::allocateRemoteImage(int width, int height, int maxResLevel)
+int MultiviewRti::allocateRemoteImage(QBuffer* b)
 {
 	return 0;
 }
@@ -648,4 +662,10 @@ int MultiviewRti::allocateRemoteImage(int width, int height, int maxResLevel)
 int MultiviewRti::loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level)
 {
 	return 0;
+}
+
+
+void MultiviewRti::saveRemoteDescr(QString& filename, int level)
+{
+
 }

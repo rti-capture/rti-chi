@@ -136,7 +136,13 @@ void RtiBrowser::setImage(Rti* rti)
 		img = NULL;
 	}
 
-	if (!rti) return;
+	if (!rti)
+	{
+		if (textureData)
+			delete textureData;
+		textureData = NULL;
+		return;
+	}
 	img = rti;
 
 	// Set view 

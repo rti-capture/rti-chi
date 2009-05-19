@@ -47,7 +47,7 @@ RenderingDialog::RenderingDialog(QMap<int, RenderingMode*>* l, int currRendering
 	}
 	else
 		control = new QWidget(this);
-	control->setMinimumHeight(80);
+	control->setMinimumHeight(100);
 	connect(modeList, SIGNAL(activated(int)), this, SLOT(renderingModeUpdate(int)));
 	QVBoxLayout* layout = new QVBoxLayout;
 	layout->addWidget(modeList, 0, Qt::AlignTop);
@@ -60,7 +60,7 @@ void RenderingDialog::renderingModeUpdate(int index)
 {
 	int idx = modeList->itemData(index).toInt();
 	QWidget* c = list->value(idx)->getControl(this);
-	c->setMinimumHeight(80);
+	c->setMinimumHeight(100);
 	QBoxLayout* layout =(QBoxLayout*) this->layout();
 	layout->removeWidget(control);
 	layout->addWidget(c, 2, Qt::AlignTop);
@@ -106,7 +106,7 @@ void RenderingDialog::setRenderingMode(QMap<int, RenderingMode*>* l, int currRen
 	else
 	{
 		QWidget* c = new QWidget(this);
-		c->setMinimumHeight(80);
+		c->setMinimumHeight(100);
 		QBoxLayout* layout =(QBoxLayout*) this->layout();
 		layout->removeWidget(control);
 		layout->addWidget(c, 0, Qt::AlignTop);

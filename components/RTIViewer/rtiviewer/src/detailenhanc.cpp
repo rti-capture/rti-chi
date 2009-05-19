@@ -585,9 +585,9 @@ std::vector<vcg::Point3f>* DetailEnhancement::getBestLight(int level, int x, int
 			}
 			else
 			{
-				const int* redPtr = coefficientR->getLevel(0);
-				const int* greenPtr = coefficientG->getLevel(0);
-				const int* bluePtr = coefficientB->getLevel(0);
+				const int* redPtr = coefficientR->getLevel(level);
+				const int* greenPtr = coefficientG->getLevel(level);
+				const int* bluePtr = coefficientB->getLevel(level);
 				for(int j = y; j < y + tileH; j++)
 				{
 					for(int i = x; i < x + tileW; i++)
@@ -998,7 +998,7 @@ std::vector<vcg::Point3f>* DetailEnhancement::getLightSamples(const vcg::Point3f
 			samplePtr[offset++] = (Ax2 - deltaY3).Normalize();
 			samplePtr[offset++] = (Ax2 - deltaY4).Normalize();
 			if ( n > 2)
-				for (int i = offset; offset < nOffset; i++)
+				for (int i = offset; i < nOffset; i++)
 					samplePtr[i] == vcg::Point3f(0, 0, -1);
 		}
 	}

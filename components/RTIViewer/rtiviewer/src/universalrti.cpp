@@ -102,6 +102,11 @@ int UniversalRti::load(QString name, CallBackPos *cb)
 	if (!error) return -1;
 	int elemSize = list[2].toInt(&error);
 	if (!error) return -1;
+	
+	if (basisTerm == 1)
+		basisTerm = 4;
+	else if (basisTerm == 2)
+		basisTerm = 9;
 
 	switch(rtiType)
 	{
@@ -124,8 +129,9 @@ int UniversalRti::load(QString name, CallBackPos *cb)
 		default: type = "URTI"; return -1;
 	}
 	QString text = "Loading URTI...";
-	image->loadData(file, w, h, basisTerm, true, cb, text);
-	
+	int ret = image->loadData(file, w, h, basisTerm, true, cb, text);
+	if (ret != 0)
+		return -1;
 
 	if (cb != NULL)	(*cb)(99, "Done");
 
@@ -168,8 +174,7 @@ int UniversalRti::loadCompressed(QString name)
 
 int UniversalRti::loadCompressed(int xinf, int yinf, int xsup, int ysup, QString name)
 {
-	
-	return 0;
+	return image->loadCompressed(xinf, yinf, xsup, ysup, name);
 }
 
 
@@ -181,7 +186,7 @@ int UniversalRti::saveCompressed(QString name)
 
 int UniversalRti::saveCompressed(int xinf, int yinf, int xsup, int ysup, int reslevel, QString name)
 {
-	return 0;
+	return image->saveCompressed(xinf, yinf, xsup, ysup, reslevel, name);
 }
 
 
@@ -198,15 +203,19 @@ QImage* UniversalRti::createPreview(int width, int height)
 }
 
 
-int UniversalRti::allocateRemoteImage(int width, int height, int maxResLevel)
+int UniversalRti::allocateRemoteImage(QBuffer* b)
 {
-	
-	return 0;
+	return image->allocateRemoteImage(b);
 }
 
 
 int UniversalRti::loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level)
 {
-	
-	return 0;
+	return image->loadCompressedHttp(b, xinf, yinf, xsup, ysup, level);
+}
+
+
+void UniversalRti::saveRemoteDescr(QString& filename, int level)
+{
+	image->saveRemoteDescr(filename, level);
 }
