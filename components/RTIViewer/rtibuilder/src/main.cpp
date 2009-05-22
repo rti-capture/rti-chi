@@ -36,24 +36,33 @@ int main( int argc, char ** argv )
 {
 	QApplication app( argc, argv );
 
-	if (argc < 3)
+	if (argc < 2)
 	{
 		cout << std::endl << "Usage:" << endl << endl;
 		cout << "        rtibuilder <input> <level>" << endl << endl;
 		cout << "        <input>  RTI file to decompose (LRGB-PTM, HSH)." << endl;
-		cout << "        <level>  Levels of resolution (default: 3)." << endl;
+		cout << "        <level>  Levels of resolution (optional) (default: 3)." << endl;
 		exit(0);
 	}
 
 	// parse arguments
-	QString str1(argv[1]);
-	QString str2(argv[2]);
-
-	QString filename = str1;
-	int level = str2.toInt();
-
-	QFileInfo fi(filename);
+	QString filename;
+	int level;
+	if (argc == 2)
+	{
+		QString str1(argv[1]);
+		filename = str1;
+		level = 3;
+	}
+	else
+	{
+		QString str1(argv[1]);
+		QString str2(argv[2]);
+		filename = str1;
+		level = str2.toInt();
+	}
 	
+	QFileInfo fi(filename);
 
 	// load rti image
 	//////////////////////////////////////////////////////////////
