@@ -1,7 +1,9 @@
 TEMPLATE       = app
-TARGET         = rtibuilder
+TARGET         = rtiwebmaker
 LANGUAGE       = C++
+
 CONFIG         += qt debug network console warn_off
+
 QT             += xml
 
 MOC_DIR        = moc
@@ -46,3 +48,5 @@ mac: LIBS       += ../../compression/src/lib/libjpeg2000.a
 win32-msvc2005: LIBS  += ../../compression/src/lib/jpeg2000.lib
 win32-msvc2008: LIBS  += ../../compression/src/lib/jpeg2000.lib
 win32-g++: LIBS += ../../compression/src/lib/libjpeg2000.a
+
+mac: CONFIG -= app_bundle

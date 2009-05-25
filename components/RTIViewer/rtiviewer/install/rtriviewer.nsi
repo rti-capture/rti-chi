@@ -50,7 +50,7 @@ Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite on
   File "..\src\release\rtiviewer.exe"
-  File "..\..\rtibuilder\src\release\rtibuilder.exe"
+  File "..\..\rtibuilder\src\release\rtiwebmaker.exe"
   
   CreateDirectory "$SMPROGRAMS\RTIViewer"
   CreateShortCut "$SMPROGRAMS\RTIViewer\RTIViewer.lnk" "$INSTDIR\rtiviewer.exe"
@@ -70,7 +70,6 @@ Section "MainSection" SEC01
   File "${QT_BASE}\bin\QtOpenGL4.dll"
   File "${QT_BASE}\bin\QtXml4.dll"
   File "${QT_BASE}\bin\QtNetwork4.dll"
-  File "C:\MinGW\bin\mingwm10.dll"
 SectionEnd
 
 
@@ -115,5 +114,6 @@ Section Uninstall
   RMDir "$INSTDIR"
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
+  DeleteRegKey "HKCU" "Software\VCG\RtiViewer"
   SetAutoClose true
 SectionEnd

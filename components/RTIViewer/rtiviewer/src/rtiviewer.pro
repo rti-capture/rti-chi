@@ -1,7 +1,9 @@
 TEMPLATE       = app
 TARGET         = rtiviewer
 LANGUAGE       = C++
+
 CONFIG        += qt debug xml network opengl console warn_off
+
 QT			  += opengl xml network
 
 UI_DIR         = ui

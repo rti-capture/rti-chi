@@ -289,6 +289,7 @@ void RtiViewerDlg::about()
 
 int RtiViewerDlg::open()
 {
+	getter->closeConnection();
 	QString prova = dir.path();
 	QString path = QFileDialog::getOpenFileName(this, tr("Open File"), dir.path() , filterStr);
 	return openFile(path);
@@ -297,7 +298,6 @@ int RtiViewerDlg::open()
 
 int RtiViewerDlg::openRemote()
 {
-	//QUrl* url = new QUrl(lastUrl);
 	OpenRemoteDlg dlg(lastUrl, this);
 	if (dlg.exec() == QDialog::Accepted)
 	{

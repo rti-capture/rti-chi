@@ -39,7 +39,7 @@ int main( int argc, char ** argv )
 	if (argc < 2)
 	{
 		cout << std::endl << "Usage:" << endl << endl;
-		cout << "        rtibuilder <input> <level>" << endl << endl;
+		cout << "        rtiwebmaker <input> <level>" << endl << endl;
 		cout << "        <input>  RTI file to decompose (LRGB-PTM, HSH)." << endl;
 		cout << "        <level>  Levels of resolution (optional) (default: 3)." << endl;
 		exit(0);
