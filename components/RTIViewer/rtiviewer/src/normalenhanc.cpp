@@ -49,10 +49,10 @@ NormalEControl::NormalEControl(int gain, int kd, int envIll, QWidget *parent) : 
 	QGridLayout *layout = new QGridLayout;
 	layout->addWidget(label1, 0, 0);
 	layout->addWidget(sliderGain, 0, 1);
-	layout->addWidget(label2, 1, 0);
-	layout->addWidget(sliderKd, 1, 1);
-	layout->addWidget(label3, 2, 0);
-	layout->addWidget(sliderEnvIll, 2, 1);
+	/*layout->addWidget(label2, 1, 0);
+	layout->addWidget(sliderKd, 1, 1);*/
+	layout->addWidget(label3, 1, 0);
+	layout->addWidget(sliderEnvIll, 1, 1);
 	setLayout(layout);
 }
 

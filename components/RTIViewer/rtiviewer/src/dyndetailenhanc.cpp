@@ -931,25 +931,25 @@ void DynamicDetailEnh::updateConfig(SharpnessMeasuresDyn m, SphereSamplingDyn ss
 
 DynamicDetConfDlg::DynamicDetConfDlg(QWidget *parent) : QDialog(parent)
 {
-	QLabel* label1 = new QLabel("Operator");
+	QLabel* label1 = new QLabel("Sharpness operator");
 	QLabel* label2 = new QLabel("Light sampling");
-	QLabel* label3 = new QLabel("K1 (sharpness) (0-1)");
-	QLabel* label4 = new QLabel("K2 (lightness) (0-1)");
-	QLabel* label5 = new QLabel("Thresold (0-1)");
+	QLabel* label3 = new QLabel("K1 (Sharpness) (0-1)");
+	QLabel* label4 = new QLabel("K2 (Lightness) (0-1)");
+	QLabel* label5 = new QLabel("Threshold (0-1)");
 	QLabel* label6 = new QLabel("Smoothing filter");
 	QLabel* label7 = new QLabel("N. iteration smoothing");
 
 	sharpnessOpCmb = new QComboBox(this);
 	sharpnessOpCmb->setDuplicatesEnabled(false);
-	sharpnessOpCmb->addItem("Energy of Laplacian", QVariant(DYN_MAX_ENERGY_LAPLACE));
 	sharpnessOpCmb->addItem("Max Laplacian", QVariant(DYN_MAX_LAPLACE));
+	sharpnessOpCmb->addItem("Max Energy of Laplacian", QVariant(DYN_MAX_ENERGY_LAPLACE));
 	sharpnessOpCmb->addItem("L1 norm Sobel", QVariant(DYN_NORM_L1_SOBEL));
 	sharpnessOpCmb->addItem("L2 norm Sobel", QVariant(DYN_NORM_L2_SOBEL));
 	
 	sphereSamplCmb = new QComboBox(this);
 	sphereSamplCmb->setDuplicatesEnabled(false);
-	sphereSamplCmb->addItem("Anisotropic", QVariant(DYN_NON_UNIFORM));
 	sphereSamplCmb->addItem("Isotropic", QVariant(DYN_UNIFORM));
+	sphereSamplCmb->addItem("Anisotropic", QVariant(DYN_NON_UNIFORM));
 
 	k1Snb = new QDoubleSpinBox(this);
 	k1Snb->setRange(0.0, 1.0);

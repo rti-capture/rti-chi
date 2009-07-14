@@ -1159,13 +1159,13 @@ DetailConfDlg::DetailConfDlg(QWidget *parent) : QDialog(parent)
 {
 	QLabel* label1 = new QLabel("Local offset");
 	QLabel* label2 = new QLabel("Tile size (px)");
-	QLabel* label3 = new QLabel("N. Initial tiles");
+	QLabel* label3 = new QLabel("N. initial tiles");
 	QLabel* label4 = new QLabel("Sharpness operator");
 	QLabel* label5 = new QLabel("Light sampling");
 	QLabel* label6 = new QLabel("K1 (Sharpness)(0-1)");
 	QLabel* label7 = new QLabel("K2 (Lightness)(0-1)");
 	QLabel* label8 = new QLabel("Threshold (0-1)");
-	QLabel* label9 = new QLabel("Smooting filter");
+	QLabel* label9 = new QLabel("Smoothing filter");
 	QLabel* label10 = new QLabel("N. iteration smoothing");
 
 	localOffsetCmb = new QComboBox(this);
