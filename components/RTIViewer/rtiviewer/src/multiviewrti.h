@@ -46,6 +46,7 @@ private:
 	QSlider* viewpointSlider; /*!< Slider to set the viewpoint. */
 	QCheckBox* snapNearest; /*!< Checkbox to anable the use of the optical flow data. */
 	int maxViewX; /*!< Max number of view on X-axis. */
+	int maxViewY; /*!< Max number of view on Y-axis. */
 	bool useFlow;
 
 	QSlider* vertical;
@@ -59,7 +60,7 @@ public:
 	  \param useFlow state of the optical flow data.
 	  \param parent
 	*/
-	ViewpointControl(int initValueX, int nViewX, bool enableFlow, bool useFlow, QWidget *parent = 0);
+	ViewpointControl(int initValueX, int nViewX, int initValueY, int nViewY, bool enableFlow, bool useFlow, QWidget *parent = 0);
 
 signals:
 
@@ -72,6 +73,11 @@ signals:
 	  Emitted when the user changes the use of the optical flow.
 	*/
 	void snapModeChanged(int value);
+
+	/*!
+	  Emitted when the user changes the vertical view position.
+	*/
+	void rowChanged(int value);
 
 private slots:
 
@@ -144,8 +150,9 @@ public:
 
 	QWidget* getControl(QWidget* parent)
 	{
-		ViewpointControl* control = new ViewpointControl(currentPosX, maxViewX, enableFlow, useFlow, parent) ;
+		ViewpointControl* control = new ViewpointControl(currentPosX, maxViewX, currentPosY, maxViewY, enableFlow, useFlow, parent) ;
 		connect(control, SIGNAL(viewpointChanged(int)), this, SLOT(setPosX(int)));
+		connect(control, SIGNAL(rowChanged(int)), this, SLOT(setPosY(int)));
 		disconnect(this, SIGNAL(refreshImage()), 0, 0);
 		connect(this, SIGNAL(refreshImage()), parent, SIGNAL(updateImage()));
 		return control;
@@ -175,7 +182,7 @@ public:
 	}
 
 	float getCurrentPosX() {return currentPosX;}
-	float getCurrentPosY() {return currentPosY;}
+	float getCurrentPosY() {return maxViewY - currentPosY - 1;}
 	
 public slots:
 
@@ -197,10 +204,10 @@ public slots:
 	*/
 	void setPosY(int value)
 	{
-		if (enableFlow)
-			currentPosY = float(value)/100.0;
-		else
-			currentPosY = value;
+		//if (enableFlow)
+		//	currentPosY = float(value)/100.0;
+		//else
+		currentPosY = value;
 		emit refreshImage();
 	}
 

@@ -70,6 +70,9 @@ FORMS          = rtiviewer.ui \
                  about.ui
 
 RESOURCES     =  rtiviewer.qrc
+
+win32: RC_FILE = rtiviewer.rc
+
 # to add MacOS icon
 ICON = images/rtiviewer.icns
 

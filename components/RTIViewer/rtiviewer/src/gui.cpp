@@ -32,7 +32,7 @@
 RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	QWidget(parent),
 	rendDlg(NULL),
-	title("Rti Viewer 0.1 - VCLab (C) 2008"),
+	title("Rti Viewer 0.1 - VCLab (C) 2010"),
 	filterStr("All (*.ptm *.hsh *.rti *.mview);;Polynamial Texture Maps (*.ptm);; Hemispherical Harmonics Map (*.hsh);; Universal RTI (*.rti);; Multiview RTI (*.mview)")
 {
 	//Browser

@@ -12,7 +12,7 @@
 #define JPEG2000_OPENJPEG_WRAPPER_H
 
 // Open JPEG header
-#include <openjpeg/openjpeg.h>
+#include "openjpeg/openjpeg.h"
 
 // Qt headers
 #include <QObject>

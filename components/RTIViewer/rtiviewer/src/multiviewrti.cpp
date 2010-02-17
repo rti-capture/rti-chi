@@ -17,9 +17,10 @@
 
 
 
-ViewpointControl::ViewpointControl(int initValueX, int nViewX, bool enableFlow, bool useFlow, QWidget *parent) : QWidget(parent)
+ViewpointControl::ViewpointControl(int initValueX, int nViewX, int initValueY, int nViewY, bool enableFlow, bool useFlow, QWidget *parent) : QWidget(parent)
 {
 	maxViewX = nViewX;
+	maxViewY = nViewY;
 	QLabel* label = new QLabel("Horizontal shift");
 	viewpointSlider = new QSlider(Qt::Horizontal);
 	viewpointSlider->setTickPosition(QSlider::TicksBothSides);
@@ -30,9 +31,14 @@ ViewpointControl::ViewpointControl(int initValueX, int nViewX, bool enableFlow, 
 	QLabel* label1 = new QLabel("Vertical shift");
 	vertical = new QSlider(Qt::Vertical);
 	vertical->setTickPosition(QSlider::TicksBothSides);
-	vertical->setRange(0, 1000);
-	vertical->setTickInterval(100);
-	vertical->setValue(200);
+	if (maxViewY > 1)
+	{
+		vertical->setRange(0, (maxViewY -1));
+		vertical->setTickInterval(1);
+		vertical->setValue(initValueY);
+		vertical->setPageStep(1);
+		vertical->setSingleStep(1);
+	}
 	if (!enableFlow)
 	{
 		viewpointSlider->setRange(0, (maxViewX - 1));
@@ -57,16 +63,17 @@ ViewpointControl::ViewpointControl(int initValueX, int nViewX, bool enableFlow, 
 	connect(viewpointSlider, SIGNAL(sliderReleased()), this, SLOT(sliderReleased())); 
 	connect(viewpointSlider, SIGNAL(valueChanged(int)), this, SIGNAL(viewpointChanged(int)));
 	connect(snapNearest, SIGNAL(stateChanged(int)), this, SLOT(updateSlider(int)));
+	connect(vertical, SIGNAL(valueChanged(int)), this, SIGNAL(rowChanged(int)));
 	
 	QGridLayout* layout = new QGridLayout;
 	layout->addWidget(label, 0, 0, 1 , 1);
-	layout->addWidget(viewpointSlider, 0, 1, 1, 1);
-	layout->addWidget(snapNearest, 1, 1, 1, 1);
-	/*layout->addWidget(label, 0, 0, 1 , 1, Qt::AlignHCenter);
-	layout->addWidget(label1, 0, 1, 1, 1);
-	layout->addWidget(viewpointSlider, 1, 0, 1, 1);
-	layout->addWidget(vertical, 1, 1, 1, 1, Qt::AlignHCenter);
-	layout->addWidget(snapNearest, 2, 0, 1, 2, Qt::AlignHCenter);*/
+	layout->addWidget(viewpointSlider, 1, 0, 1, 3);
+	layout->addWidget(snapNearest, 2, 0, 1, 1);
+	if (maxViewY > 1)
+	{
+		layout->addWidget(label1, 0, 3, 1, 1, Qt::AlignHCenter);
+		layout->addWidget(vertical, 1, 3, 2, 1, Qt::AlignHCenter);
+	}
 	setLayout(layout);
 }
 
