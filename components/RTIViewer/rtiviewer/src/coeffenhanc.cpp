@@ -146,7 +146,7 @@ void CoeffEnhancement::applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCo
 	const PTMCoefficient* redPtr = redCoeff.getLevel(info.level);
 	const PTMCoefficient* greenPtr = greenCoeff.getLevel(info.level);
 	const PTMCoefficient* bluePtr = blueCoeff.getLevel(info.level);
-	int lenght = info.width * info.height * 6;
+	int lenght = info.width * info.height;
 	PTMCoefficient* redC = new PTMCoefficient[lenght];
 	PTMCoefficient* greenC = new PTMCoefficient[lenght];
 	PTMCoefficient* blueC = new PTMCoefficient[lenght];
