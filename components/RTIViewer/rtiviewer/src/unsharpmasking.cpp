@@ -77,7 +77,7 @@ QWidget* UnsharpMasking::getControl(QWidget* parent)
 
 bool UnsharpMasking::isLightInteractive()
 {
-	return false;
+	return true;
 }
 
 
@@ -103,51 +103,72 @@ void UnsharpMasking::setGain(int value)
 void UnsharpMasking::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& rgb, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
 {
 	int offsetBuf = 0;
-	const int* coeffPtr = coeff.getLevel(info.level);
+	const PTMCoefficient* coeffPtr = coeff.getLevel(info.level);
 	const unsigned char* rgbPtr = rgb.getLevel(info.level);
-	double* lumMap = new double[info.width*info.height];
+    float* lumMap = new float[info.width*info.height];
 	int width = mipMapSize[info.level].width();
 	if (type == 0) //image unsharp masking
 	{
 		// Creates a map for Y component and a map for UV component. 
-		double* uvMap = new double[info.width*info.height*2];
+        float* uvMap = new float[info.width*info.height*2];
+		LightMemoized lVec(info.light.X(), info.light.Y());
+        
+		#pragma omp parallel for schedule(static,CHUNK)
 		for (int y = info.offy; y < info.offy + info.height; y++)
 		{
+            int offsetBuf = (y-info.offy)*info.width<<2;
+			int offset = (y * width + info.offx)*3;
+			int offset2 = ((y - info.offy)*info.width)*2;
 			for (int x = info.offx; x < info.offx + info.width; x++)
 			{
-				int offset = y * width + x;
-				int offset2 = (y - info.offy)*info.width + (x - info.offx);
-				double lum = evalPoly(&coeffPtr[offset*6], info.light.X(), info.light.Y()) / 255.0;
-				double r = rgbPtr[offset*3]*lum / 255.0;
-				double g = rgbPtr[offset*3 + 1]*lum / 255.0;
-				double b = rgbPtr[offset*3 + 2]*lum / 255.0;
-				getYUV(r, g, b, lumMap[offset2], uvMap[offset2*2], uvMap[offset2*2 + 1]);
+			    float lum =  coeffPtr[offset / 3].evalPoly(lVec) / 255.0;
+                float r = rgbPtr[offset]*lum / 255.0;
+                float g = rgbPtr[offset + 1]*lum / 255.0;
+                float b = rgbPtr[offset + 2]*lum / 255.0;
+				getYUV(r, g, b, lumMap[offset2 / 2], uvMap[offset2], uvMap[offset2 + 1]);
+				offset += 3;
+				offset2 += 2;
 			}
 		}
 		// Computes the enhanced luminance.
 		enhancedLuminance(lumMap, info.width, info.height, info.mode);
 		// Creates the output texture.
 		bool flag = (info.mode == LUM_UNSHARP_MODE || info.mode == SMOOTH_MODE || info.mode == CONTRAST_MODE ||info.mode == ENHANCED_MODE);
-		for (int y = info.offy; y < info.offy + info.height; y++)
+		if (flag)
 		{
-			for (int x = info.offx; x < info.offx + info.width; x++)
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int y = info.offy; y < info.offy + info.height; y++)
 			{
-				int offset2 =(y - info.offy)*info.width + (x - info.offx); 
-				if (flag)
+				int offsetBuf = (y - info.offy) * info.width << 2;
+				int offset2 =(y - info.offy) * info.width;
+				for (int x = info.offx; x < info.offx + info.width; x++)
 				{
 					for (int i = 0; i < 3; i++)
 						buffer[offsetBuf + i] = tobyte(lumMap[offset2] * 255.0);
+					buffer[offsetBuf + 3] = 255;
+					offsetBuf += 4;
+					offset2++;
 				}
-				else
+			}
+		}
+		else
+		{
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int y = info.offy; y < info.offy + info.height; y++)
+			{
+				int offsetBuf = (y - info.offy) * info.width << 2;
+				int offset2 =(y - info.offy)*info.width * 2;
+				for (int x = info.offx; x < info.offx + info.width; x++)
 				{
-					double r, g, b;
-					getRGB(lumMap[offset2], uvMap[offset2*2], uvMap[offset2*2 +1], r, g, b);
+					float r, g, b;
+					getRGB(lumMap[offset2 / 2], uvMap[offset2], uvMap[offset2 + 1], r, g, b);
 					buffer[offsetBuf ] = tobyte(r*255);
 					buffer[offsetBuf + 1] = tobyte(g*255);
 					buffer[offsetBuf + 2] = tobyte(b*255);
+					buffer[offsetBuf + 3] = 255;
+					offsetBuf += 4;
+					offset2 += 2;
 				}
-				buffer[offsetBuf + 3] = 255;
-				offsetBuf += 4;
 			}
 		}
 		delete[] uvMap;
@@ -155,37 +176,60 @@ void UnsharpMasking::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& r
 	else //unsharp masking luminance
 	{
 		// Creates a map for the polynomial luminance.
+		LightMemoized lVec(info.light.X(), info.light.Y());
+		
+		#pragma omp parallel for schedule(static,CHUNK)
 		for (int y = info.offy; y < info.offy + info.height; y++)
 		{
+			int offset = y * width + info.offx;
+			int offset2 = (y - info.offy)*info.width;
 			for (int x = info.offx; x < info.offx + info.width; x++)
 			{
-				int offset= y * width + x;
-				lumMap[(y - info.offy)*info.width + (x - info.offx)] = evalPoly(&coeffPtr[offset*6], info.light.X(), info.light.Y()) / 255.0;
+				lumMap[offset2] = coeffPtr[offset].evalPoly(lVec) / 255.0;
+				offset++;
+				offset2++;
 			}
 		}
 		// Computes the enhanced luminance
 		enhancedLuminance(lumMap, info.width, info.height, info.mode);
 		// Creates the output texture.
 		bool flag = (info.mode == LUM_UNSHARP_MODE || info.mode == SMOOTH_MODE || info.mode == CONTRAST_MODE || info.mode == ENHANCED_MODE);
-		for (int y = info.offy; y < info.offy + info.height; y++)
+        if (flag)
 		{
-			for (int x = info.offx; x < info.offx + info.width; x++)
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int y = info.offy; y < info.offy + info.height; y++)
 			{
-				int offset = y * width + x;
-				int offset2 =(y - info.offy)*info.width + (x - info.offx); 
-				if (flag)
+				int offsetBuf = (y - info.offy) * info.width <<2;
+				int offset2 = (y - info.offy) * info.width;
+				for (int x = info.offx; x < info.offx + info.width; x++)
 				{
 					for (int i = 0; i < 3; i++)
 						buffer[offsetBuf + i] = tobyte(lumMap[offset2] / 2.0 * 255.0);
+					buffer[offsetBuf + 3] = 255;
+					offsetBuf += 4;
+					offset2++;
 				}
-				else
+			}
+		}
+		else
+		{
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int y = info.offy; y < info.offy + info.height; y++)
+			{
+				int offsetBuf = (y - info.offy) * info.width << 2;
+				int offset = (y * width + info.offx)*3;
+				int offset2 = (y - info.offy) * info.width; 
+				for (int x = info.offx; x < info.offx + info.width; x++)
 				{
 					for (int i = 0; i < 3; i++)
-						buffer[offsetBuf + i] = tobyte(rgbPtr[offset*3 + i] * lumMap[offset2]);
+						buffer[offsetBuf + i] = tobyte(rgbPtr[offset + i] * lumMap[offset2]);
+					buffer[offsetBuf + 3] = 255;
+					offsetBuf += 4;
+					offset += 3;
+					offset2++;
 				}
-				buffer[offsetBuf + 3] = 255;
-				offsetBuf += 4;
 			}
+
 		}
 		
 	}
@@ -196,84 +240,130 @@ void UnsharpMasking::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& r
 void UnsharpMasking::applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCoeff& greenCoeff, const PyramidCoeff& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
 {
 	int offsetBuf = 0;
-	const int* redPtr = redCoeff.getLevel(info.level);
-	const int* greenPtr = greenCoeff.getLevel(info.level);
-	const int* bluePtr = blueCoeff.getLevel(info.level);
+	const PTMCoefficient* redPtr = redCoeff.getLevel(info.level);
+	const PTMCoefficient* greenPtr = greenCoeff.getLevel(info.level);
+	const PTMCoefficient* bluePtr = blueCoeff.getLevel(info.level);
 	const vcg::Point3f* normalsPtr = normals.getLevel(info.level);
-	double* lumMap = new double[info.width*info.height];
+    float* lumMap = new float[info.width*info.height];
 	int width = mipMapSize[info.level].width();
 	if (type == 0) //classic unsharp masking
 	{
-		double* uvMap = new double[info.width*info.height*2];
+        float* uvMap = new float[info.width*info.height*2];
+		LightMemoized lVec(info.light.X(), info.light.Y());
+        
+		#pragma omp parallel for schedule(static,CHUNK)
 		for (int y = info.offy; y < info.offy + info.height; y++)
 		{
+            int offsetBuf = (y-info.offy)*info.width<<2;
+			int offset = y * width + info.offx;
+			int offset2 = (y - info.offy)*info.width;
 			for (int x = info.offx; x < info.offx + info.width; x++)
 			{
-				int offset = y * width + x;
-				int offset2 = (y - info.offy)*info.width + (x - info.offx);
-				double r = evalPoly(&redPtr[offset*6], info.light.X(), info.light.Y()) / 255.0;
-				double g = evalPoly(&greenPtr[offset*6], info.light.X(), info.light.Y()) / 255.0;
-				double b = evalPoly(&bluePtr[offset*6], info.light.X(), info.light.Y()) / 255.0;
+				float r = redPtr[offset].evalPoly(lVec) / 255.0;//evalPoly((int*)&(redPtr[offset][0]), info.light.X(), info.light.Y()) / 255.0;
+                float g = greenPtr[offset].evalPoly(lVec) / 255.0;//evalPoly((int*)&(greenPtr[offset][0]), info.light.X(), info.light.Y()) / 255.0;
+                float b = bluePtr[offset].evalPoly(lVec) / 255.0;//evalPoly((int*)&(bluePtr[offset][0]), info.light.X(), info.light.Y()) / 255.0;
 				getYUV(r, g, b, lumMap[offset2], uvMap[offset2*2], uvMap[offset2*2 + 1]);
+				offset++;
+				offset2++;
 			}
 		}
 		enhancedLuminance(lumMap, info.width, info.height, info.mode);
 		bool flag = (info.mode == LUM_UNSHARP_MODE || info.mode == SMOOTH_MODE || info.mode == CONTRAST_MODE || info.mode == ENHANCED_MODE);
-		for (int y = info.offy; y < info.offy + info.height; y++)
+		if (flag)
 		{
-			for (int x = info.offx; x < info.offx + info.width; x++)
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int y = info.offy; y < info.offy + info.height; y++)
 			{
-				int offset2 =(y - info.offy)*info.width + (x - info.offx); 
-				if (flag)
+				int offsetBuf = (y-info.offy)*info.width<<2;
+				int offset2 =(y - info.offy)*info.width; 
+				for (int x = info.offx; x < info.offx + info.width; x++)
 				{
 					for (int i = 0; i < 3; i++)
 						buffer[offsetBuf + i] = tobyte(lumMap[offset2] * 255.0);
+					buffer[offsetBuf + 3] = 255;
+					offsetBuf += 4;
+					offset2++;
 				}
-				else
+			}
+		}
+		else
+		{
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int y = info.offy; y < info.offy + info.height; y++)
+			{
+				int offsetBuf = (y-info.offy)*info.width<<2;
+				int offset2 =(y - info.offy)*info.width; 
+				for (int x = info.offx; x < info.offx + info.width; x++)
 				{
-					double r, g, b;
+					float r, g, b;
 					getRGB(lumMap[offset2], uvMap[offset2*2], uvMap[offset2*2 +1], r, g, b);
 					buffer[offsetBuf] = tobyte(r*255);
 					buffer[offsetBuf + 1] = tobyte(g*255);
 					buffer[offsetBuf + 2] = tobyte(b*255);
+					buffer[offsetBuf + 3] = 255;
+					offsetBuf += 4;
+					offset2++;
 				}
-				buffer[offsetBuf + 3] = 255;
-				offsetBuf += 4;
 			}
 		}
 		delete[] uvMap;
 	}
 	else //luminance unsharp masking
 	{
+        #pragma omp parallel for schedule(static,CHUNK)
 		for (int y = info.offy; y < info.offy + info.height; y++)
 		{
+			int offset= y * width + info.offx;
+			int offset2 = (y - info.offy)*info.width;
 			for (int x = info.offx; x < info.offx + info.width; x++)
 			{
-				int offset= y * width + x;
-				lumMap[(y - info.offy)*info.width + (x - info.offx)] = getLum(normalsPtr[offset], info.light);
+				lumMap[offset2] = getLum(normalsPtr[offset], info.light);
+				offset++;
+				offset2++;
 			}
 		}
 		enhancedLuminance(lumMap, info.width, info.height, info.mode);
 		bool flag = (info.mode == LUM_UNSHARP_MODE || info.mode == SMOOTH_MODE || info.mode == CONTRAST_MODE || info.mode == ENHANCED_MODE);
-		for (int y = info.offy; y < info.offy + info.height; y++)
+		LightMemoized lVec(info.light.X(), info.light.Y());
+		if (flag)
 		{
-			for (int x = info.offx; x < info.offx + info.width; x++)
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int y = info.offy; y < info.offy + info.height; y++)
 			{
-				int offset = y * width + x;
-				double lum = lumMap[(y - info.offy)*info.width + (x - info.offx)];
-				if (flag)
+				int offsetBuf = (y-info.offy)*info.width<<2;
+				int offset = y * width + info.offx;
+				int offset2 = (y - info.offy)*info.width;
+				for (int x = info.offx; x < info.offx + info.width; x++)
 				{
+					float lum = lumMap[offset2];
 					for (int i = 0; i < 3; i++)
 						buffer[offsetBuf + i] = tobyte(lum / 2.0 * 255.0);
+					buffer[offsetBuf + 3] = 255;
+					offsetBuf += 4;
+					offset++;
+					offset2++;
 				}
-				else
+			}
+		}
+		else
+		{
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int y = info.offy; y < info.offy + info.height; y++)
+			{
+				int offsetBuf = (y-info.offy)*info.width<<2;
+				int offset = y * width + info.offx;
+				int offset2 = (y - info.offy)*info.width;
+				for (int x = info.offx; x < info.offx + info.width; x++)
 				{
-					buffer[offsetBuf] = tobyte(evalPoly(&redPtr[offset*6], info.light.X(), info.light.Y()) * lum);
-					buffer[offsetBuf + 1] = tobyte(evalPoly(&greenPtr[offset*6], info.light.X(), info.light.Y()) * lum);
-					buffer[offsetBuf + 2] = tobyte(evalPoly(&bluePtr[offset*6], info.light.X(), info.light.Y()) * lum);
+					float lum = lumMap[offset2];
+					buffer[offsetBuf] = tobyte(redPtr[offset].evalPoly(lVec)*lum);//evalPoly((int*)&(redPtr[offset][0]), info.light.X(), info.light.Y()) * lum);
+					buffer[offsetBuf + 1] = tobyte(greenPtr[offset].evalPoly(lVec)*lum);//evalPoly((int*)&(greenPtr[offset][0]), info.light.X(), info.light.Y()) * lum);
+					buffer[offsetBuf + 2] = tobyte(bluePtr[offset].evalPoly(lVec)*lum);//evalPoly((int*)&(bluePtr[offset][0]), info.light.X(), info.light.Y()) * lum);
+					buffer[offsetBuf + 3] = 255;
+					offsetBuf += 4;
+					offset++;
+					offset2++;
 				}
-				buffer[offsetBuf + 3] = 255;
-				offsetBuf += 4;
 			}
 		}
 	}
@@ -281,17 +371,18 @@ void UnsharpMasking::applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCoef
 }
 
 
-void UnsharpMasking::enhancedLuminance(double* lumMap, int width, int height, int mode)
+void UnsharpMasking::enhancedLuminance(float* lumMap, int width, int height, int mode)
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	int dist = 2;
-	double* tempLum = new double[width*height];
-	double* smootLum = new double[width*height];
+    float* tempLum = new float[width*height];
+    float* smootLum = new float[width*height];
 	int* nKernel = new int[width*height];
-	memcpy(smootLum, lumMap, width*height*sizeof(double));
+    memcpy(smootLum, lumMap, width*height*sizeof(float));
 	for (int i = 0; i < nIter; i++)
 	{
-		memset(tempLum, 0, width*height*sizeof(double));
+        memset(tempLum, 0, width*height*sizeof(float));
+        #pragma omp parallel for schedule(static,CHUNK)
 		for (int y = 0; y < height; y++)
 		{
 			for (int x = 0; x < width; x++)
@@ -331,24 +422,32 @@ void UnsharpMasking::enhancedLuminance(double* lumMap, int width, int height, in
 				}
 			}
 		}
+		#pragma omp parallel for schedule(static,CHUNK)
 		for (int ii = 0; ii < width*height; ii++)
-			tempLum[ii] /= static_cast<double>(nKernel[ii]);
-		memcpy(smootLum, tempLum, width*height*sizeof(double));
+			tempLum[ii] /= static_cast<float>(nKernel[ii]);
+        memcpy(smootLum, tempLum, width*height*sizeof(float));
 	}
 	delete[] tempLum;
-	for (int i = 0; i < height*width; i++)
+   
+	switch(mode)
 	{
-		switch(mode)
-		{
 		case LUM_UNSHARP_MODE:
 			break;
 		case SMOOTH_MODE:
-			lumMap[i] = smootLum[i]; break;
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int i = 0; i < height*width; i++)
+				lumMap[i] = smootLum[i];
+			break;
 		case CONTRAST_MODE:
-			lumMap[i] = (lumMap[i] - smootLum[i])*4; break;
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int i = 0; i < height*width; i++)
+				lumMap[i] = (lumMap[i] - smootLum[i])*4.0f;
+			break;
 		default:
-			lumMap[i] = lumMap[i] + gain *(lumMap[i] - smootLum[i]);
-		}
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int i = 0; i < height*width; i++)
+				lumMap[i] = lumMap[i] + gain *(lumMap[i] - smootLum[i]);
+			break;		
 	}
 	delete[] smootLum;
 	delete[] nKernel;
@@ -356,9 +455,9 @@ void UnsharpMasking::enhancedLuminance(double* lumMap, int width, int height, in
 }
 
 
-double UnsharpMasking::getLum(const vcg::Point3f& normal, const vcg::Point3f& l)
+float UnsharpMasking::getLum(const vcg::Point3f& normal, const vcg::Point3f& l)
 {
-	double nDotL = normal*l;
+    float nDotL = normal*l;
 	if (nDotL < 0) 
 		nDotL = 0.0;
 	else if (nDotL > 1)
@@ -367,14 +466,14 @@ double UnsharpMasking::getLum(const vcg::Point3f& normal, const vcg::Point3f& l)
 }
 
 
-void UnsharpMasking::getYUV(double r, double g, double b, double& l, double& u, double& v)
+void UnsharpMasking::getYUV(float r, float g, float b, float& l, float& u, float& v)
 {
 	l = r * 0.299 + g * 0.587 + b * 0.144;
 	u = r * -0.14713 + g * -0.28886 + b * 0.436;
 	v = r * 0.615 + g * -0.51499 + b * -0.10001;
 }
 
-void UnsharpMasking::getRGB(double y, double u, double v, double& r, double& g, double& b)
+void UnsharpMasking::getRGB(float y, float u, float v, float& r, float& g, float& b)
 {
 	r = y + v * 1.13983;
 	g = y + u * -0.39465 + v * -0.5806;

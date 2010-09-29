@@ -112,7 +112,7 @@ int Hsh::load(QString name, CallBackPos *cb)
 
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
-	double diff = first.msecsTo(second) / 1000.0;
+        float diff = first.msecsTo(second) / 1000.0;
 	printf("HSH Loading: %.5f s\n", diff);
 #endif
 
@@ -120,7 +120,7 @@ int Hsh::load(QString name, CallBackPos *cb)
 }
 
 
-int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb, QString& text)
+int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb,const QString& text)
 {
 	type = "HSH";
 	w = width;
@@ -229,9 +229,15 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 		redCoefficients.setLevel(new float[size], size, level);
 		greenCoefficients.setLevel(new float[size], size, level);
 		blueCoefficients.setLevel(new float[size], size, level);
+		int th_id;
+		#pragma omp parallel for
 		for (int i = 0; i < height - 1; i+=2)
 		{
-			if (cb != NULL && i % 50 == 0)	(*cb)(50 + (level-1)*8 + i*8.0/height, "Mip mapping generation...");
+			th_id = omp_get_thread_num();
+			if (th_id == 0)
+			{
+				if (cb != NULL && i % 50 == 0)	(*cb)(50 + (level-1)*8 + i*8.0/height, "Mip mapping generation...");
+			}
 			for (int j = 0; j < width - 1; j+=2)
 			{
 				int index1 = (i * width + j)*ordlen;
@@ -296,7 +302,7 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 	vcg::Point3d l0(sin(M_PI/4)*cos(M_PI/6), sin(M_PI/4)*sin(M_PI/6), cos(M_PI/4));
 	vcg::Point3d l1(sin(M_PI/4)*cos(5*M_PI / 6), sin(M_PI/4)*sin(5*M_PI / 6), cos(M_PI/4));
 	vcg::Point3d l2(sin(M_PI/4)*cos(3*M_PI / 2), sin(M_PI/4)*sin(3*M_PI / 2), cos(M_PI/4));
-	double hweights0[9], hweights1[9], hweights2[9];
+    float hweights0[9], hweights1[9], hweights2[9];
 	getHSH(M_PI / 4, M_PI / 6, hweights0);
 	getHSH(M_PI / 4, 5*M_PI / 6, hweights1);
 	getHSH(M_PI / 4, 3*M_PI / 2, hweights2);
@@ -304,15 +310,17 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 	L.SetRow(0, l0);
 	L.SetRow(1, l1);
 	L.SetRow(2, l2);
-	LInverse = vcg::Inverse<double>(L);
-
+    LInverse = vcg::Inverse<double>(L);
+	
 	for (int level = 0; level < MIP_MAPPING_LEVELS; level++)
 	{
 		const float* rPtr = redCoefficients.getLevel(level);
 		const float* gPtr = greenCoefficients.getLevel(level);
 		const float* bPtr = blueCoefficients.getLevel(level);
 		vcg::Point3f* temp = new vcg::Point3f[mipMapSize[level].width()*mipMapSize[level].height()];
-		if (cb != NULL) (*cb)(75 + level*6, "Mip mapping generation...");
+		if (cb != NULL) (*cb)(75 + level*6, "Normal generation...");
+
+		#pragma omp parallel for
 		for (int y = 0; y < mipMapSize[level].height(); y++)
 		{
 			for (int x = 0; x < mipMapSize[level].width(); x++)
@@ -542,7 +550,7 @@ int Hsh::createImage(unsigned char** buffer, int& width, int& height, const vcg:
 
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
-	double diff = first.msecsTo(second) / 1000.0;
+        float diff = first.msecsTo(second) / 1000.0;
 	printf("Default rendering: %.5f s\n", diff);
 	
 #endif
@@ -578,9 +586,9 @@ QImage* Hsh::createPreview(int width, int height)
 	const float* greenPtr = greenCoefficients.getLevel(level);
 	const float* bluePtr = blueCoefficients.getLevel(level);
 	int tempW = mipMapSize[level].width();
-	double hweights[9];
-	double phi = 0.0f;
-	double theta = acos(1.0);
+        float hweights[9];
+        float phi = 0.0f;
+        float theta = acos(1.0);
 	getHSH(theta, phi, hweights);
 	int offset = 0;
 		
@@ -589,7 +597,7 @@ QImage* Hsh::createPreview(int width, int height)
 		for (int x = 0; x < imageW; x++)
 		{
 			offset= y * imageW + x;
-			double val = 0;
+                        float val = 0;
 			for (int k = 0; k < ordlen; k++)
 				val += redPtr[offset*ordlen + k] * hweights[k];
 			buffer[offsetBuf + 2] = tobyte(val*255);
@@ -648,7 +656,7 @@ int Hsh::allocateRemoteImage(QBuffer* b)
 		return -1;
 	for (int i = 0; i < ordlen; i++)
 	{
-		gmin[i] = scaleList.at(i).toDouble(&error);
+                gmin[i] = scaleList.at(i).toDouble(&error);
 		if (!error)
 			return -1;
 	}
@@ -661,7 +669,7 @@ int Hsh::allocateRemoteImage(QBuffer* b)
 		return -1;
 	for (int i = 0; i < ordlen; i++)
 	{
-		gmax[i] = biasList.at(i).toDouble(&error);
+                gmax[i] = biasList.at(i).toDouble(&error);
 		if (!error)
 			return -1;
 	}
@@ -674,8 +682,8 @@ int Hsh::allocateRemoteImage(QBuffer* b)
 	for (int i = maxRemoteResolution; i > maxRemoteResolution - 4; i--)
 	{
 		int n = 1 << (maxRemoteResolution - i);
-		width = ceil(static_cast<double>(w)/static_cast<double>(n));
-		height = ceil(static_cast<double>(h)/static_cast<double>(n));
+                width = ceil(static_cast<float>(w)/static_cast<float>(n));
+                height = ceil(static_cast<float>(h)/static_cast<float>(n));
 		int size = width * height * ordlen;
 		redCoefficients.allocateLevel(maxRemoteResolution - i, size);
 		greenCoefficients.allocateLevel(maxRemoteResolution - i, size);
@@ -734,7 +742,7 @@ int Hsh::loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, 
 			vcg::Point3d l0(sin(M_PI/4)*cos(M_PI/6), sin(M_PI/4)*sin(M_PI/6), cos(M_PI/4));
 			vcg::Point3d l1(sin(M_PI/4)*cos(5*M_PI / 6), sin(M_PI/4)*sin(5*M_PI / 6), cos(M_PI/4));
 			vcg::Point3d l2(sin(M_PI/4)*cos(3*M_PI / 2), sin(M_PI/4)*sin(3*M_PI / 2), cos(M_PI/4));
-			double hweights0[9], hweights1[9], hweights2[9];
+                        float hweights0[9], hweights1[9], hweights2[9];
 			getHSH(M_PI / 4, M_PI / 6, hweights0);
 			getHSH(M_PI / 4, 5*M_PI / 6, hweights1);
 			getHSH(M_PI / 4, 3*M_PI / 2, hweights2);
@@ -742,7 +750,7 @@ int Hsh::loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, 
 			L.SetRow(0, l0);
 			L.SetRow(1, l1);
 			L.SetRow(2, l2);
-			LInverse = vcg::Inverse<double>(L);
+                        LInverse = vcg::Inverse<double>(L);
 
 			vcg::Point3d f(0, 0, 0);
 			for (int k = 0; k < ordlen; k++)

@@ -320,7 +320,7 @@ private:
 	  \param height height of the image.
 	  \return value of the sharpness operator.
 	*/
-	double computeSharpOperator(int* image, int width, int height);
+        float computeSharpOperator(int* image, int width, int height);
 
 	
 	/*!

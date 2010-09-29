@@ -14,6 +14,10 @@
 #include <QHBoxLayout>
 #include <QLabel>
 
+#include <omp.h>
+
+const float d256 = 1.0f/256.0f;
+
 DiffuseGControl::DiffuseGControl(int initValue, QWidget *parent) : QWidget(parent)
 {
 	QLabel* label = new QLabel("Gain");
@@ -85,20 +89,25 @@ void DiffuseGain::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& rgb,
 {
 	int offsetBuf = 0;
 	const unsigned char* rgbPtr = rgb.getLevel(info.level);
-	const int* coeffPtr = coeff.getLevel(info.level);
+	const PTMCoefficient* coeffPtr = coeff.getLevel(info.level);
 	const vcg::Point3f* normalsPtr = normals.getLevel(info.level);
 	// Creates the output texture.
+
+    #pragma omp parallel for schedule(static,CHUNK)
 	for (int y = info.offy; y < info.offy + info.height; y++)
 	{
+        int offsetBuf = ((y-info.offy)*info.width)<<2;
+		int offset = y * mipMapSize[info.level].width() + info.offx;
 		for (int x = info.offx; x < info.offx + info.width; x++)
 		{
-			int offset = y * mipMapSize[info.level].width() + x;
-			double lum = applyModel(&coeffPtr[offset*6], normalsPtr[offset].X(), normalsPtr[offset].Y(), info.light.X(), info.light.Y());
-			lum /= 256.0;
+			//int offset = y * mipMapSize[info.level].width() + x;
+            float lum = applyModel(&(coeffPtr[offset][0]), normalsPtr[offset].X(), normalsPtr[offset].Y(), info.light.X(), info.light.Y()) / 256.0f;
+			int offset3 = offset*3;
 			for (int i = 0; i < 3; i++)
-				buffer[offsetBuf + i] = tobyte(rgbPtr[offset*3 + i] * lum);
-			buffer[offsetBuf + 3] = 255;
+				buffer[offsetBuf + i] = tobyte(rgbPtr[offset3 + i] * lum);
+            buffer[offsetBuf + 3] = 255;
 			offsetBuf += 4;
+			offset++;
 		}
 	}
 
@@ -108,34 +117,40 @@ void DiffuseGain::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& rgb,
 void DiffuseGain::applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCoeff& greenCoeff, const PyramidCoeff& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
 {
 	int offsetBuf = 0;
-	const int* redPtr = redCoeff.getLevel(info.level);
-	const int* greenPtr = greenCoeff.getLevel(info.level);
-	const int* bluePtr = blueCoeff.getLevel(info.level);
+	const PTMCoefficient* redPtr = redCoeff.getLevel(info.level);
+	const PTMCoefficient* greenPtr = greenCoeff.getLevel(info.level);
+	const PTMCoefficient* bluePtr = blueCoeff.getLevel(info.level);
 	const vcg::Point3f* normalsPtr = normals.getLevel(info.level);
 	// Creates the output texture.
+	
+    #pragma omp parallel for schedule(static,CHUNK)
 	for (int y = info.offy; y < info.offy + info.height; y++)
 	{
+        int offsetBuf = ((y-info.offy)*info.width)<<2;
+		int offset = y * mipMapSize[info.level].width() + info.offx;
 		for (int x = info.offx; x < info.offx + info.width; x++)
 		{
-			int offset = y * mipMapSize[info.level].width() + x;
-			buffer[offsetBuf + 0] = tobyte(applyModel(&redPtr[offset*6], normalsPtr[offset].X(), normalsPtr[offset].Y(), info.light.X(), info.light.Y()));
-			buffer[offsetBuf + 1] = tobyte(applyModel(&greenPtr[offset*6], normalsPtr[offset].X(), normalsPtr[offset].Y(), info.light.X(), info.light.Y()));
-			buffer[offsetBuf + 2] = tobyte(applyModel(&bluePtr[offset*6], normalsPtr[offset].X(), normalsPtr[offset].Y(), info.light.X(), info.light.Y()));
-			buffer[offsetBuf + 3] = 255;
+			buffer[offsetBuf + 0] = tobyte(applyModel(&(redPtr[offset][0]), normalsPtr[offset].X(), normalsPtr[offset].Y(), info.light.X(), info.light.Y()));
+			buffer[offsetBuf + 1] = tobyte(applyModel(&(greenPtr[offset][0]), normalsPtr[offset].X(), normalsPtr[offset].Y(), info.light.X(), info.light.Y()));
+			buffer[offsetBuf + 2] = tobyte(applyModel(&(bluePtr[offset][0]), normalsPtr[offset].X(), normalsPtr[offset].Y(), info.light.X(), info.light.Y()));
+            buffer[offsetBuf + 3] = 255;
+			offset++;
 			offsetBuf += 4;
 		}
 	}
 }
 
 
-double DiffuseGain::applyModel(const int* a, float nu, float nv, double lu, double lv)
+float DiffuseGain::applyModel(const int* a, float nu, float nv, float lu, float lv)
 {
-	double a0 = gain * a[0];
-	double a1 = gain * a[1];
-	double a2 = gain * a[2];
-	double a3 = (1 - gain) * (2*a[0]*nu + a[2]*nv) + a[3];
-	double a4 = (1 - gain) * (2*a[1]*nv + a[2]*nu) + a[4];
-	double a5 = (1 - gain) * (a[0]*nu*nu + a[1]*nv*nv + a[2]*nu*nv) + (a[3] - a3) * nu
-				+ (a[4] - a4) * nv + a[5];
+    float a0 = gain * a[0];
+    float a1 = gain * a[1];
+    float a2 = gain * a[2];
+    float a3t =  ((a[0]<<1)*nu + a[2]*nv);
+    float a3 = (1.0f - gain) * a3t + a[3];
+    float a4t = ((a[1]<<1)*nv + a[2]*nu);
+    float a4 = (1.0f - gain) * a4t + a[4];
+    float a5 = (1.0f - gain) * (a[0]*nu*nu + a[1]*nv*nv + a[2]*nu*nv) + (a[3] - a3) * nu
+			+ (a[4] - a4) * nv + a[5];
 	return a0*lu*lu + a1*lv*lv + a2*lu*lv + a3*lu + a4*lv + a5; 
 }

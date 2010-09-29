@@ -18,9 +18,12 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
+#include <omp.h>
+
+
 
 /*!
-  Widget to show the progress of the downloading of a remote RTI
+Widget to show the progress of the downloading of a remote RTI
 */
 class LoadRemoteWidget : public QWidget
 {
@@ -29,7 +32,7 @@ private:
 
 	QLabel* string;
 	int i;
-	
+
 public:
 
 	LoadRemoteWidget(bool remote, QWidget* parent = 0) : QWidget(parent)
@@ -37,7 +40,7 @@ public:
 		i = 0;
 		if (remote)
 		{
-			
+
 			QVBoxLayout* layout = new QVBoxLayout;
 			string = new QLabel("Downloading remote RTI ");
 			layout->addWidget(string, 0, Qt::AlignVCenter);
@@ -45,7 +48,7 @@ public:
 			startTimer(500);
 		}
 	}
-	
+
 protected:
 
 	void timerEvent(QTimerEvent * event)
@@ -63,7 +66,7 @@ protected:
 
 //! Defaut Rendering for RTI images.
 /*!
-  The class defines the default rendering for RTI images.
+The class defines the default rendering for RTI images.
 */
 class DefaultRendering : public QObject, public RenderingMode
 {
@@ -76,9 +79,9 @@ public:
 
 	DefaultRendering(): remote(false){}
 	void setRemote(bool flag) {remote = flag;}
-	
+
 	QString getTitle() {return "Default";}
-	
+
 	QWidget* getControl(QWidget* parent)
 	{
 		LoadRemoteWidget* control = new LoadRemoteWidget(remote, parent);
@@ -86,27 +89,34 @@ public:
 		connect(parent, SIGNAL(resetRemote()), this, SLOT(resetRemote())); 
 		return control;
 	}
-	
+
 	bool isLightInteractive() {return true;}
 	bool supportRemoteView()  {return true;}
 	bool enabledLighting() {return true;}
-	
+
 	void applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& rgb, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
 	{
-		int offsetBuf = 0;
-		const int* coeffPtr = coeff.getLevel(info.level);
+		//int offsetBuf = 0;
+		const PTMCoefficient* coeffPtr = coeff.getLevel(info.level);
 		const unsigned char* rgbPtr = rgb.getLevel(info.level);
 		int tempW = mipMapSize[info.level].width();
+
+		LightMemoized lVec(info.light.X(), info.light.Y());
+		
+		#pragma omp parallel for schedule(static,CHUNK)
 		for (int y = info.offy; y < info.offy + info.height; y++)
 		{
+            int offsetBuf = ((y-info.offy)*info.width) << 2;
+			int offset= (y * tempW + info.offx)*3;
 			for (int x = info.offx; x < info.offx + info.width; x++)
 			{
-				int offset= y * tempW + x;
-				double lum = evalPoly(&coeffPtr[offset*6], info.light.X(), info.light.Y()) / 255.0;
-				for (int i = 0; i < 3; i++)
-					buffer[offsetBuf + i] = tobyte(rgbPtr[offset*3 + i] * lum);
 				buffer[offsetBuf + 3] = 255;
-				offsetBuf += 4;
+                float lum = coeffPtr[offset / 3].evalPoly(lVec) / 255.0f;
+                float b[4];
+                for (int i = 0; i < 3; i++)
+                    buffer[offsetBuf + i] = tobyte(rgbPtr[offset + i] * lum);
+              	offsetBuf += 4;
+				offset += 3;
 			}
 		}
 	}
@@ -114,19 +124,24 @@ public:
 
 	void applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCoeff& greenCoeff, const PyramidCoeff& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
 	{
-		int offsetBuf = 0;
-		const int* redPtr = redCoeff.getLevel(info.level);
-		const int* greenPtr = greenCoeff.getLevel(info.level);
-		const int* bluePtr = blueCoeff.getLevel(info.level);
+		//int offsetBuf = 0;
+		const PTMCoefficient* redPtr = redCoeff.getLevel(info.level);
+		const PTMCoefficient* greenPtr = greenCoeff.getLevel(info.level);
+		const PTMCoefficient* bluePtr = blueCoeff.getLevel(info.level);
+		LightMemoized lVec(info.light.X(), info.light.Y());
+		
+		#pragma omp parallel for schedule(static,CHUNK)
 		for (int y = info.offy; y < info.offy + info.height; y++)
 		{
+            int offsetBuf = (y-info.offy)*info.width<<2;
+			int offset= y * mipMapSize[info.level].width() + info.offx;
 			for (int x = info.offx; x < info.offx + info.width; x++)
-			{
-				int offset= y * mipMapSize[info.level].width() + x;
-				buffer[offsetBuf + 0] = tobyte(evalPoly(&redPtr[offset*6], info.light.X(), info.light.Y()));
-				buffer[offsetBuf + 1] = tobyte(evalPoly(&greenPtr[offset*6], info.light.X(), info.light.Y()));
-				buffer[offsetBuf + 2] = tobyte(evalPoly(&bluePtr[offset*6], info.light.X(), info.light.Y()));
+			{	
 				buffer[offsetBuf + 3] = 255;
+				buffer[offsetBuf + 0] = tobyte(redPtr[offset].evalPoly(lVec)); //evalPoly(&(redPtr[offset][0]), info.light.X(), info.light.Y()));
+				buffer[offsetBuf + 1] = tobyte(greenPtr[offset].evalPoly(lVec)); //evalPoly(&(greenPtr[offset][0]), info.light.X(), info.light.Y()));
+				buffer[offsetBuf + 2] = tobyte(bluePtr[offset].evalPoly(lVec)); //evalPoly(&(bluePtr[offset][0]), info.light.X(), info.light.Y()));
+				offset++;
 				offsetBuf += 4;
 			}
 		}
@@ -139,45 +154,52 @@ public:
 		const float* greenPtr = greenCoeff.getLevel(info.level);
 		const float* bluePtr = blueCoeff.getLevel(info.level);
 		int tempW = mipMapSize[info.level].width();
-		double hweights[9];
+        float hweights[9];
 		vcg::Point3d temp(info.light.X(), info.light.Y(), info.light.Z());
 		temp.Normalize();
-		double phi = atan2(temp.Y(), temp.X());
-		double theta = acos(temp.Z()/temp.Norm());
-		
-		int offsetBuf = 0;
+        float phi = atan2(temp.Y(), temp.X());
+        float theta = acos(temp.Z()/temp.Norm());
+
+		//int offsetBuf = 0;
 		getHSH(theta, phi, hweights);
-	
+		
+		#pragma omp parallel for schedule(static,CHUNK)
 		for (int y = info.offy; y < info.offy + info.height; y++)
 		{
+			
+            int offsetBuf = (y-info.offy)*info.width<<2;
+			int offset= y * tempW + info.offx;
 			for (int x = info.offx; x < info.offx + info.width; x++)
 			{
-				int offset= y * tempW + x;
-				double val = 0;
+				float r,b,g;
+				r = 0;
+				b = 0;
+				g = 0;
+				int offset2 = offset*info.ordlen;
 				for (int k = 0; k < info.ordlen; k++)
-					val += redPtr[offset*info.ordlen + k] * hweights[k];
-				buffer[offsetBuf + 0] = tobyte(val*255);
-				val = 0;
-				for (int k = 0; k < info.ordlen; k++)
-					val += greenPtr[offset*info.ordlen + k] * hweights[k];
-				buffer[offsetBuf + 1] = tobyte(val*255);
-				val = 0;
-				for (int k = 0; k < info.ordlen; k++)
-					val += bluePtr[offset*info.ordlen + k] * hweights[k];
-				buffer[offsetBuf + 2] = tobyte(val*255);
+				{
+					int offset3 = offset2 + k;
+					r += redPtr[offset3] * hweights[k];
+					g += greenPtr[offset3] * hweights[k];
+					b += bluePtr[offset3] * hweights[k];
+				}
+				buffer[offsetBuf + 0] = tobyte(r*255);
+				buffer[offsetBuf + 1] = tobyte(g*255);
+				buffer[offsetBuf + 2] = tobyte(b*255);
 				buffer[offsetBuf + 3] = 255;
 				offsetBuf += 4;
+				offset++;
 			}
 		}
-	
+
 	}
 
-public slots:
+	public slots:
 
-	void resetRemote()
-	{
-		remote =  false;
-	}
+		void resetRemote()
+		{
+			remote =  false;
+		}
 
 };
 

@@ -253,7 +253,7 @@ int MultiviewRti::load(QString name, CallBackPos *cb)
 
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
-	double diff = first.msecsTo(second) / 1000.0;
+        float diff = first.msecsTo(second) / 1000.0;
 	printf("Multiview RTI Loading: %.5f s\n", diff);
 #endif
 
@@ -331,7 +331,7 @@ int MultiviewRti::loadFlowData(const QString &path, std::vector<float>** output)
 }
 
 
-int MultiviewRti::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb, QString& text)
+int MultiviewRti::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb,const QString& text)
 {
 	return 0;
 }
@@ -508,11 +508,11 @@ int MultiviewRti::createImage(unsigned char** buffer, int& width, int& height, c
 						if (x < width)
 						{
 							int stopX = x;
-							unsigned char* leftPx = &ptrBuffer[(y * width + startX) * 4];
-							unsigned char* rightPx = &ptrBuffer[(y * width + stopX) * 4];
+                                                        unsigned char* leftPx = &ptrBuffer[(y * width + startX)<< 2];
+                                                        unsigned char* rightPx = &ptrBuffer[(y * width + stopX)<< 2];
 							for (int i = startX + 1; i < stopX; i++)
 							{
-								unsigned char* ptr = &ptrBuffer[(y*width + i)*4];
+                                                                unsigned char* ptr = &ptrBuffer[(y*width + i)<<2];
 								for (int j  = 0; j < 3; j++)
 									ptr[j] = leftPx[j] + (i - startX) * (rightPx[j] - leftPx[j]) / (stopX - startX);
 								ptr[3] = 255;
@@ -549,7 +549,7 @@ int MultiviewRti::createImage(unsigned char** buffer, int& width, int& height, c
 
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
-	double diff = first.msecsTo(second) / 1000.0;
+        float diff = first.msecsTo(second) / 1000.0;
 	printf("Default rendering Multiview RTI: %.5f s\n", diff);
 	
 #endif
@@ -566,10 +566,10 @@ void MultiviewRti::applyOpticalFlow(const unsigned char* image, const std::vecto
 		for (int x = 0; x < w; x++)
 			outFlow[offset++] = 50;
 
-	double* tempImg = new double[w*h*4];
-	memset(tempImg, 0, sizeof(double)*w*h*4);
-	double* contrib = new double[w*h];
-	memset(contrib, 0, sizeof(double)*w*h);
+        float* tempImg = new float[w*h*4];
+        memset(tempImg, 0, sizeof(float)*w*h*4);
+        float* contrib = new float[w*h];
+        memset(contrib, 0, sizeof(float)*w*h);
 
 	const unsigned char* ptrImage = image;
 	offset = 0;
@@ -583,14 +583,14 @@ void MultiviewRti::applyOpticalFlow(const unsigned char* image, const std::vecto
 			{
 				if (x + shift < w && x + shift >= 0)
 				{
-					double value = shift * dist;
+                                        float value = shift * dist;
 					int left = floor(value);
 					int right = ceil(value);
-					double* ptrTemp = &tempImg[(offset+left)*4];
+                                        float* ptrTemp = &tempImg[(offset+left)<<2];
 					if (left != right)
 					{
-						double leftRem = vcg::math::Abs(value - left);
-						double rightRem = vcg::math::Abs(value - right);
+                                                float leftRem = vcg::math::Abs(value - left);
+                                                float rightRem = vcg::math::Abs(value - right);
 						int leftIndex = offset + left;
 						contrib[leftIndex] += rightRem;
 						if (outFlow[leftIndex] > leftRem)

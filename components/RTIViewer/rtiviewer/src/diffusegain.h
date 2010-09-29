@@ -91,7 +91,7 @@ private:
 	  \param lu, lv projection of the light vector on uv plane.
 	  \return the output value.
 	*/
-	double applyModel(const int* a, float nu, float nv, double lu, double lv);
+        float applyModel(const int* a, float nu, float nv, float lu, float lv);
 
 public slots:
 

@@ -75,8 +75,8 @@ void LightControl::paintEvent(QPaintEvent *event)
 			painter.drawRect(width/2 - dx, height/2 - dy, dx * 2 - 1, dy * 2 -1);
 		else
 		{
-			double alpha = acos(2.0*dx/width);
-			double beta = acos(2.0*dy/height);
+                        float alpha = acos(2.0*dx/width);
+                        float beta = acos(2.0*dy/height);
 			int dx2 = width/2.0 * sin(beta);
 			int dy2 = height/2.0 * sin(alpha);
 			painter.drawArc(0, 0, width, height, 16*(M_PI/2 + beta)*180/M_PI, 16*(M_PI/2 - alpha - beta)*180/M_PI);

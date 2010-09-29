@@ -124,7 +124,7 @@ private:
 	  \param mipMapSize size of mip-mapping levels.
 	*/
 	void calcSmooting(const PyramidNormals& normals, const QSize* mipMapSize);
-	
+
 	/*!
 	  Computes the illumination model defined as: kd(Ne*light) + envIll
 	  with the enhanced normal Ne equals to: Ne = N + k (N - Nl).
@@ -132,7 +132,7 @@ private:
 	  \param normalL smoothed normal.
 	  \param light light vector.
 	*/
-	double applyModel(const vcg::Point3f& normal, const vcg::Point3f& normalL, const vcg::Point3f& light);
+    float applyModel(const vcg::Point3f& normal, const vcg::Point3f& normalL, const vcg::Point3f& light);
 
 	/*!
 	  Computes the contrast signal N - Nl.

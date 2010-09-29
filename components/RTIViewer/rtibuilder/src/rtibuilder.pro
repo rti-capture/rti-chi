@@ -2,11 +2,27 @@ TEMPLATE       = app
 TARGET         = rtiwebmaker
 LANGUAGE       = C++
 
-CONFIG         += qt debug network console warn_off
+CONFIG         += qt debug_and_release network console warn_off
 
 QT             += xml
 
 MOC_DIR        = moc
+
+win32-msvc2005:QMAKE_LFLAGS   += /LARGEADDRESSAWARE
+win32-msvc2008:QMAKE_LFLAGS   += /LARGEADDRESSAWARE
+
+win32-msvc2005:QMAKE_CXXFLAGS   += /O2 /Ot /Oi /openmp /Zp16 /fp:fast /arch:SSE2
+win32-msvc2008:QMAKE_CXXFLAGS   += /O2 /Ot /Oi /openmp /Zp16 /fp:fast /arch:SSE2
+
+win32-g++:QMAKE_LIBS += -lgomp
+win32-g++:QMAKE_LFLAGS += -m32
+win32-g++:QMAKE_CXXFLAGS += -O3 -msse2 -fopenmp -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize
+win32-g++:QMAKE_CFLAGS += -O3 -msse2 -fopenmp -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize
+
+macx-g++:QMAKE_LIBS += -lgomp
+macx-g++:QMAKE_LFLAGS += -m32
+macx-g++:QMAKE_CXXFLAGS += -O3 -fopenmp -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize
+macx-g++:QMAKE_CFLAGS += -O3 -fopenmp -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize
 
 INCLUDEPATH    += ../../../../vcglib \
                   ../../rtiviewer/src \

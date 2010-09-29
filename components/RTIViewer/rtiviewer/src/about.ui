@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>aboutDialog</class>
- <widget class="QDialog" name="aboutDialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="aboutDialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,91 +10,94 @@
     <height>598</height>
    </rect>
   </property>
-  <property name="sizePolicy" >
-   <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <property name="minimumSize" >
+  <property name="minimumSize">
    <size>
     <width>0</width>
     <height>0</height>
    </size>
   </property>
-  <property name="maximumSize" >
+  <property name="maximumSize">
    <size>
     <width>806</width>
     <height>650</height>
    </size>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>About RtiViewer</string>
   </property>
-  <property name="windowIcon" >
+  <property name="windowIcon">
    <iconset>
     <normaloff/>
    </iconset>
   </property>
-  <property name="modal" >
+  <property name="modal">
    <bool>true</bool>
   </property>
-  <layout class="QVBoxLayout" >
+  <layout class="QVBoxLayout">
    <item>
-    <widget class="QGroupBox" name="groupBoxSx" >
-     <property name="title" >
+    <widget class="QGroupBox" name="groupBoxSx">
+     <property name="title">
       <string/>
      </property>
-     <property name="flat" >
+     <property name="flat">
       <bool>false</bool>
      </property>
-     <layout class="QHBoxLayout" >
+     <layout class="QHBoxLayout">
       <item>
-       <layout class="QVBoxLayout" >
+       <layout class="QVBoxLayout">
         <item>
-         <widget class="QLabel" name="label" >
-          <property name="maximumSize" >
+         <widget class="QLabel" name="label">
+          <property name="maximumSize">
            <size>
             <width>16777215</width>
             <height>30</height>
            </size>
           </property>
-          <property name="text" >
-           <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">&#xd;&#xd;
-p, li { white-space: pre-wrap; }&#xd;&#xd;
-&lt;/style>&lt;/head>&lt;body style=" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;">&#xd;&#xd;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-size:12pt; font-weight:600;">RTIViewer&lt;/span>&lt;/p>&lt;/body>&lt;/html></string>
+          <property name="text">
+           <string>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+
+p, li { white-space: pre-wrap; }
+
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;RTIViewer&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
-          <property name="alignment" >
+          <property name="alignment">
            <set>Qt::AlignHCenter|Qt::AlignTop</set>
           </property>
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" >
+         <layout class="QHBoxLayout">
           <item>
-           <widget class="QLabel" name="labelMLName" >
-            <property name="maximumSize" >
+           <widget class="QLabel" name="labelMLName">
+            <property name="maximumSize">
              <size>
               <width>300</width>
               <height>244</height>
              </size>
             </property>
-            <property name="font" >
+            <property name="font">
              <font>
               <pointsize>12</pointsize>
              </font>
             </property>
-            <property name="text" >
+            <property name="text">
              <string/>
             </property>
-            <property name="pixmap" >
-             <pixmap resource="rtiviewer.qrc" >:/images/TabletEnhanced2-400.jpg</pixmap>
+            <property name="pixmap">
+             <pixmap resource="rtiviewer.qrc">:/images/TabletEnhanced2-400.jpg</pixmap>
             </property>
-            <property name="scaledContents" >
+            <property name="scaledContents">
              <bool>true</bool>
             </property>
-            <property name="alignment" >
+            <property name="alignment">
              <set>Qt::AlignCenter</set>
             </property>
            </widget>
@@ -101,75 +105,141 @@ p, li { white-space: pre-wrap; }&#xd;&#xd;
          </layout>
         </item>
         <item>
-         <widget class="QLabel" name="labelMLLink" >
-          <property name="text" >
-           <string>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
-&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+         <widget class="QLabel" name="labelMLLink">
+          <property name="text">
+           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;">
-&lt;p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:8pt;">&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:12pt;">&lt;a href="http://chi-dev.wikidot.com/rtiviewer">&lt;span style=" text-decoration: underline; color:#0000ff;">http://chi-dev.wikidot.com/rtiviewer&lt;/span>&lt;/a>&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:13pt;">Protected by the GPL&lt;/p>&lt;/body>&lt;/html></string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:13pt;&quot;&gt;Protected by the GPL&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
-          <property name="alignment" >
+          <property name="alignment">
            <set>Qt::AlignCenter</set>
           </property>
-          <property name="openExternalLinks" >
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="openExternalLinks">
            <bool>true</bool>
           </property>
          </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;manual.pdf&quot;&gt;&lt;span style=&quot; font-size:12pt; text-decoration: underline; color:#0000ff;&quot;&gt;User Manual&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+            <property name="margin">
+             <number>1</number>
+            </property>
+            <property name="indent">
+             <number>-2</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;img src=&quot;:/images/logo-pdf.png&quot; /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="indent">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" >
-        <property name="leftMargin" >
+       <layout class="QVBoxLayout">
+        <property name="leftMargin">
          <number>0</number>
         </property>
-        <property name="rightMargin" >
+        <property name="rightMargin">
          <number>0</number>
         </property>
         <item>
-         <widget class="QLabel" name="labelMLDescription" >
-          <property name="sizePolicy" >
-           <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+         <widget class="QLabel" name="labelMLDescription">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="text" >
-           <string>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
-&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+          <property name="text">
+           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;">
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:13pt;">&lt;span style=" font-size:11pt; font-weight:600;">General Info&lt;/span>&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:11pt; font-weight:600;">&lt;span style=" font-weight:400;">RtiViewer is a viewer for Reflectange Transformation Imaging (RTI). RTIViewer allows the visualization of huge resolution RTI images both locally and remotely through HTTP protocol.&lt;/span>&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:11pt;">This tool is particularly suitable for Cultural Heritage applications, where the use of this kind of images has been rapidly growing. This tool has been developed by the &lt;span style=" font-style:italic;">Visual Computing Laboratory of ISTI-CNR&lt;/span> and financed by &lt;span style=" font-style:italic;">Cultural Heritage Imaging&lt;/span> (&lt;span style=" text-decoration: underline; color:#0000ff;">http://www.c-h-i.org&lt;/span>) under a National Leadership Grant from the US &lt;span style=" font-style:italic;">Institute of Museum and Library Services (IMLS)&lt;/span> in the framework of the project: &lt;span style=" font-weight:600;">Developing Advanced Technologies for the Imaging of Cultural Heritage Objects&lt;/span>.&lt;span style=" font-weight:600;"> &lt;/span>Other partners of this project are: HPLabs (HP), University of Southern California (USC), University of California Santa Cruz (UCSC).&lt;/p>&lt;/body>&lt;/html></string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt; font-weight:600;&quot;&gt;General Info&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt;&quot;&gt;RTIViewer is a viewer for Reflectance Transformation Imaging (RTI). RTIViewer allows the visualization of huge resolution RTI images both locally and remotely through HTTP protocol.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt;&quot;&gt;This tool is particularly suitable for Cultural Heritage applications, where the use of this kind of images is rapidly growing. This tool has been developed by the &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt; font-style:italic;&quot;&gt;Visual Computing Laboratory of ISTI-CNR&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt;&quot;&gt; and financed by &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt; font-style:italic;&quot;&gt;Cultural Heritage Imaging&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt;&quot;&gt; (&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt; text-decoration: underline; color:#0000ff;&quot;&gt;http://www.c-h-i.org&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt;&quot;&gt;) under a National Leadership Grant from the US &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt; font-style:italic;&quot;&gt;Institute of Museum and Library Services (IMLS)&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt;&quot;&gt; in the framework of the project: &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt; font-weight:600;&quot;&gt;Developing Advanced Technologies for the Imaging of Cultural Heritage Objects&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt;&quot;&gt;.&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt; font-weight:600;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt;&quot;&gt;Other partners of this project are: HPLabs (HP), University of Southern California (USC), University of California Santa Cruz (UCSC).&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
-          <property name="alignment" >
+          <property name="alignment">
            <set>Qt::AlignJustify|Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
           </property>
-          <property name="wordWrap" >
+          <property name="wordWrap">
            <bool>true</bool>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="labelAuthors" >
-          <property name="text" >
-           <string>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
-&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+         <widget class="QLabel" name="labelAuthors">
+          <property name="text">
+           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;">
-&lt;p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:8pt;">&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:10pt; font-weight:600;">&lt;span style=" font-size:11pt;">Authors&lt;/span>&lt;/p>
-&lt;p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:10pt;">&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:10pt;">Architect                                           Developers&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:10pt;">&lt;span style=" font-weight:600;">Massimiliano Corsini          Gianpaolo Palma&lt;/span>&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:10pt; font-weight:600;">                                              Massimiliano Corsini&lt;/p>
-&lt;p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:10pt;">&lt;/p>&lt;/body>&lt;/html></string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:8pt;&quot;&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:11pt; font-weight:600;&quot;&gt;Authors&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:10pt;&quot;&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:10pt;&quot;&gt;Architect                                           Developers&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:10pt; font-weight:600;&quot;&gt;Massimiliano Corsini          Gianpaolo Palma&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:10pt; font-weight:600;&quot;&gt;                                              Massimiliano Corsini&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg'; font-size:10pt; font-weight:600;&quot;&gt;		      Joao Barbosa (Univ. Minho)&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg'; font-size:10pt;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
-          <property name="wordWrap" >
+          <property name="wordWrap">
            <bool>true</bool>
           </property>
          </widget>
@@ -180,86 +250,86 @@ p, li { white-space: pre-wrap; }
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" >
+    <layout class="QHBoxLayout">
      <item>
-      <widget class="QLabel" name="labelMLName_4" >
-       <property name="maximumSize" >
+      <widget class="QLabel" name="labelMLName_4">
+       <property name="maximumSize">
         <size>
          <width>300</width>
          <height>244</height>
         </size>
        </property>
-       <property name="font" >
+       <property name="font">
         <font>
          <pointsize>12</pointsize>
         </font>
        </property>
-       <property name="text" >
+       <property name="text">
         <string/>
        </property>
-       <property name="pixmap" >
-        <pixmap resource="rtiviewer.qrc" >:/images/vcglogo.png</pixmap>
+       <property name="pixmap">
+        <pixmap resource="rtiviewer.qrc">:/images/vcglogo.png</pixmap>
        </property>
-       <property name="scaledContents" >
+       <property name="scaledContents">
         <bool>false</bool>
        </property>
-       <property name="alignment" >
+       <property name="alignment">
         <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
      <item>
-      <layout class="QVBoxLayout" >
+      <layout class="QVBoxLayout">
        <item>
-        <widget class="QLabel" name="labelMLName_2" >
-         <property name="maximumSize" >
+        <widget class="QLabel" name="labelMLName_2">
+         <property name="maximumSize">
           <size>
            <width>200</width>
            <height>250</height>
           </size>
          </property>
-         <property name="font" >
+         <property name="font">
           <font>
            <pointsize>12</pointsize>
           </font>
          </property>
-         <property name="text" >
+         <property name="text">
           <string/>
          </property>
-         <property name="pixmap" >
-          <pixmap resource="rtiviewer.qrc" >:/images/hptran.png</pixmap>
+         <property name="pixmap">
+          <pixmap resource="rtiviewer.qrc">:/images/hptran.png</pixmap>
          </property>
-         <property name="scaledContents" >
+         <property name="scaledContents">
           <bool>false</bool>
          </property>
-         <property name="alignment" >
+         <property name="alignment">
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="labelMLName_7" >
-         <property name="maximumSize" >
+        <widget class="QLabel" name="labelMLName_7">
+         <property name="maximumSize">
           <size>
            <width>300</width>
            <height>244</height>
           </size>
          </property>
-         <property name="font" >
+         <property name="font">
           <font>
            <pointsize>12</pointsize>
           </font>
          </property>
-         <property name="text" >
+         <property name="text">
           <string/>
          </property>
-         <property name="pixmap" >
-          <pixmap resource="rtiviewer.qrc" >:/images/ucsantacruz_resize.png</pixmap>
+         <property name="pixmap">
+          <pixmap resource="rtiviewer.qrc">:/images/ucsantacruz_resize.png</pixmap>
          </property>
-         <property name="scaledContents" >
+         <property name="scaledContents">
           <bool>false</bool>
          </property>
-         <property name="alignment" >
+         <property name="alignment">
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
@@ -267,84 +337,84 @@ p, li { white-space: pre-wrap; }
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" >
+      <layout class="QVBoxLayout">
        <item>
-        <widget class="QLabel" name="labelMLName_3" >
-         <property name="maximumSize" >
+        <widget class="QLabel" name="labelMLName_3">
+         <property name="maximumSize">
           <size>
            <width>300</width>
            <height>244</height>
           </size>
          </property>
-         <property name="font" >
+         <property name="font">
           <font>
            <pointsize>12</pointsize>
           </font>
          </property>
-         <property name="text" >
+         <property name="text">
           <string/>
          </property>
-         <property name="pixmap" >
-          <pixmap resource="rtiviewer.qrc" >:/images/mono-gold-cardinal-big.gif</pixmap>
+         <property name="pixmap">
+          <pixmap resource="rtiviewer.qrc">:/images/mono-gold-cardinal-big.gif</pixmap>
          </property>
-         <property name="scaledContents" >
+         <property name="scaledContents">
           <bool>false</bool>
          </property>
-         <property name="alignment" >
+         <property name="alignment">
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="labelMLName_9" >
-         <property name="maximumSize" >
+        <widget class="QLabel" name="labelMLName_9">
+         <property name="maximumSize">
           <size>
            <width>300</width>
            <height>244</height>
           </size>
          </property>
-         <property name="font" >
+         <property name="font">
           <font>
            <pointsize>12</pointsize>
           </font>
          </property>
-         <property name="text" >
+         <property name="text">
           <string/>
          </property>
-         <property name="pixmap" >
-          <pixmap resource="rtiviewer.qrc" >:/images/logousc_resize.png</pixmap>
+         <property name="pixmap">
+          <pixmap resource="rtiviewer.qrc">:/images/logousc_resize.png</pixmap>
          </property>
-         <property name="scaledContents" >
+         <property name="scaledContents">
           <bool>false</bool>
          </property>
-         <property name="alignment" >
+         <property name="alignment">
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="labelMLName_5" >
-         <property name="maximumSize" >
+        <widget class="QLabel" name="labelMLName_5">
+         <property name="maximumSize">
           <size>
            <width>300</width>
            <height>244</height>
           </size>
          </property>
-         <property name="font" >
+         <property name="font">
           <font>
            <pointsize>12</pointsize>
           </font>
          </property>
-         <property name="text" >
+         <property name="text">
           <string/>
          </property>
-         <property name="pixmap" >
-          <pixmap resource="rtiviewer.qrc" >:/images/inscriptifact_banner_small.png</pixmap>
+         <property name="pixmap">
+          <pixmap resource="rtiviewer.qrc">:/images/inscriptifact_banner_small.png</pixmap>
          </property>
-         <property name="scaledContents" >
+         <property name="scaledContents">
           <bool>false</bool>
          </property>
-         <property name="alignment" >
+         <property name="alignment">
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
@@ -352,45 +422,45 @@ p, li { white-space: pre-wrap; }
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" >
+      <layout class="QVBoxLayout">
        <item>
-        <layout class="QHBoxLayout" >
+        <layout class="QHBoxLayout">
          <item>
-          <widget class="QLabel" name="labelMLName_8" >
-           <property name="maximumSize" >
+          <widget class="QLabel" name="labelMLName_8">
+           <property name="maximumSize">
             <size>
              <width>300</width>
              <height>244</height>
             </size>
            </property>
-           <property name="font" >
+           <property name="font">
             <font>
              <pointsize>12</pointsize>
             </font>
            </property>
-           <property name="text" >
+           <property name="text">
             <string/>
            </property>
-           <property name="pixmap" >
-            <pixmap resource="rtiviewer.qrc" >:/images/chi-logo.png</pixmap>
+           <property name="pixmap">
+            <pixmap resource="rtiviewer.qrc">:/images/chi-logo.png</pixmap>
            </property>
-           <property name="scaledContents" >
+           <property name="scaledContents">
             <bool>false</bool>
            </property>
-           <property name="alignment" >
+           <property name="alignment">
             <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="okButton" >
-           <property name="minimumSize" >
+          <widget class="QPushButton" name="okButton">
+           <property name="minimumSize">
             <size>
              <width>0</width>
              <height>60</height>
             </size>
            </property>
-           <property name="text" >
+           <property name="text">
             <string>OK</string>
            </property>
           </widget>
@@ -398,28 +468,28 @@ p, li { white-space: pre-wrap; }
         </layout>
        </item>
        <item>
-        <widget class="QLabel" name="labelMLName_6" >
-         <property name="maximumSize" >
+        <widget class="QLabel" name="labelMLName_6">
+         <property name="maximumSize">
           <size>
            <width>240</width>
            <height>100</height>
           </size>
          </property>
-         <property name="font" >
+         <property name="font">
           <font>
            <pointsize>12</pointsize>
           </font>
          </property>
-         <property name="text" >
+         <property name="text">
           <string/>
          </property>
-         <property name="pixmap" >
-          <pixmap resource="rtiviewer.qrc" >:/images/logo_imls_400_wide.png</pixmap>
+         <property name="pixmap">
+          <pixmap resource="rtiviewer.qrc">:/images/logo_imls_400_wide.png</pixmap>
          </property>
-         <property name="scaledContents" >
+         <property name="scaledContents">
           <bool>true</bool>
          </property>
-         <property name="alignment" >
+         <property name="alignment">
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
@@ -431,7 +501,7 @@ p, li { white-space: pre-wrap; }
   </layout>
  </widget>
  <resources>
-  <include location="rtiviewer.qrc" />
+  <include location="rtiviewer.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -440,15 +510,34 @@ p, li { white-space: pre-wrap; }
    <receiver>aboutDialog</receiver>
    <slot>close()</slot>
    <hints>
-    <hint type="sourcelabel" >
-     <x>518</x>
-     <y>499</y>
+    <hint type="sourcelabel">
+     <x>793</x>
+     <y>466</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>282</x>
      <y>260</y>
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>label_2</sender>
+   <signal>linkActivated(QString)</signal>
+   <receiver>aboutDialog</receiver>
+   <slot>showManual(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>171</x>
+     <y>362</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>392</x>
+     <y>388</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>showManual(QString)</slot>
+ </slots>
 </ui>

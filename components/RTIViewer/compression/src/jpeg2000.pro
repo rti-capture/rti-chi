@@ -7,6 +7,23 @@ DESTDIR = ./lib
 
 win32: DEFINES += OPJ_STATIC
 
+
+win32-msvc2005:QMAKE_LFLAGS   += /LARGEADDRESSAWARE
+win32-msvc2008:QMAKE_LFLAGS   += /LARGEADDRESSAWARE
+
+win32-msvc2005:QMAKE_CXXFLAGS   += /O2 /Ot /Oi /openmp /Zp16 /fp:fast /arch:SSE2
+win32-msvc2008:QMAKE_CXXFLAGS   += /O2 /Ot /Oi /openmp /Zp16 /fp:fast /arch:SSE2
+
+win32-g++:QMAKE_LIBS +=
+win32-g++:QMAKE_LFLAGS += -m32
+win32-g++:QMAKE_CXXFLAGS += -O3 -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize
+win32-g++:QMAKE_CFLAGS += -O3 -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize
+
+macx-g++:QMAKE_LIBS +=
+macx-g++:QMAKE_LFLAGS += -m32
+macx-g++:QMAKE_CXXFLAGS += -O3 -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize
+macx-g++:QMAKE_CFLAGS += -O3 -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize
+
 SOURCES        = jpeg2000.cpp\
 				openjpeg/bio.c \
 				openjpeg/cio.c \

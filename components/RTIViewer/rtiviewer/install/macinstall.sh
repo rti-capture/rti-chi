@@ -13,6 +13,7 @@
 cd ../src
 QTPATH="/Library/Frameworks"
 APPNAME="RTIViewer.app"
+APPNAME2="rtiwebmaker"
 
 BUNDLE="RTIViewerBundle"
 
@@ -29,12 +30,22 @@ else
   exit 0
 fi
 
+if [ -e ../../rtibuilder/src/$APPNAME2 ]
+then
+	echo "------------------"
+else
+	echo "Started in the wrong dir"
+	exit 0
+fi
+
 echo "Starting to copying stuff in the bundle"
 
 rm -r -f $BUNDLE
 
 mkdir $BUNDLE
 cp -r rtiviewer.app $BUNDLE
+
+cp -r ../../rtibuilder/src/rtiwebmaker $BUNDLE/rtiviewer.app/Contents/MacOS
 
 # we must add also a qt.conf that contains the new dir of the plugins
 cp ../install/qt.conf $BUNDLE/$APPNAME/Contents/Resources
@@ -45,7 +56,7 @@ cp ../install/qt.conf $BUNDLE/$APPNAME/Contents/Resources
 mkdir $BUNDLE/$APPNAME/Contents/Frameworks   
 mkdir $BUNDLE/$APPNAME/Contents/plugins   
 mkdir $BUNDLE/$APPNAME/Contents/plugins/imageformats 
-  
+
 #cp ../../docs/gpl.txt $BUNDLE
 #cp ../../docs/readme.txt $BUNDLE
 
@@ -61,7 +72,7 @@ for x in $QTCOMPONENTS
   do
    install_name_tool -id  @executable_path/../Frameworks/$x.framework/Versions/4.0/$x $BUNDLE/rtiviewer.app/Contents/Frameworks/$x.framework/Versions/4.0/$x
   done
-
+  
 install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/QtGui.framework/Versions/4.0/QtGui
 install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/QtXml.framework/Versions/4.0/QtXml
 install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/QtNetwork.framework/Versions/4.0/QtNetwork
@@ -90,6 +101,18 @@ do
   install_name_tool -change QtOpenGL.framework/Versions/4/QtOpenGL   @executable_path/../Frameworks/QtOpenGL.framework/Versions/4/QtOpenGL   $BUNDLE/rtiviewer.app/Contents/$x
   install_name_tool -change QtXml.framework/Versions/4/QtXml         @executable_path/../Frameworks/QtXml.framework/Versions/4/QtXml         $BUNDLE/rtiviewer.app/Contents/$x
 done
+
+EXECNAMES="MacOS/rtiwebmaker" 
+for x in $EXECNAMES
+do
+	install_name_tool -change QtCore.framework/Versions/4/QtCore       @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore       $BUNDLE/rtiviewer.app/Contents/$x
+	install_name_tool -change QtXml.framework/Versions/4/QtXml         @executable_path/../Frameworks/QtXml.framework/Versions/4/QtXml         $BUNDLE/rtiviewer.app/Contents/$x
+	install_name_tool -change QtGui.framework/Versions/4/QtGui         @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui         $BUNDLE/rtiviewer.app/Contents/$x
+done
+
+cd ./$BUNDLE
+ln -s ./rtiviewer.app/Contents/MacOS/rtiwebmaker ./
+cd ../
 
 cd ../install
 

@@ -105,9 +105,9 @@ protected:
 	void mouseReleaseEvent(QMouseEvent *event);
 	
 	/*!
-	  Mouse double click event handler.
+          Mouse float click event handler.
 	*/
-	void mouseDoubleClickEvent(QMouseEvent *event);
+    void mousefloatClickEvent(QMouseEvent *event);
 	
 	/*!
 	  Wheel event handler.
@@ -150,9 +150,9 @@ private:
 	int viewHeight; /*!< Height of the current view. */
 	int viewWidth; /*!< Width of the current view. */
 
-	double zoom; /*!< Current zoom level. */
-	double minZoom; /*!< Minimum zoom level. */ 
-	const double maxZoom; /*!< Maximum zoom level. */
+    float zoom; /*!< Current zoom level. */
+	float minZoom; /*!< Minimum zoom level. */
+	const float maxZoom; /*!< Maximum zoom level. */
 	QShortcut zoomIn; /*!< Shortcut for zoom in action.  */
 	QShortcut zoomOut; /*!< Shortcut for zoom out action. */
 	
@@ -189,10 +189,12 @@ private:
 	QShortcut a5Mode;
 	QShortcut lightVectorMode;
 	QShortcut lightVectorMode2;
+
 	
 // private method
 private:
-	
+
+
 	/*!
 	  Updates the view size
 	*/
@@ -285,6 +287,11 @@ signals:
 	*/
 	void setLightDir(const vcg::Point3f& l, bool refresh);
 
+    /*!
+	  Emitted to update the zoom value.
+	*/
+	void updateZoomValue(float value, float minValue);
+
 // public Qt slots
 public slots:
 	
@@ -322,6 +329,11 @@ public slots:
 	  Saves a snapshot of the image in the current view of the browser.
 	*/
 	void snapshotActivated();
+
+	/*!
+	  Set the zoom factor.
+	*/
+	void updateZoom(int zoomVal);
 
 };
 

@@ -16,7 +16,7 @@
 RenderingDialog::RenderingDialog(QMap<int, RenderingMode*>* l, int currRendering, QWidget *parent, bool remote) : QWidget(parent) 
 {
 	list = l;
-	modeList = new QComboBox(this);
+	modeList = new MyComboBox(this);
 	modeList->setDuplicatesEnabled(false);
 	if (l)
 	{

@@ -13,7 +13,6 @@
 #define RTIVIEWERDLG_H
 
 // Local headers
-#include "ui_rtiviewer.h"
 #include "rtiBrowser.h"
 #include "lightControl.h"
 #include "navigator.h"
@@ -37,6 +36,9 @@
 #include <QDir>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+
+#include <QDesktopServices>
+#include <QUrl>
 
 //! Main window class.
 /*!
@@ -69,6 +71,7 @@ private:
 	QLineEdit* filename; /*!< Read-only text box to show the file-path of RTI image. */
 	QLineEdit* filesize; /*!< Read-only text box to show the size of RTI image. */
 	QLineEdit* fileformat; /*!< Read-only text box to show the format of RTI image. */
+	QSpinBox* zoomFact; /*!< Control to set the zoom factor. */
 
 	HttpThread* getter; /*!< Secondary thread to get the RTI image from a remote server. */
 	QMutex* mutex; /*!< Mutex to provide a mutual exclusion lock between the GUI thread and the HTTP thread. */
@@ -82,6 +85,7 @@ private:
 
 	const QString title;
 	const QString filterStr;
+	const int maxZoom;
 
 
 public:
@@ -140,6 +144,12 @@ public slots:
 	*/
 	void configure();
 
+
+	/*!
+	  Set the zoom value.
+	*/
+	void setZoomValue(float value, float minValue);
+
 protected:
 
 	void dragEnterEvent ( QDragEnterEvent * event )
@@ -157,6 +167,57 @@ protected:
 			openFile(path);
 		}
 	}
+};
+
+
+class FileOpenEater : public QObject
+{
+	Q_OBJECT
+
+public:
+	FileOpenEater(RtiViewerDlg *_mainWindow)
+	{
+		mainWindow= _mainWindow;
+		noEvent=true;
+	}
+
+	RtiViewerDlg *mainWindow;
+	bool noEvent;
+
+protected:
+
+	bool eventFilter(QObject *obj, QEvent *event)
+	{
+		if (event->type() == QEvent::FileOpen)
+		{
+			noEvent=false;
+			QFileOpenEvent *fileEvent = static_cast<QFileOpenEvent*>(event);
+			mainWindow->openFile(fileEvent->file());
+			return true;
+		} 
+		else
+			return QObject::eventFilter(obj, event);
+	}
+};
+
+
+class AboutDlg: public QDialog
+{
+	Q_OBJECT
+public:
+	AboutDlg(QWidget *parent = 0) : QDialog(parent)
+	{
+	}
+
+public slots:
+
+	void showManual(QString file)
+	{
+		QString currentDir = QDir::currentPath();
+		QString path = tr("file:///%1/%2").arg(currentDir).arg(file);
+		QDesktopServices::openUrl(QUrl(path));
+	}
+
 };
 
 #endif /* RTIVIEWERDLG_H */

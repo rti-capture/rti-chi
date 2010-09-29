@@ -34,7 +34,7 @@ DynamicDetailEControl::DynamicDetailEControl(unsigned int tileSize, unsigned int
 	tileSizeCmb = new QComboBox(this);
 	tileSizeCmb->setDuplicatesEnabled(false);
 	int v = 8;
-	for (int i = 0; v*i <= MAX_TILE_SIZE; i++)
+	for (int i = 1; v*i <= MAX_TILE_SIZE; i++)
 		tileSizeCmb->addItem(tr("%1").arg(v*i), QVariant(v*i));
 	tileSize /= 8;
 	tileSize *= 8;
@@ -108,7 +108,7 @@ DynamicDetailEnh::~DynamicDetailEnh()
 
 QString DynamicDetailEnh::getTitle() 
 {
-	return "Dynamic Detail Enhancement";
+	return "Dynamic Multi Light";
 }
 
 
@@ -130,7 +130,7 @@ QWidget* DynamicDetailEnh::getControl(QWidget* parent)
 
 bool DynamicDetailEnh::isLightInteractive()
 {
-	return false;
+	return true;
 }
 
 
@@ -217,6 +217,7 @@ void DynamicDetailEnh::calcDetails(RenderingInfo info, int levelWidth)
 	lights = std::vector<vcg::Point3f>(ni*nj);
 	std::vector<std::vector<vcg::Point3f>*> tempLight(ni*nj);
 	// Selects the better light vectors for each tile.
+	#pragma omp parallel for
 	for (int j = 0; j < nj; j++)
 	{
 		for (int i = 0; i < ni; i++)
@@ -233,7 +234,7 @@ void DynamicDetailEnh::calcDetails(RenderingInfo info, int levelWidth)
 	}
 	// Computes a global smoothing.
 	calcLocalLight(tempLight, lights, ni, nj);
-	// Applie the final smothing filter.
+	// Applies the final smothing filter.
 	calcSmoothing(lights, ni, nj);
 	QImage vectImage;
 	if (drawingMode != 0)
@@ -280,21 +281,36 @@ void DynamicDetailEnh::calcDetails(RenderingInfo info, int levelWidth)
 	// Creates the output texture.
 	if (lrgb)
 	{
-		for (int j = 0; j < info.height ; j++)
+		if (drawingMode == 0)
 		{
-			for(int i = 0; i < info.width; i++)
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int j = 0; j < info.height ; j++)
 			{
-				int offset = j*info.width + i;
-				int offset2 = (j + info.offy)*levelWidth + (i + info.offx);
-				vcg::Point3f l = getLight(i, j, deltaW, deltaH, ni, nj);
-				double lum = evalPoly(&coefficient[offset2*6], l.X(), l.Y()) / 255.0;
-				if (drawingMode == 0)
+				int offset2 = (j + info.offy)*levelWidth + info.offx;
+				int offset = j*info.width;
+				for(int i = 0; i < info.width; i++)
 				{
+					vcg::Point3f l = getLight(i, j, deltaW, deltaH, ni, nj);
+					float lum = coefficient[offset2].evalPoly(l.X(), l.Y()) / 255.0;
 					for (int k = 0; k < 3; k++)
-						bufferPtr[offset*4 + k] = tobyte(lum*color[offset2*3 +k]);
+							bufferPtr[offset*4 + k] = tobyte(lum*color[offset2*3 +k]);
+					offset2++;
+					offset++;
+					bufferPtr[offset*4 + 3] = 255;
 				}
-				else
+			}
+		}
+		else
+		{
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int j = 0; j < info.height ; j++)
+			{
+				int offset2 = (j + info.offy)*levelWidth + info.offx;
+				int offset = j*info.width;
+				for(int i = 0; i < info.width; i++)
 				{
+					vcg::Point3f l = getLight(i, j, deltaW, deltaH, ni, nj);
+					float lum = coefficient[offset2].evalPoly(l.X(), l.Y()) / 255.0;
 					QRgb rgb = vectImage.pixel(i, j);
 					if (qAlpha(rgb) != 0)
 					{
@@ -310,28 +326,45 @@ void DynamicDetailEnh::calcDetails(RenderingInfo info, int levelWidth)
 						for (int k = 0; k < 3; k++)
 							bufferPtr[offset*4 + k] = tobyte(lum*color[offset2*3 +k]);
 					}
+					offset2++;
+					offset++;
+					bufferPtr[offset*4 + 3] = 255;
 				}
-				bufferPtr[offset*4 + 3] = 255;
 			}
 		}
 	}
 	else
 	{
-		for (int j = 0; j < info.height ; j++)
+        if (drawingMode == 0)
 		{
-			for(int i = 0; i < info.width; i++)
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int j = 0; j < info.height ; j++)
 			{
-				int offset = j*info.width + i;
-				int offset2 = (j + info.offy)*levelWidth + (i + info.offx);
-				vcg::Point3f l = getLight(i, j, deltaW, deltaH, ni, nj);
-				if (drawingMode == 0)
+				int offset2 = (j + info.offy)*levelWidth + info.offx;
+				int offset = j*info.width;
+				for(int i = 0; i < info.width; i++)
 				{
-					bufferPtr[offset*4] = tobyte(evalPoly(&red[offset2*6], l.X(), l.Y()));
-					bufferPtr[offset*4 + 1] = tobyte(evalPoly(&green[offset2*6], l.X(), l.Y()));
-					bufferPtr[offset*4 + 2] = tobyte(evalPoly(&blue[offset2*6], l.X(), l.Y()));
+					vcg::Point3f l = getLight(i, j, deltaW, deltaH, ni, nj);
+					int offset4 = offset*4;
+					bufferPtr[offset4] = tobyte(red[offset2].evalPoly(l.X(), l.Y()));
+					bufferPtr[offset4 + 1] = tobyte(green[offset2].evalPoly(l.X(), l.Y()));
+					bufferPtr[offset4 + 2] = tobyte(blue[offset2].evalPoly(l.X(), l.Y()));
+					offset2++;
+					offset++;
+					bufferPtr[offset4 + 3] = 255;
 				}
-				else
+			}
+		}
+		else
+		{
+			#pragma omp parallel for schedule(static,CHUNK)
+			for (int j = 0; j < info.height ; j++)
+			{
+				int offset2 = (j + info.offy)*levelWidth + info.offx;
+				int offset = j*info.width;
+				for(int i = 0; i < info.width; i++)
 				{
+					vcg::Point3f l = getLight(i, j, deltaW, deltaH, ni, nj);
 					QRgb rgb = vectImage.pixel(i, j);
 					if (qAlpha(rgb) != 0)
 					{
@@ -344,12 +377,14 @@ void DynamicDetailEnh::calcDetails(RenderingInfo info, int levelWidth)
 					}
 					else
 					{
-						bufferPtr[offset*4] = tobyte(evalPoly(&red[offset2*6], l.X(), l.Y()));
-						bufferPtr[offset*4 + 1] = tobyte(evalPoly(&green[offset2*6], l.X(), l.Y()));
-						bufferPtr[offset*4 + 2] = tobyte(evalPoly(&blue[offset2*6], l.X(), l.Y()));
+						bufferPtr[offset*4] = tobyte(red[offset2].evalPoly(l.X(), l.Y()));
+						bufferPtr[offset*4 + 1] = tobyte(green[offset2].evalPoly(l.X(), l.Y()));
+						bufferPtr[offset*4 + 2] = tobyte(blue[offset2].evalPoly(l.X(), l.Y()));
 					}
+					offset2++;
+					offset++;
+					bufferPtr[offset*4 + 3] = 255;
 				}
-				bufferPtr[offset*4 + 3] = 255;
 			}
 		}
 	}
@@ -385,9 +420,9 @@ std::vector<vcg::Point3f>* DynamicDetailEnh::getLightSamples(const vcg::Point3f&
 			for (int j = -1; j <= 1; j++)
 			{
 				vcg::Point3f temp = baseDir + baseDirS*i + baseTanS*j;
-				double x2 = temp.X();
+                float x2 = temp.X();
 				x2 *= x2;
-				double y2 = temp.Y();
+                float y2 = temp.Y();
 				y2 *= y2;
 				if (x2 + y2 > 0.999)
 					temp.Z() = 0.0;
@@ -440,12 +475,12 @@ std::vector<vcg::Point3f>* DynamicDetailEnh::getLightSamples(const vcg::Point3f&
 
 std::vector<vcg::Point3f>* DynamicDetailEnh::getBestLight(int x, int y, int tileW, int tileH, int width, const std::vector<vcg::Point3f>& lightSamples)
 {
-	double gradient[9];
-	double lightness[9];
+    float gradient[9];
+    float lightness[9];
 	int maxGrad = 0;
 	int maxL = 0;
-	unsigned char rgb[3];
-	double max = 0;
+
+    float max = 0;
 	int index = 0;
 	std::vector<vcg::Point3f>* vector = new std::vector<vcg::Point3f>();
 	for(int k = 0; k < 9; k++)
@@ -457,36 +492,47 @@ std::vector<vcg::Point3f>* DynamicDetailEnh::getBestLight(int x, int y, int tile
 			int* image = new int[tileW*tileH];
 			int offsetBuf = 0;
 			// Creates a image from the tile.
+            unsigned char rgb[3];
+            LightMemoized lVec(lightSamples[k].X(), lightSamples[k].Y());
+
 			if (lrgb)
 			{
-				for(int j = y; j < y + tileH; j++)
+                for(int j = y; j < y + tileH; j++)
 				{
+
+					float LValue = lightness[k];
+					int offsetBuf = (j-y)*tileW;
+					int *img; img = (image+offsetBuf);
+					int offset = j*width + x;
 					for(int i = x; i < x + tileW; i++)
 					{
-						int offset = j*width + i;
-						double lum = evalPoly(&coefficient[offset*6], lightSamples[k].X(), lightSamples[k].Y()) / 255.0;
-						rgb[0] = tobyte(lum * color[offset*3]);
-						rgb[1] = tobyte(lum * color[offset*3 + 1]);
-						rgb[2] = tobyte(lum * color[offset*3 + 1]);
-						lightness[k] += 0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2];
-						image[offsetBuf] = 0x0 |(rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+						float lum = coefficient[offset].evalPoly(lVec);
+                        unsigned char r = tobyte(lum * color[offset*3]);
+                        unsigned char g = tobyte(lum * color[offset*3 + 1]);
+                        unsigned char b = tobyte(lum * color[offset*3 + 1]);
+                        LValue += 0.299f*r + 0.587f*g + 0.114f*b;
+                        img[i-x] = 0x0 |(r << 16) | (g << 8) | b;
 						offsetBuf++;
+						offset++;
 					}
+                    lightness[k] += LValue;
 				}
 			}
 			else
 			{
+                
 				for(int j = y; j < y + tileH; j++)
 				{
+                    int offsetBuf = (j-y)*tileW;
+					int offset = j*width + x;
 					for(int i = x; i < x + tileW; i++)
 					{
-						int offset = j*width + i;
-						rgb[0] = tobyte(evalPoly(&red[offset*6], lightSamples[k].X(), lightSamples[k].Y()));
-						rgb[1] = tobyte(evalPoly(&green[offset*6], lightSamples[k].X(), lightSamples[k].Y()));
-						rgb[2] = tobyte(evalPoly(&blue[offset*6], lightSamples[k].X(), lightSamples[k].Y()));
+						rgb[0] = tobyte(red[offset].evalPoly(lVec));
+						rgb[1] = tobyte(green[offset].evalPoly(lVec));
 						lightness[k] += 0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2];
 						image[offsetBuf] = 0x0 |(rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
 						offsetBuf++;
+						offset++;
 					}
 				}
 
@@ -501,7 +547,7 @@ std::vector<vcg::Point3f>* DynamicDetailEnh::getBestLight(int x, int y, int tile
 		}
 	}
 	// Selects the light vector with an enhancement measure greater than a threshold.
-	double value[9];
+    float value[9];
 	for (int k = 0; k < 9; k++)
 	{
 		value[k] = k1*gradient[k]/gradient[maxGrad]+ k2*lightness[k]/lightness[maxL];
@@ -512,7 +558,7 @@ std::vector<vcg::Point3f>* DynamicDetailEnh::getBestLight(int x, int y, int tile
 		}
 	}
 	vector->push_back(lightSamples[index]);
-	double limit = threshold*value[index];
+    float limit = threshold*value[index];
 	for (int k = 0; k < 9; k++)
 	{
 		if (k != index && value[k] > limit)
@@ -522,16 +568,16 @@ std::vector<vcg::Point3f>* DynamicDetailEnh::getBestLight(int x, int y, int tile
 }
 
 
-double DynamicDetailEnh::computeSharpOperator(int* image, int width, int height)
+float DynamicDetailEnh::computeSharpOperator(int* image, int width, int height)
 {
-	double gradient = 0;
+    float gradient = 0;
 	if (sharpnessOp == DYN_MAX_LAPLACE || sharpnessOp == DYN_MAX_ENERGY_LAPLACE)
 	{
 		for(int i = 1; i < width - 1; i+=2)
 		{
 			for(int j = 1; j < height - 1; j+=2)
 			{
-				double g = 0;
+                float g = 0;
 				// Computes Laplace operator.
 				g += image[(j-1)*width + i - 1];
 				g += 4*image[(j-1)*width + i];
@@ -556,7 +602,7 @@ double DynamicDetailEnh::computeSharpOperator(int* image, int width, int height)
 		{
 			for(int j = 1; j < height - 1; j++)
 			{
-				double gx = 0, gy = 0;
+                float gx = 0, gy = 0;
 				
 				// Computes Sobel operator.
 				gy += 1 * image[(j-1)*width + i - 1];
@@ -783,6 +829,7 @@ void DynamicDetailEnh::calcLocalLight(std::vector<std::vector<vcg::Point3f>*>& s
 	// Computes the average of the light vectors of the neighbouring tiles.
 	std::vector<vcg::Point3f> avg(nx*ny);
 	std::vector<int> nKernel(nx*ny);
+	#pragma omp parallel for
 	for (int y = 0; y < ny; y++)
 	{
 		for (int x = 0; x < nx; x++)
@@ -823,6 +870,7 @@ void DynamicDetailEnh::calcLocalLight(std::vector<std::vector<vcg::Point3f>*>& s
 		}
 	}
 	// Selects for aech tile the light vector nearer to the average vector.
+	#pragma omp parallel for
 	for (int ii = 0; ii < nx*ny; ii++)
 	{
 		avg[ii] /= static_cast<float>(nKernel[ii]);
@@ -851,6 +899,7 @@ void DynamicDetailEnh::calcSmoothing(std::vector<vcg::Point3f>& light, int nx, i
 	std::vector<int> nKernel(nx*ny);
 	for (int i = 0; i < nIterFilter; i++)
 	{
+		#pragma omp parallel for
 		for (int y = 0; y < ny; y++)
 		{
 			for (int x = 0; x < nx; x++)
@@ -890,6 +939,7 @@ void DynamicDetailEnh::calcSmoothing(std::vector<vcg::Point3f>& light, int nx, i
 				}
 			}
 		}
+		#pragma omp parallel for
 		for (int ii = 0; ii < nx*ny; ii++)
 		{
 			tempLight[ii] /= static_cast<float>(nKernel[ii]);
@@ -951,21 +1001,21 @@ DynamicDetConfDlg::DynamicDetConfDlg(QWidget *parent) : QDialog(parent)
 	sphereSamplCmb->addItem("Isotropic", QVariant(DYN_UNIFORM));
 	sphereSamplCmb->addItem("Anisotropic", QVariant(DYN_NON_UNIFORM));
 
-	k1Snb = new QDoubleSpinBox(this);
+    k1Snb = new QDoubleSpinBox(this);
 	k1Snb->setRange(0.0, 1.0);
 	k1Snb->setDecimals(2);
 	k1Snb->setSingleStep(0.01);
 	k1Snb->setValue(0.7);
-	connect(k1Snb, SIGNAL(valueChanged(double)), this, SLOT(k1Changed(double)));
+    connect(k1Snb, SIGNAL(valueChanged(double)), this, SLOT(k1Changed(double)));
 	
-	k2Snb = new QDoubleSpinBox(this);
+    k2Snb = new QDoubleSpinBox(this);
 	k2Snb->setRange(0.0, 1.0);
 	k2Snb->setDecimals(2);
 	k2Snb->setSingleStep(0.01);
 	k2Snb->setValue(0.3);
-	connect(k2Snb, SIGNAL(valueChanged(double)), this, SLOT(k2Changed(double)));
+    connect(k2Snb, SIGNAL(valueChanged(double)), this, SLOT(k2Changed(double)));
 	
-	thresholdSnb = new QDoubleSpinBox(this);
+    thresholdSnb = new QDoubleSpinBox(this);
 	thresholdSnb->setRange(0.0, 1.0);
 	thresholdSnb->setDecimals(2);
 	thresholdSnb->setSingleStep(0.01);
@@ -1013,7 +1063,7 @@ DynamicDetConfDlg::DynamicDetConfDlg(QWidget *parent) : QDialog(parent)
 	
 	setModal(false);
 	setWindowFlags(Qt::Tool);
-	setWindowTitle(tr("Configure Dynamic Detail Enhancement"));
+	setWindowTitle(tr("Configure Dynamic Multi Light"));
 }
 
 

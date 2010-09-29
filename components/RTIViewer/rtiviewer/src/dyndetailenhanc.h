@@ -218,12 +218,12 @@ private:
 	unsigned char* bufferPtr; /*!< Pointer to output texture buffer.*/
 	int w; /*!< Width of output texture. */
 	int h; /*!< Height of the output texture. */
-	const int* coefficient; /*!< Pointer to luminance coefficients for LRGB-PTM. */
+	const PTMCoefficient* coefficient; /*!< Pointer to luminance coefficients for LRGB-PTM. */
 	const unsigned char* color; /*!< Pointer to RGB components for LRGB-PTM. */
 	bool lrgb; /*!< Flag to indicate the type of PTM.*/
-	const int *red; /*!< Pointer to red component for RGB-PTM. */
-	const int *green; /*!< Pointer to green component for RGB-PTM. */
-	const int *blue; /*!< Pointer to blue component for RGB-PTM. */
+	const PTMCoefficient *red; /*!< Pointer to red component for RGB-PTM. */
+	const PTMCoefficient *green; /*!< Pointer to green component for RGB-PTM. */
+	const PTMCoefficient *blue; /*!< Pointer to blue component for RGB-PTM. */
 
 	std::vector<vcg::Point3f> lights; /*!< List of selected light vectors for each tiles. */
 	
@@ -286,7 +286,7 @@ private:
 	  \param height height of the image.
 	  \return value of sharpness operator.
 	*/
-	double computeSharpOperator(int* image, int width, int height);
+        float computeSharpOperator(int* image, int width, int height);
 
 
 	/*!

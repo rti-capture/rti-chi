@@ -32,14 +32,15 @@
 RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	QWidget(parent),
 	rendDlg(NULL),
-	title("Rti Viewer 0.1 - VCLab (C) 2010"),
-	filterStr("All (*.ptm *.hsh *.rti *.mview);;Polynamial Texture Maps (*.ptm);; Hemispherical Harmonics Map (*.hsh);; Universal RTI (*.rti);; Multiview RTI (*.mview)")
+	title("RTIViewer 1.0.1 (Beta)"),
+	filterStr("All (*.ptm *.hsh *.rti *.mview);;Polynamial Texture Maps (*.ptm);; Hemispherical Harmonics Map (*.hsh);; Universal RTI (*.rti);; Multiview RTI (*.mview)"),
+	maxZoom(2)
 {
 	//Browser
 	browserFrame = new QFrame(this);
 	browserFrame->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	browserFrame->setLineWidth(3);
-	browser = new RtiBrowser(650, 650, NULL, 3.0, browserFrame);
+	browser = new RtiBrowser(650, 650, NULL, maxZoom, browserFrame);
 	QHBoxLayout* browserLayout = new QHBoxLayout;
 	browserLayout->setContentsMargins(0, 0, 0, 0);
 	browserLayout->addWidget(browser);
@@ -49,7 +50,7 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	navFrame = new QFrame(this);
 	navFrame->setFrameStyle(QFrame::Panel| QFrame::Sunken);
 	navFrame->setLineWidth(3);
-	navigator = new Navigator(navFrame, 360, 240, 3);
+	navigator = new Navigator(navFrame, 360, 240, maxZoom);
 	QHBoxLayout* navLayout = new QHBoxLayout;
 	navLayout->setContentsMargins(0, 0, 0, 0);
 	navLayout->addWidget(navigator);
@@ -60,6 +61,7 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	connect(browser, SIGNAL(sizeChanged(int, int)), navigator, SLOT(updateBrowserSize(int, int)));
 	connect(browser, SIGNAL(viewChanged(QRectF)), navigator, SLOT(updateSelection(QRectF)));
 	connect(navigator, SIGNAL(selectionChanged(QRectF)), browser, SLOT(updateView(QRectF)));
+	connect(browser, SIGNAL(updateZoomValue(float, float)), this, SLOT(setZoomValue(float, float)));
 	
 	//Toolbar
 	openLocalAct = new QAction(QIcon(":/images/openlocal.png"),tr("&Open..."), this);
@@ -92,7 +94,7 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	
 	//Rendering mode widget
 	QGroupBox* rendGroup = new QGroupBox("Rendering mode", this);
-	rendGroup->setFixedWidth(366);
+	rendGroup->setFixedWidth(365);
 	rendDlg = new RenderingDialog(NULL, -1, rendGroup);
 	QVBoxLayout* rendLayout = new QVBoxLayout;
 	rendLayout->setContentsMargins(0, 0, 0, 0);
@@ -101,8 +103,8 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	connect(rendDlg, SIGNAL(renderingModeChanged(int)), browser, SLOT(setRenderingMode(int)));
 	connect(rendDlg, SIGNAL(updateImage()), browser, SLOT(updateImage()));
 
-	//File info widget
 	QGroupBox* infoGroup = new QGroupBox("File info", this);
+	infoGroup->setFixedWidth(365);
 	QLabel* label1 = new QLabel("File");
 	QLabel* label2 = new QLabel("Size");
 	QLabel* label3 = new QLabel("Format");
@@ -113,6 +115,7 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	fileformat = new QLineEdit(infoGroup);
 	fileformat->setReadOnly(true);
 	QGridLayout* infoLayout = new QGridLayout;
+	
 	infoLayout->addWidget(label1, 0, 0);
 	infoLayout->addWidget(filename, 0, 1, 1, 3);
 	infoLayout->addWidget(label2, 1, 0);
@@ -121,10 +124,24 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	infoLayout->addWidget(fileformat, 1, 3);
 	infoGroup->setLayout(infoLayout);
 
+	QLabel* label4 = new QLabel("Zoom");
+	zoomFact = new QSpinBox(infoGroup);
+	zoomFact->setRange(1, maxZoom*100);
+	zoomFact->setSuffix("%");
+	zoomFact->setValue(100);
+	zoomFact->setKeyboardTracking(false);
+	zoomFact->setEnabled(false);
+
+	connect(zoomFact, SIGNAL(valueChanged(int)), browser, SLOT(updateZoom(int)));
+
 	QGridLayout* toolLight = new QGridLayout;
-	toolLight->setColumnMinimumWidth(1, 300);
-	toolLight->addWidget(toolBar, 0, 0, 1, 1, Qt::AlignTop);
-	toolLight->addWidget(light, 0, 1, 1, 1, Qt::AlignCenter);
+	toolLight->setColumnMinimumWidth(1, 240);
+	toolLight->addWidget(toolBar, 0, 0, Qt::AlignTop | Qt::AlignLeft );
+	toolLight->addWidget(light, 0, 1, Qt::AlignCenter);
+	QVBoxLayout* zoomLayout = new QVBoxLayout;
+	zoomLayout->addWidget(label4, 0, Qt::AlignHCenter);
+	zoomLayout->addWidget(zoomFact, 0, Qt::AlignHCenter);
+	toolLight->addLayout(zoomLayout, 0, 2, Qt::AlignVCenter); 
 
 	//Main window layout
 	QGridLayout* layout = new QGridLayout;
@@ -145,7 +162,6 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	
 	setLayout(layout);
 	
-	
 	// widget attributes
 	setWindowState(Qt::WindowMaximized);
 	setWindowTitle(title);
@@ -162,7 +178,7 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	getter->start();
 
 	//Application settings
-	settings = new QSettings("VCG", "RtiViewer");
+	settings = new QSettings("VCG", "RTIViewer");
 	int tempW = settings->value("maxWindowWidth", 2000).toInt();
 	int tempH = settings->value("maxWindowHeight", 2000).toInt();
 	dir.setPath(settings->value("workingDir", "").toString()); 
@@ -231,6 +247,7 @@ int RtiViewerDlg::openFile(QString path)
 		fileformat->setText("");
 		if (image->load(LoadingDlg::QCallBack)== 0) //Loads the image info
 		{
+			zoomFact->setEnabled(true);
 			//Sets the browser image
 			browser->setImage(image);
 			//Sets the navigator image
@@ -279,7 +296,8 @@ void RtiViewerDlg::configure()
 
 void RtiViewerDlg::about()
 {
-	QDialog *dlg = new QDialog(this);
+	//QDialog *dlg = new QDialog(this);
+	AboutDlg *dlg = new AboutDlg(this);
 	Ui::aboutDialog aboutdlg;
 	aboutdlg.setupUi(dlg);
 	dlg->exec();
@@ -367,6 +385,7 @@ int RtiViewerDlg::openRemote()
 			QMessageBox::critical(this, "Error", "Remote thumb-nail invalid.");
 			return -1;
 		}
+		zoomFact->setEnabled(true);
 		//Allocates image
 		emit getter->setRti(imageRti);
 		browser->setImage(imageRti);
@@ -409,4 +428,13 @@ void RtiViewerDlg::httpErrorOccurred(QString error)
 {
 	getter->resetHttpError();
 	QMessageBox::critical(this, "HTTP Error", error);
+}
+
+
+void RtiViewerDlg::setZoomValue(float value, float minValue)
+{
+	zoomFact->setMinimum(minValue*100);
+	disconnect(zoomFact, SIGNAL(valueChanged(int)), 0, 0);
+	zoomFact->setValue(value*100);
+	connect(zoomFact, SIGNAL(valueChanged(int)), browser, SLOT(updateZoom(int)));
 }

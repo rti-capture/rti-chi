@@ -78,7 +78,7 @@ protected:
 private:
 
 
-	const double maxZoom; /*!< Maximum zoom level. */
+        const float maxZoom; /*!< Maximum zoom level. */
 
 	int height; /*!< Height of the widget. */
 	int width; /*!< Width of the widget. */

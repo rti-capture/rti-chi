@@ -183,7 +183,7 @@ public:
 	  \param text string to display in the progress bar.
 	  \return returns 0 if the coefficients were successfully loaded, returns -1 otherwise.
 	*/
-	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0, QString& text = QString()) = 0;
+	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0, const QString& text = QString()) = 0;
 
 	
 	/*!

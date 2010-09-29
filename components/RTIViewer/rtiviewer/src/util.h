@@ -22,6 +22,10 @@
 
 #include <QString> 
 
+#include <stdio.h>
+
+#define CHUNK 128
+
 /*!
   Number of mip-mapping level used.
 */
@@ -72,7 +76,7 @@ struct RenderingInfo
 };
 
 
-static const double zerotol = 1.0e-5;
+static const float zerotol = 1.0e-5;
 
 /*!
   Type of callback to update progress window.
@@ -109,18 +113,18 @@ static QString getLine(FILE* file, bool* eof)
   \param a array of six coefficients.
   \param lu, lv projections of light vector on uv-plane.
 */
-static double evalPoly(const int* a, float lu, float lv)
+static float evalPoly(const int* a, float lu, float lv)
 {
 	return a[0]*lu*lu + a[1]*lv*lv + a[2]*lu*lv + a[3]*lu + a[4]*lv + a[5]; 
 }
 
 
 /*!
-  Converts a double value as unsigned char value.
+  Converts a float value as unsigned char value.
   \param value value to convert.
   \return returns the converted value as unsigned char. 
 */
-static unsigned char tobyte(double value)
+static unsigned char tobyte(float value)
 {
 	unsigned char v;
 
@@ -152,9 +156,9 @@ static unsigned char toColor(float normal)
   \param x value to check.
   \return returns true if the value is contained by the interval, returns false otherwise.
 */
-static bool isZero(double x)
+static bool isZero(float x)
 {
-	double limit = 1e-9;
+        float limit = 1e-9;
 	return x > -limit && x < limit;
 }
 
@@ -164,12 +168,12 @@ static bool isZero(double x)
   \param x input value.
   \return the cube root of \a x.
 */
-static double cubeRoot(double x)
+static float cubeRoot(float x)
 {
 	if (x > 0)
-		return pow(x, 1.0 / 3.0);
+		return pow(x, 1.0f / 3.0f);
 	else if (x < 0)
-		return -pow(-x, 1.0 / 3.0);
+		return -pow(-x, 1.0f / 3.0f);
 	return 0;
 }
 
@@ -181,9 +185,9 @@ static double cubeRoot(double x)
   \param n index of the next free element in the solutions array.
   \return the number of solutions.
 */
-static int solveQuadric(double c[3], double s[4], int n)
+static int solveQuadric(float c[3], float s[4], int n)
 {
-	double p, q, D;
+        float p, q, D;
 	
 	/* normal form: x^2 + px + q = 0 */
 
@@ -203,7 +207,7 @@ static int solveQuadric(double c[3], double s[4], int n)
 	} 
 	else if (D > 0)
 	{
-		double sqrt_D = sqrt(D);
+                float sqrt_D = sqrt(D);
 		s[0 + n] = sqrt_D - p;
 		s[1 + n] = -sqrt_D - p;
 		return 2;
@@ -218,7 +222,7 @@ static int solveQuadric(double c[3], double s[4], int n)
   \param s solutions.
   \return the number of solutions.
 */
-static int solveQuadric(double c[3], double s[4]) {
+static int solveQuadric(float c[3], float s[4]) {
 	return solveQuadric(c, s, 0);
 }
 
@@ -230,13 +234,13 @@ static int solveQuadric(double c[3], double s[4]) {
   \param s solutions.
   \return the number of solutions.
 */
-static int solveCubic(double c[4], double s[4]) 
+static int solveCubic(float c[4], float s[4])
 {
 	int i, num;
-	double sub;
-	double A, B, C;
-	double sq_A, p, q;
-	double cb_p, D;
+        float sub;
+        float A, B, C;
+        float sq_A, p, q;
+        float cb_p, D;
 
 	/* normal form: x^3 + Ax^2 + Bx + C = 0 */
 	A = c[2] / c[3];
@@ -259,9 +263,9 @@ static int solveCubic(double c[4], double s[4])
 			s[0] = 0;
 			num = 1;
 		}
-		else /* one single and one double solution */
+                else /* one single and one float solution */
 		{
-			double u = cubeRoot(-q);
+                        float u = cubeRoot(-q);
 			s[0] = 2 * u;
 			s[1] = -u;
 			num = 2;
@@ -269,8 +273,8 @@ static int solveCubic(double c[4], double s[4])
 	} 
 	else if (D < 0) /* Casus irreducibilis: three real solutions */
 	{
-		double phi = 1.0 / 3 * acos(-q / sqrt(-cb_p));
-		double t = 2 * sqrt(-p);
+                float phi = 1.0 / 3 * acos(-q / sqrt(-cb_p));
+                float t = 2 * sqrt(-p);
 
 		s[0] = t * cos(phi);
 		s[1] = -t * cos(phi + M_PI / 3);
@@ -279,9 +283,9 @@ static int solveCubic(double c[4], double s[4])
 	} 
 	else /* one real solution */
 	{
-		double sqrt_D = sqrt(D);
-		double u = cubeRoot(sqrt_D - q);
-		double v = -cubeRoot(sqrt_D + q);
+                float sqrt_D = sqrt(D);
+                float u = cubeRoot(sqrt_D - q);
+                float v = -cubeRoot(sqrt_D + q);
 
 		s[0] = u + v;
 		num = 1;
@@ -301,12 +305,12 @@ static int solveCubic(double c[4], double s[4])
   \param s solutions.
   \return the number of solutions.
 */
-static int solveQuartic(double c[5], double s[4])
+static int solveQuartic(float c[5], float s[4])
 {
-	double coeffs[4];
-	double z, u, v, sub;
-	double A, B, C, D;
-	double sq_A, p, q, r;
+        float coeffs[4];
+        float z, u, v, sub;
+        float A, B, C, D;
+        float sq_A, p, q, r;
 	int i, num;
 
 	/* normal form: x^4 + Ax^3 + Bx^2 + Cx + D = 0 */
@@ -378,11 +382,11 @@ static int solveQuartic(double c[5], double s[4])
 }
 
 
-static int computeMaximumOnCircle(double* a, double &lx, double &ly)
+static int computeMaximumOnCircle(float* a, float &lx, float &ly)
 {
-	double db0, db1, db2, db3, db4;
-	double zeros[4];
-	double u, v, maxval, maxu = -1, maxv = -1, inc, arg, polyval;
+        float db0, db1, db2, db3, db4;
+        float zeros[4];
+        float u, v, maxval, maxu = -1, maxv = -1, inc, arg, polyval;
 	int index, nroots;
 
 	index = -1;
@@ -405,17 +409,17 @@ static int computeMaximumOnCircle(double* a, double &lx, double &ly)
 
 	if (db0 != 0)
 	{
-		double c[5] = { db4, db3, db2, db1, db0 };
+                float c[5] = { db4, db3, db2, db1, db0 };
 		nroots = solveQuartic(c, zeros);
 	} 
 	else if (db1 != 0)
 	{
-		double c[4] = { db4, db3, db2, db1 };
+                float c[4] = { db4, db3, db2, db1 };
 		nroots = solveCubic(c, zeros);
 	}
 	else 
 	{
-		double c[3] = { db4, db3, db2 };
+                float c[3] = { db4, db3, db2 };
 		nroots = solveQuadric(c, zeros);
 	}
 			
@@ -428,7 +432,7 @@ static int computeMaximumOnCircle(double* a, double &lx, double &ly)
 			index = 0;
 			break;
 		default:
-			double* vals = new double[nroots];
+                        float* vals = new float[nroots];
 			index = 0;
 			for (int i = 0; i < nroots; i++) 
 			{
@@ -474,7 +478,7 @@ static int computeMaximumOnCircle(double* a, double &lx, double &ly)
 
 	u = 2 * zeros[index] / (1 + zeros[index] * zeros[index]);
 	v = (1 - zeros[index] * zeros[index]) / (1 + zeros[index] * zeros[index]);
-	double val1 = a[0] * u * u + a[1] * v * v + a[2] * u * v + a[3] * u + a[4] * v + a[5];
+        float val1 = a[0] * u * u + a[1] * v * v + a[2] * u * v + a[3] * u + a[4] * v + a[5];
 	if (maxval > val1) {
 		lx = maxu;
 		ly = maxv;
@@ -485,17 +489,19 @@ static int computeMaximumOnCircle(double* a, double &lx, double &ly)
 /*!
   Returns the first nine Hemispherical Harmonics computed in the theta and phi angles.
 */
-static void getHSH(double theta, double phi, double* hweights)
+static void getHSH(float theta, float phi, float* hweights)
 {
+	float cosPhi = cos(phi);
+	float cosTheta = cos(theta);
 	hweights[0] = 1/sqrt(2*M_PI);
-	hweights[1] = sqrt(6/M_PI)      *  (cos(phi)*sqrt(cos(theta)-cos(theta)*cos(theta)));
-	hweights[2] = sqrt(3/(2*M_PI))  *  (-1. + 2.*cos(theta));
-	hweights[3] = sqrt(6/M_PI)      *  (sqrt(cos(theta) - cos(theta)*cos(theta))*sin(phi));
-	hweights[4] = sqrt(30/M_PI)     *  (cos(2.*phi)*(-cos(theta) + cos(theta)*cos(theta)));
-	hweights[5] = sqrt(30/M_PI)     *  (cos(phi)*(-1. + 2.*cos(theta))*sqrt(cos(theta) - cos(theta)*cos(theta)));
-	hweights[6] = sqrt(5/(2*M_PI))  *  (1 - 6.*cos(theta) + 6.*cos(theta)*cos(theta));
-	hweights[7] = sqrt(30/M_PI)     *  ((-1 + 2.*cos(theta))*sqrt(cos(theta) - cos(theta)*cos(theta))*sin(phi));
-	hweights[8] = sqrt(30/M_PI)     *  ((-cos(theta) + cos(theta)*cos(theta))*sin(2.*phi));
+	hweights[1] = sqrt(6/M_PI)      *  (cosPhi*sqrt(cosTheta-cosTheta*cosTheta));
+	hweights[2] = sqrt(3/(2*M_PI))  *  (-1. + 2.*cosTheta);
+	hweights[3] = sqrt(6/M_PI)      *  (sqrt(cosTheta - cosTheta*cosTheta)*sin(phi));
+	hweights[4] = sqrt(30/M_PI)     *  (cos(2.*phi)*(-cosTheta + cosTheta*cosTheta));
+	hweights[5] = sqrt(30/M_PI)     *  (cosPhi*(-1. + 2.*cosTheta)*sqrt(cosTheta - cosTheta*cosTheta));
+	hweights[6] = sqrt(5/(2*M_PI))  *  (1 - 6.*cosTheta + 6.*cosTheta*cosTheta);
+	hweights[7] = sqrt(30/M_PI)     *  ((-1 + 2.*cosTheta)*sqrt(cosTheta - cosTheta*cosTheta)*sin(phi));
+	hweights[8] = sqrt(30/M_PI)     *  ((-cosTheta + cosTheta*cosTheta)*sin(2.*phi));
 }
 
 #endif  /* UTIL_H */

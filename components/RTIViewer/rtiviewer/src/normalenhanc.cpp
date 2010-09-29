@@ -22,6 +22,7 @@
 #include <QApplication>
 #include <QTime>
 
+#include <omp.h>
 
 NormalEControl::NormalEControl(int gain, int kd, int envIll, QWidget *parent) : QWidget(parent)
 {
@@ -49,8 +50,6 @@ NormalEControl::NormalEControl(int gain, int kd, int envIll, QWidget *parent) : 
 	QGridLayout *layout = new QGridLayout;
 	layout->addWidget(label1, 0, 0);
 	layout->addWidget(sliderGain, 0, 1);
-	/*layout->addWidget(label2, 1, 0);
-	layout->addWidget(sliderKd, 1, 1);*/
 	layout->addWidget(label3, 1, 0);
 	layout->addWidget(sliderEnvIll, 1, 1);
 	setLayout(layout);
@@ -83,7 +82,7 @@ NormalEnhancement::~NormalEnhancement()
 	
 QString NormalEnhancement::getTitle() 
 {
-	return "Normal Enhancement";
+	return "Normal Unsharp Masking";
 }
 
 
@@ -105,7 +104,7 @@ QWidget* NormalEnhancement::getControl(QWidget* parent)
 
 bool NormalEnhancement::isLightInteractive()
 {
-	return false;
+	return true;
 }
 
 
@@ -153,25 +152,29 @@ void NormalEnhancement::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB
 
 #ifdef PRINT_DEBUG
 	QTime second2 = QTime::currentTime();
-	double diff = first2.msecsTo(second2) / 1000.0;
+        float diff = first2.msecsTo(second2) / 1000.0;
 	printf("Normal smooting: %.5f s\n", diff);
 #endif
 
 	// Creates the output texture.
 	int offsetBuf = 0;
-	const int* coeffPtr = coeff.getLevel(info.level);
+	const PTMCoefficient* coeffPtr = coeff.getLevel(info.level);
 	const unsigned char* rgbPtr = rgb.getLevel(info.level);
 	const vcg::Point3f* normalsPtr = normals.getLevel(info.level);
 	const vcg::Point3f* normalsLPtr = normalsL.getLevel(info.level);
 	bool flag = (info.mode == SMOOTH_MODE || info.mode == CONTRAST_MODE || info.mode == ENHANCED_MODE);
-	for (int y = info.offy; y < info.offy + info.height; y++)
+	
+	LightMemoized lVec(info.light.X(), info.light.Y());
+	if (flag)
 	{
-		for (int x = info.offx; x < info.offx + info.width; x++)
+		#pragma omp parallel for schedule(static,CHUNK)
+		for (int y = info.offy; y < info.offy + info.height; y++)
 		{
-			int offset = y * mipMapSize[info.level].width() + x;
-			double lum = evalPoly(&coeffPtr[offset*6], info.light.X(), info.light.Y()) / 255.0;
-			if (flag)
+			int offsetBuf = (y-info.offy)*info.width*4;
+			int offset = y * mipMapSize[info.level].width() + info.offx;
+			for (int x = info.offx; x < info.offx + info.width; x++)
 			{
+				float lum = coeffPtr[offset].evalPoly(lVec) / 255.0f;
 				vcg::Point3f n;
 				switch(info.mode)
 				{
@@ -192,15 +195,31 @@ void NormalEnhancement::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB
 					for (int i = 0; i < 3; i++)
 						buffer[offsetBuf + i] = toColor(n[i]);
 				}
+				buffer[offsetBuf + 3] = 255;
+				offsetBuf += 4;
+				offset++;
 			}
-			else
+		}
+	}
+	else
+	{
+		#pragma omp parallel for schedule(static,CHUNK)
+		for (int y = info.offy; y < info.offy + info.height; y++)
+		{
+			int offsetBuf = (y-info.offy)*info.width*4;
+			int offset = y * mipMapSize[info.level].width() + info.offx;
+			int offset3 = offset*3;
+			for (int x = info.offx; x < info.offx + info.width; x++)
 			{
-				double diff = applyModel(normalsPtr[offset], normalsLPtr[offset], info.light) * lum;
+				float lum = coeffPtr[offset].evalPoly(lVec) / 255.0f;
+				float diff = applyModel(normalsPtr[offset], normalsLPtr[offset], info.light) * lum;
 				for (int i = 0; i < 3; i++)
-					buffer[offsetBuf + i] = tobyte(rgbPtr[offset*3 + i] * diff);
+					buffer[offsetBuf + i] = tobyte(rgbPtr[offset3 + i] * diff);
+				buffer[offsetBuf + 3] = 255;
+				offsetBuf += 4;
+				offset++;
+				offset3 += 3;
 			}
-			buffer[offsetBuf + 3] = 255;
-			offsetBuf += 4;
 		}
 	}
 }
@@ -217,24 +236,28 @@ void NormalEnhancement::applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidC
 
 #ifdef PRINT_DEBUG
 	QTime second2 = QTime::currentTime();
-	double diff = first2.msecsTo(second2) / 1000.0;
+        float diff = first2.msecsTo(second2) / 1000.0;
 	printf("Normal smooting: %.5f s\n", diff);
 #endif
 	
 	// Creates the output texture.
 	int offsetBuf = 0;
-	const int* redPtr = redCoeff.getLevel(info.level);
-	const int* greenPtr = greenCoeff.getLevel(info.level);
-	const int* bluePtr = blueCoeff.getLevel(info.level);
+	const PTMCoefficient* redPtr = redCoeff.getLevel(info.level);
+	const PTMCoefficient* greenPtr = greenCoeff.getLevel(info.level);
+	const PTMCoefficient* bluePtr = blueCoeff.getLevel(info.level);
 	const vcg::Point3f* normalsPtr = normals.getLevel(info.level);
 	const vcg::Point3f* normalsLPtr = normalsL.getLevel(info.level);
 	bool flag = (info.mode == SMOOTH_MODE || info.mode == CONTRAST_MODE || info.mode == ENHANCED_MODE);
-	for (int y = info.offy; y < info.offy + info.height; y++)
+	
+	LightMemoized lVec(info.light.X(), info.light.Y());
+	if (flag)
 	{
-		for (int x = info.offx; x < info.offx + info.width; x++)
+		#pragma omp parallel for schedule(static,CHUNK)
+		for (int y = info.offy; y < info.offy + info.height; y++)
 		{
-			int offset = y * mipMapSize[info.level].width() + x;
-			if (flag)
+			int offsetBuf = (y-info.offy)*info.width*4;
+			int offset = y * mipMapSize[info.level].width() + info.offx;
+			for (int x = info.offx; x < info.offx + info.width; x++)
 			{
 				vcg::Point3f n;
 				switch(info.mode)
@@ -256,16 +279,29 @@ void NormalEnhancement::applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidC
 					for (int i = 0; i < 3; i++)
 						buffer[offsetBuf + i] = toColor(n[i]);
 				}
+				buffer[offsetBuf + 3] = 255;
+				offsetBuf += 4;
+				offset++;
 			}
-			else
+		}
+	}
+	else
+	{
+		#pragma omp parallel for schedule(static,CHUNK)
+		for (int y = info.offy; y < info.offy + info.height; y++)
+		{
+			int offsetBuf = (y-info.offy)*info.width*4;
+			int offset = y * mipMapSize[info.level].width() + info.offx;
+			for (int x = info.offx; x < info.offx + info.width; x++)
 			{
-				double diff = applyModel(normalsPtr[offset], normalsLPtr[offset], info.light);
-				buffer[offsetBuf + 0] = tobyte(evalPoly(&redPtr[offset*6], info.light.X(), info.light.Y()) * diff);
-				buffer[offsetBuf + 1] = tobyte(evalPoly(&greenPtr[offset*6], info.light.X(), info.light.Y()) * diff);
-				buffer[offsetBuf + 2] = tobyte(evalPoly(&bluePtr[offset*6], info.light.X(), info.light.Y()) * diff);
+				float diff = applyModel(normalsPtr[offset], normalsLPtr[offset], info.light);
+				buffer[offsetBuf + 0] = tobyte(redPtr[offset].evalPoly(lVec)* diff);  
+				buffer[offsetBuf + 1] = tobyte(greenPtr[offset].evalPoly(lVec)* diff);
+				buffer[offsetBuf + 2] = tobyte(bluePtr[offset].evalPoly(lVec)* diff);
+				buffer[offsetBuf + 3] = 255;
+				offsetBuf += 4;
+				offset++;
 			}
-			buffer[offsetBuf + 3] = 255;
-			offsetBuf += 4;
 		}
 	}
 }
@@ -277,22 +313,26 @@ void NormalEnhancement::calcSmooting(const PyramidNormals& normals, const QSize*
 	smooted = true;
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	LoadingDlg* loading = new LoadingDlg(loadParent);
-	loading->setWindowTitle("Smooting...");
+	loading->setWindowTitle("Smoothing...");
 	loading->show();
 	CallBackPos* cb = LoadingDlg::QCallBack;
-
+	
 	int dist = 2;
 	for (int level = 0; level < MIP_MAPPING_LEVELS; level++)
 	{
 		vcg::Point3f* dest = new vcg::Point3f[normals.getLevelLenght(level)];
 		memcpy(dest, normals.getLevel(level), normals.getLevelLenght(level)*sizeof(vcg::Point3f));
+
+
+
 		vcg::Point3f* tempNormals = new vcg::Point3f[normals.getLevelLenght(level)];
 		int* nKernel = new int[normals.getLevelLenght(level)];
 		int width = mipMapSize[level].width();
 		int height = mipMapSize[level].height();
 		for (int i = 0; i < nIter; i++)
 		{
-			if (cb != NULL)(*cb)(100/(4.0*nIter) * (nIter*level + i) , "Normal smooting...");
+			if (cb != NULL)(*cb)(100/(4.0*nIter) * (nIter*level + i) , "Normal smoothing...");
+			#pragma omp parallel for schedule(static,CHUNK)
 			for (int y = 0; y < height; y++)
 			{
 				for (int x = 0; x < width; x++)
@@ -333,10 +373,13 @@ void NormalEnhancement::calcSmooting(const PyramidNormals& normals, const QSize*
 					}
 				}
 			}
+			#pragma omp parallel for schedule(static,CHUNK)
 			for (int ii = 0; ii < normals.getLevelLenght(level); ii++)
 				tempNormals[ii] /= static_cast<float>(nKernel[ii]);
 			memcpy(dest, tempNormals, normals.getLevelLenght(level)*sizeof(vcg::Point3f));
 		}
+
+		#pragma omp parallel for schedule(static,CHUNK)
 		for (int ii = 0; ii < normals.getLevelLenght(level); ii++)
 			dest[ii].Normalize();
 		normalsL.setLevel(dest, normals.getLevelLenght(level), level);
@@ -350,11 +393,12 @@ void NormalEnhancement::calcSmooting(const PyramidNormals& normals, const QSize*
 }
 
 
-double NormalEnhancement::applyModel(const vcg::Point3f& normal, const vcg::Point3f& normalL, const vcg::Point3f& light)
+
+float NormalEnhancement::applyModel(const vcg::Point3f& normal, const vcg::Point3f& normalL, const vcg::Point3f& light)
 {
 	vcg::Point3f normalE= normal + (normal - normalL) * gain;
 	normalE.Normalize();
-	double nDotL =  normalE * light;
+        float nDotL =  normalE * light;
 	if (nDotL < 0.0)
 		nDotL = 0.0;
 	else if (nDotL > 1.0)
@@ -366,10 +410,10 @@ double NormalEnhancement::applyModel(const vcg::Point3f& normal, const vcg::Poin
 vcg::Point3f NormalEnhancement::getContrastNormal(const vcg::Point3f& normal, const vcg::Point3f& normalL)
 {
 	float dot = normal*normalL;
-	double angle = acos(dot);
+        float angle = acos(dot);
 	if(angle < 0.0)
 		angle *= -1.0;
-	angle = fmod(angle, M_PI_2);
+	angle = fmod(angle, (float)M_PI_2);
 	angle /= M_PI_2;
 	return vcg::Point3f(angle, angle, angle);
 }

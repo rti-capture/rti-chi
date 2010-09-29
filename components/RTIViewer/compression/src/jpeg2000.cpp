@@ -12,7 +12,7 @@
 
 // local headers
 #include "jpeg2000.h"
-
+#include <stdio.h>
 
 void Jpeg2000::setDefaults()
 {

@@ -79,7 +79,7 @@ public:
 	virtual QImage* createPreview(int width, int height);
 	virtual int allocateRemoteImage(QBuffer* b);  
 	virtual int loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level); 
-	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0, QString& text = QString());
+	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0,const QString& text = QString());
 	virtual void saveRemoteDescr(QString& filename, int level);
 
 };

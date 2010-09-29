@@ -124,7 +124,7 @@ void Navigator::mouseReleaseEvent(QMouseEvent *event)
 void Navigator::wheelEvent(QWheelEvent *event)
 {
 	if (!image) return;
-	double off = event->delta()*0.05;
+        float off = event->delta()*0.05;
 
 	int limitH, limitW;
 	limitW = (pos.width() * browserWidth / maxZoom)/rtiWidth;
@@ -176,8 +176,8 @@ void Navigator::setImage(QImage* img, int rtiW, int rtiH)
 	image = img;
 	rtiWidth = rtiW;
 	rtiHeight = rtiH;
-	double viewHeight, viewWidth;
-	double ratio = static_cast<double>(img->width()) / static_cast<double>(img->height());
+        float viewHeight, viewWidth;
+        float ratio = static_cast<float>(img->width()) / static_cast<float>(img->height());
 	
 	if (img->height() > height)
 		viewHeight = height;
@@ -189,7 +189,7 @@ void Navigator::setImage(QImage* img, int rtiW, int rtiH)
 	else
 		viewWidth = img->width();
 
-	double ratio2 = viewWidth / viewHeight;
+        float ratio2 = viewWidth / viewHeight;
 	if (ratio2 != ratio)
 	{
 		if (viewWidth / ratio <= height)
@@ -263,7 +263,7 @@ void Navigator::updateBrowserSize(int w, int h)
 
 void Navigator::updateSelection(QRectF rect)
 {
-	double ratio = static_cast<double>(pos.height()) / static_cast<double>(rtiHeight);
+        float ratio = static_cast<float>(pos.height()) / static_cast<float>(rtiHeight);
 	int x = rect.x() * ratio;
 	int y = rect.y() * ratio;
 	int w = ceil(rect.width() * ratio);
@@ -277,7 +277,7 @@ void Navigator::updateSelection(QRectF rect)
 void Navigator::updateSubImage()
 {
 	QRectF sub;
-	double ratio = static_cast<double>(rtiHeight) / static_cast<double>(pos.height());
+        float ratio = static_cast<float>(rtiHeight) / static_cast<float>(pos.height());
 	int x = ceil((selection.x() - pos.x()) * ratio);
 	int y = ceil((selection.y() - pos.y()) * ratio);
 	int w = selection.width() * ratio;

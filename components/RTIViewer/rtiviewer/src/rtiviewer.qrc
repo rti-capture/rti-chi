@@ -1,4 +1,5 @@
-<RCC>
+<!DOCTYPE RCC>
+<RCC version="1.0">
     <qresource prefix="/" >
         <file>images/TabletEnhanced2-400.jpg</file>
         <file>images/chi-logo.png</file>
@@ -15,5 +16,6 @@
 		<file>images/snapshot.png</file>
         <file>images/ucsantacruz_resize.png</file>
         <file>images/vcglogo.png</file>
+		<file>images/logo-pdf.png</file>
     </qresource>
 </RCC>

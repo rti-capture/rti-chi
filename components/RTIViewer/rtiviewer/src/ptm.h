@@ -48,7 +48,7 @@ protected:
 	QString version; /*!< Version. */
  	QSize mipMapSize[MIP_MAPPING_LEVELS]; /*!< Size of mip-mapping levels. */
 
-	double scale[6]; /*!< Scale value. */
+        float scale[6]; /*!< Scale value. */
 	int bias[6]; /*!< Bias value. */
 
 
@@ -92,10 +92,10 @@ protected:
 	*/
 	vcg::Point3f calculateNormal(const int* coeff)
 	{
-		double a[6];
+                float a[6];
 		for (int k = 0; k < 6; k++)
 			a[k] = coeff[k]/256.0;
-		double lx, ly, lz;
+                float lx, ly, lz;
 		
 		if (vcg::math::Abs(4 * a[1] * a[0] - a[2] * a[2]) < zerotol)
 		{
@@ -125,7 +125,7 @@ protected:
 		}
 		else
 		{
-			double length2d = lx * lx + ly * ly;
+                        float length2d = lx * lx + ly * ly;
 			int maxfound;
 			if (4 * a[0] * a[1] - a[2] * a[2] > zerotol && a[0] < -zerotol)
 				maxfound = 1;
@@ -142,7 +142,7 @@ protected:
 					}
 				}
 			}
-			double disc = 1.0 - lx*lx - ly*ly;
+                        float disc = 1.0 - lx*lx - ly*ly;
 			if (disc < 0.0)
 				lz = 0.0;
 			else 
@@ -169,18 +169,24 @@ protected:
 		for (int level = 0; level < MIP_MAPPING_LEVELS; level++)
 		{
 			QSize size = mipMapSize[level];
-			const int* coeffLevel = coeff.getLevel(level);
+			const PTMCoefficient* coeffLevel = coeff.getLevel(level);
 			int lenght = size.width()*size.height();
 			vcg::Point3f* normalsLevel = new vcg::Point3f[lenght];
 			if (!lrgb)
 				memcpy(normalsLevel, norm.getLevel(level), sizeof(vcg::Point3f)*lenght);
+			int th_id;
+			#pragma omp parallel for
 			for (int j = 0; j < size.height(); j++)
 			{
-				if (cb != NULL && (j % 50 == 0)) (*cb)(offset + level*limit/4.0 + limit/4.0 * j / size.height(), "Normals generation...");
+				th_id = omp_get_thread_num();
+				if (th_id == 0)
+				{
+					if (cb != NULL && (j % 50 == 0)) (*cb)(offset + level*limit/4.0 + limit/4.0 * j / size.height(), "Normals generation...");
+				}
 				for (int i = 0; i < size.width(); i++)
 				{
 					int offset = j * size.width() + i;
-					vcg::Point3f temp = calculateNormal(&coeffLevel[offset*6]);
+					vcg::Point3f temp = calculateNormal(&(coeffLevel[offset][0]));
 					if (lrgb)
 						normalsLevel[offset] = temp;
 					else
@@ -207,9 +213,15 @@ protected:
 		int width2 = ceil(width/2.0);
 		int height2 = ceil(height/2.0);
 		allocateSubLevel(level, width2, height2);
+		int th_id;
+		#pragma omp parallel for
 		for (int i = 0; i < height - 1; i+=2)
 		{
-			if (cb != NULL && (i % 50 == 0)) (*cb)(offset + static_cast<double>(i*(limit/2.0)/height), "Mip mapping generation...");
+			th_id = omp_get_thread_num();
+			if (th_id == 0)
+			{
+				if (cb != NULL && (i % 50 == 0)) (*cb)(offset + static_cast<float>(i*(limit/2.0)/height), "Mip mapping generation...");
+			}
 			for (int j = 0; j < width - 1; j+=2)
 			{
 				int index1 = (i * width + j);
@@ -330,7 +342,7 @@ public:
 	virtual QImage* createPreview(int width, int height);
 	virtual int allocateRemoteImage(QBuffer* b);  
 	virtual int loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level); 
-	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0, QString& text = QString());
+	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0,const QString& text = QString());
 	virtual void saveRemoteDescr(QString& filename, int level);
 
 private:
@@ -380,7 +392,7 @@ public:
 	virtual QImage* createPreview(int width, int height);
 	virtual int allocateRemoteImage(QBuffer* b);
 	virtual int loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, int level);
-	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0, QString& text = QString());
+	virtual int loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb = 0,const QString& text = QString());
 	virtual void saveRemoteDescr(QString& filename, int level);
 
 private:

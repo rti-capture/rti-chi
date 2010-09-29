@@ -128,7 +128,7 @@ int RGBPtm::load(QString name, CallBackPos * cb)
 }
 
 
-int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb, QString& text)
+int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb,const QString& text)
 {
 	w = width;
 	h = height;
@@ -166,9 +166,9 @@ int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti
 	}
 
 	//Allocates array for polynomial coefficients
-	int* redCoeff = new int[w*h*basisTerm];
-	int* greenCoeff = new int[w*h*basisTerm];
-	int* blueCoeff = new int[w*h*basisTerm];
+	PTMCoefficient* redCoeff = new PTMCoefficient[w*h];
+	PTMCoefficient* greenCoeff = new PTMCoefficient[w*h];
+	PTMCoefficient* blueCoeff = new PTMCoefficient[w*h];
 	
 	//Reads polynomial coefficients
 	int offset;
@@ -187,11 +187,11 @@ int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti
 						return -1;
 					fread(&c, sizeof(unsigned char), 1, file);
 					if (j == 0)
-						redCoeff[offset*basisTerm + i] = static_cast<int>((c - bias[i])*scale[i]);
+						redCoeff[offset][i] = static_cast<int>((c - bias[i])*scale[i]);
 					else if (j == 1)
-						greenCoeff[offset*basisTerm + i] = static_cast<int>((c - bias[i])*scale[i]);
+						greenCoeff[offset][i] = static_cast<int>((c - bias[i])*scale[i]);
 					else
-						blueCoeff[offset*basisTerm + i] = static_cast<int>((c - bias[i])*scale[i]);
+						blueCoeff[offset][i] = static_cast<int>((c - bias[i])*scale[i]);
 				}
 			}
 		}
@@ -215,9 +215,15 @@ int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti
 		int lenght = normals.getLevelLenght(level);
 		vcg::Point3f* tempNormals = new vcg::Point3f[lenght];
 		memcpy(tempNormals, normals.getLevel(level), sizeof(vcg::Point3f)*lenght);
+		int th_id = 0;
+		#pragma omp parallel for
 		for (int i = 0; i < lenght; i++)
 		{
-			if (cb != NULL && i%500 == 0)	(*cb)(90 + level*2.5 + 2.5 * i / lenght, "Normals generation...");
+			th_id = omp_get_thread_num();
+			if (th_id == 0)
+			{
+				if (cb != NULL && i%500 == 0)	(*cb)(90 + level*2.5 + 2.5 * i / lenght, "Normals generation...");
+			}
 			tempNormals[i] /= 3;
 			tempNormals[i].Normalize();
 		}
@@ -317,7 +323,7 @@ int RGBPtm::createImage(unsigned char** buffer, int& width, int& height, const v
 	else if (mode == LUMR_MODE || mode == LUMG_MODE || mode == LUMB_MODE)
 	{
 		// Creates map of the RGB component.
-		const int* coeffPtr = NULL;
+		const PTMCoefficient* coeffPtr = NULL;
 		switch(mode)
 		{
 			case LUMR_MODE:
@@ -332,7 +338,7 @@ int RGBPtm::createImage(unsigned char** buffer, int& width, int& height, const v
 			for (int x = offx; x < offx + width; x++)
 			{
 				int offset = y * mipMapSize[level].width() + x;
-				unsigned char c = tobyte(evalPoly(&coeffPtr[offset*6], light.X(), light.Y()));
+				unsigned char c = tobyte(evalPoly((int*)&(coeffPtr[offset][0]), light.X(), light.Y()));
 				(*buffer)[offsetBuf + 0] = c;
 				(*buffer)[offsetBuf + 1] = c;
 				(*buffer)[offsetBuf + 2] = c;
@@ -395,18 +401,18 @@ QImage* RGBPtm::createPreview(int width, int height)
 	
 	// Creates the preview.
 	unsigned char* buffer = new unsigned char[imageH*imageW*4];
-	const int* redPtr = redCoefficients.getLevel(level);
-	const int* greenPtr = greenCoefficients.getLevel(level);
-	const int* bluePtr = blueCoefficients.getLevel(level);
+	const PTMCoefficient* redPtr = redCoefficients.getLevel(level);
+	const PTMCoefficient* greenPtr = greenCoefficients.getLevel(level);
+	const PTMCoefficient* bluePtr = blueCoefficients.getLevel(level);
 	int offset = 0;
 	for (int i = 0; i < imageH; i++)
 	{
 		for (int j = 0; j < imageW; j++)
 		{
 			offset = i * imageW + j;
-			buffer[offset*4 + 2] = tobyte(evalPoly(&redPtr[offset*6], 0, 0));
-			buffer[offset*4 + 1] = tobyte(evalPoly(&greenPtr[offset*6], 0, 0));
-			buffer[offset*4 + 0] = tobyte(evalPoly(&bluePtr[offset*6], 0, 0));
+			buffer[offset*4 + 2] = tobyte(evalPoly((int*)&(redPtr[offset][0]), 0, 0));
+			buffer[offset*4 + 1] = tobyte(evalPoly((int*)&(greenPtr[offset][0]), 0, 0));
+			buffer[offset*4 + 0] = tobyte(evalPoly((int*)&(bluePtr[offset][0]), 0, 0));
 			buffer[offset*4 + 3] = 255;
 		}
 	}
@@ -561,7 +567,7 @@ int LRGBPtm::load(QString name, CallBackPos *cb)
 }
 
 
-int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb, QString& text)
+int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb,const QString& text)
 {
 	w = width;
 	h = height;
@@ -599,7 +605,7 @@ int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urt
 	}
 	
 	//Allocates array for polynomial coefficients and rgb components
-	int* coeffPtr = new int[w*h*basisTerm];;
+	PTMCoefficient* coeffPtr = new PTMCoefficient[w*h];
 	unsigned char* rgbPtr = new unsigned char[w*h*3];
 
 	int offset;
@@ -618,7 +624,7 @@ int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urt
 				if(feof(file))
 					return -1;
 				fread(&c, sizeof(unsigned char), 1, file);
-				coeffPtr[offset*basisTerm + i] = static_cast<int>((c - bias[i])*scale[i]);
+				coeffPtr[offset][i] = static_cast<int>((c - bias[i])*scale[i]);
 			}
 
 			if (version == "PTM_1.1")
@@ -749,7 +755,7 @@ int LRGBPtm::saveCompressed(int xinf, int yinf, int xsup, int ysup, int reslevel
 
 	int offset, offset2;
 	const unsigned char* rgbPtr = rgb.getLevel(reslevel);
-	const int* coeffPtr = coefficients.getLevel(reslevel);
+	const PTMCoefficient* coeffPtr = coefficients.getLevel(reslevel);
 	for (int y = yinf; y < ysup; y++)
 		for (int x = xinf; x < xsup; x++)
 		{
@@ -760,7 +766,7 @@ int LRGBPtm::saveCompressed(int xinf, int yinf, int xsup, int ysup, int reslevel
 			comps[2][offset2] = rgbPtr[offset*3+2];
 
 			for (int k = 0; k < 6; k++)
-				comps[k+3][offset2] = coeffPtr[offset*6 + k];
+				comps[k+3][offset2] = coeffPtr[offset][k];
 				
 		}
 
@@ -849,13 +855,13 @@ int LRGBPtm::createImage(unsigned char** buffer, int& width, int& height, const 
 	else if (mode == LUM_MODE)
 	{
 		// Creates the map of luminance.
-		const int* coeffPtr = coefficients.getLevel(level);
+		const PTMCoefficient* coeffPtr = coefficients.getLevel(level);
 		for (int y = offy; y < offy + height; y++)
 		{
 			for (int x = offx; x < offx + width; x++)
 			{
 				int offset = y * mipMapSize[level].width() + x;
-				double lum = evalPoly(&coeffPtr[offset*6], light.X(), light.Y());
+				double lum = evalPoly(&(coeffPtr[offset][0]), light.X(), light.Y());
 				unsigned char l = tobyte(lum / 2.0);
 				for (int i = 0; i < 3; i++)
 					(*buffer)[offsetBuf + i] = l;
@@ -884,7 +890,7 @@ int LRGBPtm::createImage(unsigned char** buffer, int& width, int& height, const 
 	else if (mode >= A0_MODE && mode <= A5_MODE)
 	{
 		// Creates the map of the coefficient.
-		const int* coeffPtr = coefficients.getLevel(level);
+		const PTMCoefficient* coeffPtr = coefficients.getLevel(level);
 		for (int y = offy; y < offy + height; y++)
 		{
 			for (int x = offx; x < offx + width; x++)
@@ -892,7 +898,7 @@ int LRGBPtm::createImage(unsigned char** buffer, int& width, int& height, const 
 				int offset = y * mipMapSize[level].width() + x;
 				unsigned char b;
 				int index = mode - A0_MODE;
-				b = coeffPtr[offset*6 + index]/scale[index] + bias[index];
+				b = coeffPtr[offset][index]/scale[index] + bias[index];
 				for (int i = 0; i < 3; i++)
 					(*buffer)[offsetBuf + i] = b;
 				(*buffer)[offsetBuf + 3] = 255;
@@ -955,14 +961,14 @@ QImage* LRGBPtm::createPreview(int width, int height)
 	// Creates the preview.
 	unsigned char* buffer = new unsigned char[imageH*imageW*4];
 	int offset = 0;
-	const int* coeffLevel = coefficients.getLevel(level);
+	const PTMCoefficient* coeffLevel = coefficients.getLevel(level);
 	const unsigned char* rgbLevel = rgb.getLevel(level);
 	for (int i = 0; i < imageH; i++)
 	{
 		for (int j = 0; j < imageW; j++)
 		{
 			offset = i * imageW + j;
-			double lum = evalPoly(&coeffLevel[offset*6], 0, 0) / 255.0;
+			double lum = evalPoly(&(coeffLevel[offset][0]), 0, 0) / 255.0;
 			buffer[offset*4 + 2] = tobyte(rgbLevel[offset*3] * lum);
 			buffer[offset*4 + 1] = tobyte(rgbLevel[offset*3 + 1] * lum);
 			buffer[offset*4 + 0] = tobyte(rgbLevel[offset*3 + 2] * lum);
@@ -1054,10 +1060,10 @@ int LRGBPtm::loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ys
 			rgb.setElement(level, offset*3 + 2, jpegimage.componentData(2)[offset2]);
 
 			for (int k = 0; k < 6; k++)
-				coefficients.setElement(level, offset * 6 + k, jpegimage.componentData(k+3)[offset2]);
-			
+				coefficients.setElement(level, offset, k, jpegimage.componentData(k+3)[offset2]);
+
 			// Computes normal
-			normals.setElement(level, offset, calculateNormal(&(coefficients.getLevel(level)[offset*6])));
+			normals.setElement(level, offset, calculateNormal(&(coefficients.getLevel(level)[offset][0])));
 		}
 
 	return 0;
@@ -1090,7 +1096,7 @@ void LRGBPtm::saveRemoteDescr(QString& filename, int level)
 
 void LRGBPtm::allocateSubLevel(int level, int w, int h)
 {
-	coefficients.allocateLevel(level, w*h*6);
+	coefficients.allocateLevel(level, w*h);
 	rgb.allocateLevel(level, w*h*3); 
 }
 
@@ -1115,6 +1121,7 @@ void LRGBPtm::calculateMipMap(int pos, int level, int i1, int i2)
 
 void LRGBPtm::calculateMipMap(int pos, int level, int i1, int i2, int i3, int i4)
 {
+	//printf("Hello ... %d %d %d %d\n",level,pos, pos/6, pos%6);
 	for (int k = 0; k < 6; k++)
 		coefficients.calcMipMapping(level, pos*6 + k, i1*6 +k, i2*6 +k, i3*6 +k, i4*6 +k);
 	for (int k = 0; k < 3; k++)
@@ -1379,7 +1386,7 @@ int JPEGLRGBPtm::load(QString name, CallBackPos *cb)
 			correctCoeff(coef[index], info[index], sideInformation[index], w, h);
 	}
 	
-	int* coeffPtr = new int[w*h*6];
+	PTMCoefficient* coeffPtr = new PTMCoefficient[w*h];
 	unsigned char* rgbPtr = new unsigned char[w*h*3];
 
 	for(int y = h - 1; y >= 0; y--)
@@ -1389,7 +1396,7 @@ int JPEGLRGBPtm::load(QString name, CallBackPos *cb)
 			if (cb != NULL && (y % 100 == 0))(*cb)(41 + (h-y)*29/h, "Loading JPEG-LRGB PTM...");
 			offset = w * y + x;
 			for (int i = 0; i < 6; i++)
-				coeffPtr[offset*6 + i] = static_cast<int>((coef[i][offset] - bias[i])*scale[i]);
+				coeffPtr[offset][i] = static_cast<int>((coef[i][offset] - bias[i])*scale[i]);
 			rgbPtr[offset*3] = tobyte(coef[6][offset]);
 			rgbPtr[offset*3 + 1] = tobyte(coef[7][offset]);
 			rgbPtr[offset*3 + 2] = tobyte(coef[8][offset]);

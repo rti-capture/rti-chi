@@ -12,11 +12,32 @@
 #ifndef RENDERINGDIALOG_H
 #define RENDERINGDIALOG_H
 
-#include "renderingMode.h"
+#include "renderingmode.h"
 
 #include <QDialog>
 #include <QComboBox>
 #include <QLabel>
+#include <QWheelEvent>
+
+class MyComboBox: public QComboBox
+{
+
+public:
+	MyComboBox(QWidget* parent) : QComboBox(parent)
+	{
+
+	};
+
+protected:
+
+	void wheelEvent(QWheelEvent* e)
+	{
+		e->ignore();
+	};
+
+
+};
+
 
 //! Rendering dialog class.
 /*!
@@ -30,7 +51,7 @@ Q_OBJECT
 // private data members
 private:
 	
-	QComboBox* modeList; /*!< Combobox to select the rendering mode. */
+	MyComboBox* modeList; /*!< Combobox to select the rendering mode. */
 	QWidget* control; /*!< Widget to set the parameters of the rendering mode. */
 	QMap<int, RenderingMode*>* list; /*!< List of rendering modes. */
 

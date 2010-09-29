@@ -76,8 +76,8 @@ private:
 	int xFocus; /*!< x-coordinate of the gradient focus. */
 	int yFocus; /*!< y-corrdinate of the gradient focus. */
 
-	double dx; /*!< Maximum shift of the light position from the center on x-axis. */
-	double dy; /*!< Maximum shift of the light position from the center on y-axis. */
+        float dx; /*!< Maximum shift of the light position from the center on x-axis. */
+        float dy; /*!< Maximum shift of the light position from the center on y-axis. */
 
 	vcg::Point3f light; /*!< Light vector. */
 	
@@ -129,9 +129,9 @@ private:
 		}
 		else //general case
 		{
-			double m = (height/2.0 - y1)/(width/2.0 - x1);
-			double q = x1 * m - y1;
-			double temp = 0;
+                        float m = (height/2.0 - y1)/(width/2.0 - x1);
+                        float q = x1 * m - y1;
+                        float temp = 0;
 
 			int x = x1 < width/2? width/2 - dx: width/2 + dx;
 			int y = y1 < height/2? height/2 - dy: height/2 + dy;
@@ -156,20 +156,20 @@ private:
 	void calcLightVector()
 	{
 		//Projects the light vector on uv space
-		double distance2 = (xFocus - width/2)*(xFocus - width/2) + (yFocus - height/2)*(yFocus - height/2);
-		double projectedDist = sqrt(distance2)/ (width/2);
+                float distance2 = (xFocus - width/2)*(xFocus - width/2) + (yFocus - height/2)*(yFocus - height/2);
+                float projectedDist = sqrt(distance2)/ (width/2);
 		if (projectedDist > 1) projectedDist = 1;
 		//Computes the u and v components
-		double alpha = M_PI /2;
+                float alpha = M_PI /2;
 		if (width/2 != xFocus)
 		{
-			double m = (height/2.0 - yFocus)/(width/2.0 - xFocus);
+                        float m = (height/2.0 - yFocus)/(width/2.0 - xFocus);
 			alpha = atan(m);
 		}
 		alpha = vcg::math::Abs(alpha);
 		light[0] = xFocus > width/2? projectedDist * cos(alpha): -(projectedDist * cos(alpha));
 		light[1] = yFocus > height/2? -(projectedDist * sin(alpha)): projectedDist * sin(alpha);
-		double inner = 1 - light[0]*light[0] - light[1]*light[1];
+                float inner = 1 - light[0]*light[0] - light[1]*light[1];
 		light[2] = inner > 0 ? sqrt(inner): 0.0;
 		light.Normalize();
 	}
@@ -218,7 +218,7 @@ public:
 	*/
 	void setMaxXAngle(int degree)
 	{
-		double angle = degree/180.0 * M_PI;
+                float angle = degree/180.0 * M_PI;
 		dx = sin(angle) * width/2; 
 	}
 
@@ -227,7 +227,7 @@ public:
 	*/
 	void setMaxYAngle(int degree)
 	{
-		double angle = degree/180.0 * M_PI;
+                float angle = degree/180.0 * M_PI;
 		dy = sin(angle) * height/2;
 	}
 

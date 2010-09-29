@@ -102,24 +102,24 @@ private:
 	  \param height height of the map.
 	  \param mode special rendering mode.
 	*/
-	void enhancedLuminance(double* lumMap, int width, int height, int mode = 0);
+        void enhancedLuminance(float* lumMap, int width, int height, int mode = 0);
 	
 	/*!
 	  Returns the dot product between normal and light vector.
 	  \param normal normal.
 	  \param l light vector.
 	*/
-	double getLum(const vcg::Point3f& normal, const vcg::Point3f& l);
+        float getLum(const vcg::Point3f& normal, const vcg::Point3f& l);
 	
 	/*!
 	  Transforms from RGB to YUV.
 	*/
-	void getYUV(double r, double g, double b, double& l, double& u, double& v);
+        void getYUV(float r, float g, float b, float& l, float& u, float& v);
 	
 	/*!
 	  Transform from YUV to RGB.
 	*/
-	void getRGB(double y, double u, double v, double& r, double& g, double& b);
+        void getRGB(float y, float u, float v, float& r, float& g, float& b);
 
 public slots:
 

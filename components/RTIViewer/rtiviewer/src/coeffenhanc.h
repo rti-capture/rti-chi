@@ -95,7 +95,7 @@ private:
 	  \param height height in pixel of the map.
 	  \param ncomp number of coefficient per pixel,
 	*/
-	void enhancedCoeff(int* coeffMap, int width, int height, int ncomp);
+	void enhancedCoeff(PTMCoefficient* coeffMap, int width, int height, int ncomp);
 	
 public slots:
 

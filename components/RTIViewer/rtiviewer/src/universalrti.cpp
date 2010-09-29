@@ -137,7 +137,7 @@ int UniversalRti::load(QString name, CallBackPos *cb)
 
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
-	double diff = first.msecsTo(second) / 1000.0;
+        float diff = first.msecsTo(second) / 1000.0;
 	printf("URTI Loading: %.5f s\n", diff);
 #endif
 
@@ -145,7 +145,7 @@ int UniversalRti::load(QString name, CallBackPos *cb)
 }
 
 
-int UniversalRti::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb, QString& text)
+int UniversalRti::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb,const QString& text)
 {
 	return 0;
 }
