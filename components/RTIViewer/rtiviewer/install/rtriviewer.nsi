@@ -123,6 +123,7 @@ Section Uninstall
   Delete "$INSTDIR\*.exe"
   Delete "$INSTDIR\imageformats\*.dll"
   Delete "$INSTDIR\*.dll"
+  Delete "$INSTDIR\*.manifest"
   
   Delete "$SMPROGRAMS\${DIR_INST_NAME}\Uninstall.lnk"
   Delete "$DESKTOP\${APPL_INST_NAME}.lnk"
