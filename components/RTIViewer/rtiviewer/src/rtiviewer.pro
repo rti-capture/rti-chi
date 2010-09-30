@@ -8,7 +8,7 @@ QT += opengl xml network
 UI_DIR = ui
 MOC_DIR = moc
 
-win32-msvc2005:QMAKE_LFLAGS   += /LARGEADDRESSAWARE
+win32-msvc2005:QMAKE_LFLAGS   += /LARGEADDRESSAWARE 
 win32-msvc2008:QMAKE_LFLAGS   += /LARGEADDRESSAWARE
 
 win32-msvc2005:QMAKE_CXXFLAGS   += /O2 /Ot /Oi /openmp /Zp16 /fp:fast /arch:SSE2
@@ -88,6 +88,8 @@ FORMS = about.ui
 
 RESOURCES = rtiviewer.qrc
 win32:RC_FILE = rtiviewer.rc
+
+mac:QMAKE_INFO_PLIST = ../install/info.plist
 
 # to add MacOS icon
 mac:ICON = images/rtiviewer.icns

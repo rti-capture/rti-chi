@@ -46,6 +46,7 @@ mkdir $BUNDLE
 cp -r rtiviewer.app $BUNDLE
 
 cp -r ../../rtibuilder/src/rtiwebmaker $BUNDLE/rtiviewer.app/Contents/MacOS
+cp -r ../doc/manual.pdf $BUNDLE
 
 # we must add also a qt.conf that contains the new dir of the plugins
 cp ../install/qt.conf $BUNDLE/$APPNAME/Contents/Resources
