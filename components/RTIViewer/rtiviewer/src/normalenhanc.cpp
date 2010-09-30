@@ -153,7 +153,7 @@ void NormalEnhancement::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB
 #ifdef PRINT_DEBUG
 	QTime second2 = QTime::currentTime();
         float diff = first2.msecsTo(second2) / 1000.0;
-	printf("Normal smooting: %.5f s\n", diff);
+	printf("Normal smoothing: %.5f s\n", diff);
 #endif
 
 	// Creates the output texture.
@@ -237,7 +237,7 @@ void NormalEnhancement::applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidC
 #ifdef PRINT_DEBUG
 	QTime second2 = QTime::currentTime();
         float diff = first2.msecsTo(second2) / 1000.0;
-	printf("Normal smooting: %.5f s\n", diff);
+	printf("Normal smoothing: %.5f s\n", diff);
 #endif
 	
 	// Creates the output texture.
