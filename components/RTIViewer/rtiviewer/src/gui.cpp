@@ -30,13 +30,13 @@
 
 
 RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
-	QWidget(parent),
+        QWidget(parent),
 	rendDlg(NULL),
 	title("RTIViewer 1.0.1 (Beta)"),
 	filterStr("All (*.ptm *.hsh *.rti *.mview);;Polynamial Texture Maps (*.ptm);; Hemispherical Harmonics Map (*.hsh);; Universal RTI (*.rti);; Multiview RTI (*.mview)"),
 	maxZoom(2)
 {
-	//Browser
+        //Browser
 	browserFrame = new QFrame(this);
 	browserFrame->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	browserFrame->setLineWidth(3);
@@ -160,9 +160,9 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	layout->addWidget(infoGroup, 2, 1, 1, 1, Qt::AlignCenter);
 	layout->addWidget(navFrame, 3, 1, 1, 1, Qt::AlignBottom | Qt::AlignHCenter);
 	
-	setLayout(layout);
-	
-	// widget attributes
+        setLayout(layout);
+
+        // widget attributes
 	setWindowState(Qt::WindowMaximized);
 	setWindowTitle(title);
 	

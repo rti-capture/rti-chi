@@ -43,7 +43,7 @@ echo "Starting to copying stuff in the bundle"
 rm -r -f $BUNDLE
 
 mkdir $BUNDLE
-cp -r rtiviewer.app $BUNDLE
+cp -r $APPNAME $BUNDLE
 
 cp -r ../../rtibuilder/src/rtiwebmaker $BUNDLE/rtiviewer.app/Contents/MacOS
 cp -r ../doc/manual.pdf $BUNDLE
@@ -112,7 +112,7 @@ do
 done
 
 cd ./$BUNDLE
-ln -s ./rtiviewer.app/Contents/MacOS/rtiwebmaker ./
+ln -s ./rtiviewer.app/Contents/MacOS/RTIWebMaker ./
 cd ../
 
 cd ../install

@@ -2,7 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-<key>CFBundleDocumentTypes</key>
+	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
@@ -76,10 +76,9 @@
 			<key>LSIsAppleDefaultForType</key>
 			<string>Yes</string>
 		</dict>
-		
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>rtiviewer</string>
+	<string>RTIViewer</string>
 	<key>CFBundleGetInfoString</key>
 	<string>RTIViewer VCG-ISTI-CNR</string>
 	<key>CFBundleIconFile</key>

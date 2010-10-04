@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = rtiviewer
+TARGET = RTIViewer
 LANGUAGE = C++
 CONFIG += qt debug_and_release xml network opengl console warn_off x86
 
@@ -89,7 +89,7 @@ FORMS = about.ui
 RESOURCES = rtiviewer.qrc
 win32:RC_FILE = rtiviewer.rc
 
-mac:QMAKE_INFO_PLIST = ../install/info.plist
+mac:QMAKE_INFO_PLIST = ../install/Info.plist
 
 # to add MacOS icon
 mac:ICON = images/rtiviewer.icns
