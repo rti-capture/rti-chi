@@ -121,7 +121,7 @@ int RGBPtm::load(QString name, CallBackPos * cb)
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
 	double diff = first.msecsTo(second) / 1000.0;
-	printf("RGB PTM  Loading: %.5f s\n", diff);
+        printf("RGB PTM  Loading: %.5f s\n", diff);
 #endif
 
 	return 0;
@@ -362,19 +362,19 @@ int RGBPtm::createImage(unsigned char** buffer, int& width, int& height, const v
 	{
 		switch(currentRendering)
 		{
-			case DEFAULT: printf("Default rendering: %.5f s\n", diff); break;
-			case DIFFUSE_GAIN: printf("Diffuse gain: %.5f s\n", diff); break;
-			case SPECULAR_ENHANCEMENT: printf("Specular enhancement: %.5f s\n", diff); break;
-			case NORMAL_ENHANCEMENT: printf("Normal enhancement: %.5f s\n", diff); break;
-			case UNSHARP_MASKING_IMG: printf("Unsharp masking image: %.5f s\n", diff); break;
-			case UNSHARP_MASKING_LUM: printf("Unsharp masking luminance: %.5f s\n", diff); break;
-			case COEFF_ENHANCEMENT: printf("Coefficient enhancement: %.5f s\n", diff); break;
-			case DETAIL_ENHANCEMENT: printf("Detail enhancement: %.5f s\n", diff); break;
-			case DYN_DETAIL_ENHANCEMENT: printf("Dynamic detail enhancement: %.5f s\n", diff); break;
+                        case DEFAULT: printf("Default rendering: %.5f s\n", diff); break;
+                        case DIFFUSE_GAIN: printf("Diffuse gain: %.5f s\n", diff); break;
+                        case SPECULAR_ENHANCEMENT: printf("Specular enhancement: %.5f s\n", diff); break;
+                        case NORMAL_ENHANCEMENT: printf("Normal enhancement: %.5f s\n", diff); break;
+                        case UNSHARP_MASKING_IMG: printf("Unsharp masking image: %.5f s\n", diff); break;
+                        case UNSHARP_MASKING_LUM: printf("Unsharp masking luminance: %.5f s\n", diff); break;
+                        case COEFF_ENHANCEMENT: printf("Coefficient enhancement: %.5f s\n", diff); break;
+                        case DETAIL_ENHANCEMENT: printf("Detail enhancement: %.5f s\n", diff); break;
+                        case DYN_DETAIL_ENHANCEMENT: printf("Dynamic detail enhancement: %.5f s\n", diff); break;
 		}
 	}
 	else
-		printf("Browing mode: %.5f s\n", diff);
+                printf("Browing mode: %.5f s\n", diff);
 #endif
 	return 0;
 }
@@ -560,7 +560,7 @@ int LRGBPtm::load(QString name, CallBackPos *cb)
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
 	double diff = first.msecsTo(second) / 1000.0;
-	printf("LRGB PTM Loading: %.5f s\n", diff);
+        printf("LRGB PTM Loading: %.5f s\n", diff);
 #endif
 
 	return 0;
@@ -920,19 +920,19 @@ int LRGBPtm::createImage(unsigned char** buffer, int& width, int& height, const 
 	{
 		switch(currentRendering)
 		{
-			case DEFAULT: printf("Default rendering: %.5f s\n", diff); break;
-			case DIFFUSE_GAIN: printf("Diffuse gain: %.5f s\n", diff); break;
-			case SPECULAR_ENHANCEMENT: printf("Specular enhancement: %.5f s\n", diff); break;
-			case NORMAL_ENHANCEMENT: printf("Normal enhancement: %.5f s\n", diff); break;
-			case UNSHARP_MASKING_IMG: printf("Unsharp masking image: %.5f s\n", diff); break;
-			case UNSHARP_MASKING_LUM: printf("Unsharp masking luminance: %.5f s\n", diff); break;
-			case COEFF_ENHANCEMENT: printf("Coefficient enhancement: %.5f s\n", diff); break;
-			case DETAIL_ENHANCEMENT: printf("Detail enhancement: %.5f s\n", diff); break;
-			case DYN_DETAIL_ENHANCEMENT: printf("Dynamic detail enhancement: %.5f s\n", diff); break;
+                        case DEFAULT: printf("Default rendering: %.5f s\n", diff); break;
+                        case DIFFUSE_GAIN: printf("Diffuse gain: %.5f s\n", diff); break;
+                        case SPECULAR_ENHANCEMENT: printf("Specular enhancement: %.5f s\n", diff); break;
+                        case NORMAL_ENHANCEMENT: printf("Normal enhancement: %.5f s\n", diff); break;
+                        case UNSHARP_MASKING_IMG: printf("Unsharp masking image: %.5f s\n", diff); break;
+                        case UNSHARP_MASKING_LUM: printf("Unsharp masking luminance: %.5f s\n", diff); break;
+                        case COEFF_ENHANCEMENT: printf("Coefficient enhancement: %.5f s\n", diff); break;
+                        case DETAIL_ENHANCEMENT: printf("Detail enhancement: %.5f s\n", diff); break;
+                        case DYN_DETAIL_ENHANCEMENT: printf("Dynamic detail enhancement: %.5f s\n", diff); break;
 		}
 	}
 	else
-		printf("Browing mode: %.5f s\n", diff);
+                printf("Browing mode: %.5f s\n", diff);
 #endif
 
 	return 0;
@@ -1121,7 +1121,6 @@ void LRGBPtm::calculateMipMap(int pos, int level, int i1, int i2)
 
 void LRGBPtm::calculateMipMap(int pos, int level, int i1, int i2, int i3, int i4)
 {
-	//printf("Hello ... %d %d %d %d\n",level,pos, pos/6, pos%6);
 	for (int k = 0; k < 6; k++)
 		coefficients.calcMipMapping(level, pos*6 + k, i1*6 +k, i2*6 +k, i3*6 +k, i4*6 +k);
 	for (int k = 0; k < 3; k++)
@@ -1422,7 +1421,7 @@ int JPEGLRGBPtm::load(QString name, CallBackPos *cb)
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
 	double diff = first.msecsTo(second) / 1000.0;
-	printf("JPEG LRGB PTM Loading: %.5f\n s", diff);
+        ("JPEG LRGB PTM Loading: %.5f\n s", diff);
 #endif
 
 	return 0;

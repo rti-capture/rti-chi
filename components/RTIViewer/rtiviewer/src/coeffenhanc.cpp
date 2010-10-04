@@ -123,17 +123,19 @@ void CoeffEnhancement::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB&
 	#pragma omp parallel for schedule(static,CHUNK)
 	for (int y = info.offy; y < info.offy + info.height; y++)
 	{
-		int offsetBuf = (y-info.offy)*info.width << 2;
+                int offsetLoc = (y-info.offy)*info.width;
+                int offsetBuf = offsetLoc << 2;
 		int offset = y * width + info.offx;
 		for (int x = info.offx; x < info.offx + info.width; x++)
 		{
-			float lum = coeffMap[offset].evalPoly(lVec) / 255.0f;
+                        float lum = coeffMap[offsetLoc].evalPoly(lVec) / 255.0f;
 			int offset3 = offset * 3;
 			for (int i = 0; i < 3; i++)
 				buffer[offsetBuf + i] = tobyte(rgbPtr[offset3 + i] * lum);
 			buffer[offsetBuf + 3] = 255;
 			offsetBuf +=4;
-			offset++;
+                        offset++;
+                        offsetLoc++;
 		}
 	}
 	delete[] coeffMap;

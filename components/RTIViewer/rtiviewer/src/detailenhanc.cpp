@@ -136,7 +136,7 @@ void DetailEnhancement::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB
 #ifdef PRINT_DEBUG
 	QTime second2 = QTime::currentTime();
         float diff = first2.msecsTo(second2) / 1000.0;
-	printf("Details extraction: %.5f s\n", diff);
+        printf("Details extraction: %.5f s\n", diff);
 #endif
 	
 	// Creates the output texture.
@@ -199,7 +199,7 @@ void DetailEnhancement::applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidC
 #ifdef PRINT_DEBUG
 		QTime second2 = QTime::currentTime();
                 float diff = first2.msecsTo(second2) / 1000.0;
-		printf("Detail extraction: %.5f s\n", diff);
+                printf("Detail extraction: %.5f s\n", diff);
 #endif	
 
 		// Creates the output texture.

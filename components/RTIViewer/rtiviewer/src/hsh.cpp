@@ -113,7 +113,7 @@ int Hsh::load(QString name, CallBackPos *cb)
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
         float diff = first.msecsTo(second) / 1000.0;
-	printf("HSH Loading: %.5f s\n", diff);
+        printf("HSH Loading: %.5f s\n", diff);
 #endif
 
 	return 0;
@@ -551,7 +551,7 @@ int Hsh::createImage(unsigned char** buffer, int& width, int& height, const vcg:
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
         float diff = first.msecsTo(second) / 1000.0;
-	printf("Default rendering: %.5f s\n", diff);
+        printf("Default rendering: %.5f s\n", diff);
 	
 #endif
 

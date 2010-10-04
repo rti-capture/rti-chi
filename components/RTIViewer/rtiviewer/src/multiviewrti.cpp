@@ -254,7 +254,7 @@ int MultiviewRti::load(QString name, CallBackPos *cb)
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
         float diff = first.msecsTo(second) / 1000.0;
-	printf("Multiview RTI Loading: %.5f s\n", diff);
+        printf("Multiview RTI Loading: %.5f s\n", diff);
 #endif
 
 	return 0;
@@ -550,7 +550,7 @@ int MultiviewRti::createImage(unsigned char** buffer, int& width, int& height, c
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
         float diff = first.msecsTo(second) / 1000.0;
-	printf("Default rendering Multiview RTI: %.5f s\n", diff);
+        printf("Default rendering Multiview RTI: %.5f s\n", diff);
 	
 #endif
 
