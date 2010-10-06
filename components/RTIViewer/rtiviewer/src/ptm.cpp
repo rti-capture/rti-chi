@@ -200,9 +200,9 @@ int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti
 
 	// Computes mip-mapping-level.
 	mipMapSize[0] = QSize(w, h);
-	redCoefficients.setLevel(redCoeff, w*h*basisTerm, 0);
-	greenCoefficients.setLevel(greenCoeff, w*h*basisTerm, 0);
-	blueCoefficients.setLevel(blueCoeff, w*h*basisTerm, 0);
+	redCoefficients.setLevel(redCoeff, w*h, 0);
+	greenCoefficients.setLevel(greenCoeff, w*h, 0);
+	blueCoefficients.setLevel(blueCoeff, w*h, 0);
 	if (cb != NULL)	(*cb)(45, "Mip mapping generation...");
 	generateMipMap(1, w, h, cb, 45, 15);
 
@@ -441,9 +441,9 @@ void RGBPtm::saveRemoteDescr(QString& filename, int level)
 
 void RGBPtm::allocateSubLevel(int level, int w, int h)
 {
-	redCoefficients.allocateLevel(level, w * h * 6);
-	greenCoefficients.allocateLevel(level, w * h * 6);
-	blueCoefficients.allocateLevel(level, w * h * 6);
+	redCoefficients.allocateLevel(level, w * h);
+	greenCoefficients.allocateLevel(level, w * h);
+	blueCoefficients.allocateLevel(level, w * h);
 }
 
 
@@ -662,7 +662,7 @@ int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urt
 
 	mipMapSize[0] = QSize(w, h);
 
-	coefficients.setLevel(coeffPtr, w*h*6, 0);
+	coefficients.setLevel(coeffPtr, w*h, 0);
 	rgb.setLevel(rgbPtr, w*h*3, 0);
 	
 	// Computes mip-mapping and normals.
