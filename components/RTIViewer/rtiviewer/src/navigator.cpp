@@ -109,12 +109,13 @@ void Navigator::mouseReleaseEvent(QMouseEvent *event)
 		dragging = false;
 		int offx = event->x() - dragPoint.x() ;
 		int offy = event->y() - dragPoint.y();
+		bool flag = resize;
 		if (resize)
 			updateSelectionSize(offx, offy);
 		else
 			updateSelectionPos(offx, offy);
 		resize = false;
-		updateSubImage();
+		updateSubImage(flag);
 		update();
 		QApplication::restoreOverrideCursor();
 	}
@@ -150,14 +151,14 @@ void Navigator::wheelEvent(QWheelEvent *event)
 			selection.setY(selection.y() + offy);
 			selection.setWidth(selection.width() - offx);
 			selection.setHeight(selection.height() - offy);
-			updateSubImage();
+			updateSubImage(true);
 		}
 	}
 	else
 	{
 		updateSelectionPos(off, off);
 		updateSelectionSize(-off*2, -off*2);
-		updateSubImage();
+		updateSubImage(true);
 	}
 	update();
 }
@@ -197,7 +198,7 @@ void Navigator::setImage(QImage* img, int rtiW, int rtiH)
 		else
 			viewWidth = viewHeight * ratio;
 	}
-	pos = QRect((width - viewWidth)/2, (height - viewHeight)/2, viewWidth, viewHeight);
+	pos = QRectF((width - viewWidth)/2, (height - viewHeight)/2, viewWidth, viewHeight);
 	selection = pos;
 	update();
 }
@@ -205,7 +206,7 @@ void Navigator::setImage(QImage* img, int rtiW, int rtiH)
 
 void Navigator::updateSelectionPos(int offx, int offy)
 {
-	int x, y;
+	float x, y;
 	if (selection.x() + offx <= pos.x())
 		x = pos.x();
 	else if (selection.right() + offx >= pos.x() + pos.width())
@@ -225,7 +226,7 @@ void Navigator::updateSelectionPos(int offx, int offy)
 
 void Navigator::updateSelectionSize(int offx, int offy)
 {
-	int h, w;
+	float h, w;
 	if (selection.right() + offx < selection.left() + 12)
 		w = 12;
 	else if (selection.right() + offx + 2> pos.right())
@@ -263,26 +264,26 @@ void Navigator::updateBrowserSize(int w, int h)
 
 void Navigator::updateSelection(QRectF rect)
 {
-        float ratio = static_cast<float>(pos.height()) / static_cast<float>(rtiHeight);
-	int x = rect.x() * ratio;
-	int y = rect.y() * ratio;
-	int w = ceil(rect.width() * ratio);
-	int h = ceil(rect.height() * ratio);
+    float ratio = static_cast<float>(pos.height()) / static_cast<float>(rtiHeight);
+	float x = rect.x() * ratio;
+	float y = rect.y() * ratio;
+	float w = ceil(rect.width() * ratio);
+	float h = ceil(rect.height() * ratio);
 
 	selection = QRect(x + pos.x(), y + pos.y(), w, h);
 	update();
 }
 
 
-void Navigator::updateSubImage()
+void Navigator::updateSubImage(bool resize)
 {
 	QRectF sub;
-        float ratio = static_cast<float>(rtiHeight) / static_cast<float>(pos.height());
-	int x = ceil((selection.x() - pos.x()) * ratio);
-	int y = ceil((selection.y() - pos.y()) * ratio);
-	int w = selection.width() * ratio;
-	int h = selection.height() * ratio;
+    float ratio = static_cast<float>(rtiHeight) / static_cast<float>(pos.height());
+	float x = (selection.x() - pos.x()) * ratio;
+	float y = (selection.y() - pos.y()) * ratio;
+	float w = selection.width() * ratio;
+	float h = selection.height() * ratio;
 
 	sub = QRectF(x, y, w, h);
-	emit selectionChanged(sub);
+	emit selectionChanged(sub, resize);
 }

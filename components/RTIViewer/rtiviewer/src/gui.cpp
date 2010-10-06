@@ -60,7 +60,7 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 
 	connect(browser, SIGNAL(sizeChanged(int, int)), navigator, SLOT(updateBrowserSize(int, int)));
 	connect(browser, SIGNAL(viewChanged(QRectF)), navigator, SLOT(updateSelection(QRectF)));
-	connect(navigator, SIGNAL(selectionChanged(QRectF)), browser, SLOT(updateView(QRectF)));
+	connect(navigator, SIGNAL(selectionChanged(QRectF, bool)), browser, SLOT(updateView(QRectF, bool)));
 	connect(browser, SIGNAL(updateZoomValue(float, float)), this, SLOT(setZoomValue(float, float)));
 	
 	//Toolbar

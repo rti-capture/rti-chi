@@ -749,19 +749,22 @@ void RtiBrowser::updateImage()
 }
 
 
-void RtiBrowser::updateView(QRectF rect)
+void RtiBrowser::updateView(QRectF rect, bool resize)
 {
     subimg = rect;
     int h = _height > maxHeight ? maxHeight: _height;
     int w = _width > maxWidth ? maxWidth: _width;
 
-    float zoom1 = h / rect.height();
-    float zoom2 = w / rect.width();
-    zoom = zoom1 > zoom2? zoom2 : zoom1;
-    if (zoom > maxZoom)
-        zoom = maxZoom;
-    else if (zoom < minZoom)
-		zoom = minZoom;
+	if (resize)
+	{
+		float zoom1 = h / rect.height();
+		float zoom2 = w / rect.width();
+		zoom = zoom1 > zoom2? zoom2 : zoom1;
+		if (zoom > maxZoom)
+			zoom = maxZoom;
+		else if (zoom < minZoom)
+			zoom = minZoom;
+	}
 	
 	emit updateZoomValue(zoom, minZoom);
 	updateZoomimg();

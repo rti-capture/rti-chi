@@ -298,7 +298,7 @@ public slots:
 	/*!
 	  Updates the sub-image rectangle.
 	*/
-	void updateView(QRectF rect);
+	void updateView(QRectF rect, bool resize);
 
 	/*!
 	  Updates the light vector.
