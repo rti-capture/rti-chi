@@ -2,14 +2,14 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "RTIViewer"
-!define PRODUCT_VERSION "1.0.1 Beta"
-!define PRODUCT_PUBLISHER "VCG - ISTI - CNR | DI - UMINHO"
+!define PRODUCT_VERSION "1.0.1"
+!define PRODUCT_PUBLISHER "VCG - ISTI - CNR"
 !define PRODUCT_WEB_SITE "http://chi-dev.wikidot.com/rtiviewer"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 !define QT_BASE "C:\Qt\4.6.2"
-!define DIR_INST_NAME "RTIViewerBeta"
-!define APPL_INST_NAME "RTIViewerBeta"
+!define DIR_INST_NAME "RTIViewer"
+!define APPL_INST_NAME "RTIViewer"
 
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
@@ -43,7 +43,7 @@
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "RTIViewerSetupBeta.exe"
+OutFile "RTIViewerSetup.exe"
 InstallDir "$PROGRAMFILES\${DIR_INST_NAME}"
 
 ShowInstDetails show

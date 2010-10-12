@@ -24,7 +24,15 @@
 int main( int argc, char ** argv )
 {
 	QApplication app( argc, argv );
+
 #if _MSC_VER
+
+	MEMORYSTATUSEX statex;
+	statex.dwLength = sizeof (statex);
+	GlobalMemoryStatusEx (&statex);
+	printf ("There are %d total Mbytes of virtual memory.\n", statex.ullTotalVirtual/(1024*1024));
+	printf ("There are %d free Mbytes of virtual memory.\n", statex.ullAvailVirtual/(1024*1024));
+
 	omp_set_num_threads(getProcessorCount());
 #endif
 	RtiViewerDlg *maindlg = new RtiViewerDlg();

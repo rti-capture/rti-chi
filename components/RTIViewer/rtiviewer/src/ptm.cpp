@@ -19,6 +19,9 @@
 #include <QTransform>
 #include <QTime>
 
+#if _MSC_VER
+#include <windows.h>
+#endif
 
 Rti* Ptm::getPtm(QTextStream &in)
 {
@@ -112,7 +115,16 @@ int RGBPtm::load(QString name, CallBackPos * cb)
 	if (eof) return -1;
 	setHeight(str.toInt(&error));
 	if (!error) return -1;
-	QString text = "Loading RGB PTM...";
+
+#if _MSC_VER
+	MEMORYSTATUSEX statex;
+	statex.dwLength = sizeof (statex);
+	GlobalMemoryStatusEx (&statex);
+	if (w*h*176 > statex.ullAvailVirtual*0.95)
+		return -2;
+#endif
+
+  	QString text = "Loading RGB PTM...";
 	if (loadData(file, w, h, 6, false, cb, text) != 0)
 		return -1;
 
@@ -550,6 +562,14 @@ int LRGBPtm::load(QString name, CallBackPos *cb)
 	if (eof) return -1;
 	setHeight(str.toInt(&error));
 	if (!error) return -1;
+
+#if _MSC_VER
+	MEMORYSTATUSEX statex;
+	statex.dwLength = sizeof (statex);
+	GlobalMemoryStatusEx (&statex);
+	if (w*h*84 > statex.ullAvailVirtual*0.95)
+		return -2;
+#endif
 
 	QString text = "Loading LRGB PTM...";
 	if (loadData(file, w, h, 6, false, cb, text) != 0)
@@ -1195,6 +1215,14 @@ int JPEGLRGBPtm::load(QString name, CallBackPos *cb)
 	if (eof) return -1;
 	setHeight(str.toInt(&error));
 	if (!error) return -1;
+
+#if _MSC_VER
+	MEMORYSTATUSEX statex;
+	statex.dwLength = sizeof (statex);
+	GlobalMemoryStatusEx (&statex);
+	if (w*h*84 > statex.ullAvailVirtual*0.95)
+		return -2;
+#endif
 
 	//Gets scale value
 	str = getLine(file, &eof);

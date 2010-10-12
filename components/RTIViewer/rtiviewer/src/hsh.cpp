@@ -15,6 +15,10 @@
 
 #include <QTime>
 
+#if _MSC_VER
+#include <windows.h>
+#endif
+
 Hsh::Hsh() :
 	Rti()
 {
@@ -98,6 +102,14 @@ int Hsh::load(QString name, CallBackPos *cb)
 	fread(&bands, sizeof(int), 1, file);
 	//read number of coefficients per pixel
 	fread(&ordlen, sizeof(int), 1, file);
+
+#if _MSC_VER
+	MEMORYSTATUSEX statex;
+	statex.dwLength = sizeof (statex);
+	GlobalMemoryStatusEx (&statex);
+	if (w*h*(ordlen*ordlen + 1)*16 > statex.ullAvailVirtual*0.95)
+		return -2;
+#endif
 
 	if (feof(file))
 		return -1;

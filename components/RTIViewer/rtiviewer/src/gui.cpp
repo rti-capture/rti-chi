@@ -32,7 +32,7 @@
 RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
         QWidget(parent),
 	rendDlg(NULL),
-	title("RTIViewer 1.0.1 (Beta)"),
+	title("RTIViewer 1.0.1"),
 	filterStr("All (*.ptm *.hsh *.rti *.mview);;Polynamial Texture Maps (*.ptm);; Hemispherical Harmonics Map (*.hsh);; Universal RTI (*.rti);; Multiview RTI (*.mview)"),
 	maxZoom(2)
 {
@@ -160,7 +160,7 @@ RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
 	layout->addWidget(infoGroup, 2, 1, 1, 1, Qt::AlignCenter);
 	layout->addWidget(navFrame, 3, 1, 1, 1, Qt::AlignBottom | Qt::AlignHCenter);
 	
-        setLayout(layout);
+    setLayout(layout);
 
         // widget attributes
 	setWindowState(Qt::WindowMaximized);
@@ -245,7 +245,8 @@ int RtiViewerDlg::openFile(QString path)
 		filename->setText("");
 		filesize->setText("");
 		fileformat->setText("");
-		if (image->load(LoadingDlg::QCallBack)== 0) //Loads the image info
+		int result = image->load(LoadingDlg::QCallBack);
+		if (result == 0) //Loads the image info
 		{
 			zoomFact->setEnabled(true);
 			//Sets the browser image
@@ -261,11 +262,17 @@ int RtiViewerDlg::openFile(QString path)
 			fileformat->setText(image->typeFormat());
 			light->setInteractive(true);
 		}
-		else
+		else if (result == -1)
 		{
 			loading->close();
 			QApplication::restoreOverrideCursor();
 			QMessageBox::critical(this, tr("Opening error"), tr("The file: \n%1\n is invalid.\n Internal format unknown.").arg(path));
+		}
+		else if (result == -2)
+		{
+			loading->close();
+			QApplication::restoreOverrideCursor();
+			QMessageBox::critical(this, tr("Opening error"), tr("The virtual memory is not\n suffice to open the file"));
 		}
 		delete loading;
 	}
