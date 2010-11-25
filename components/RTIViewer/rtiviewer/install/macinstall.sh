@@ -48,6 +48,10 @@ cp -r $APPNAME $BUNDLE
 cp -r ../../rtibuilder/src/rtiwebmaker $BUNDLE/rtiviewer.app/Contents/MacOS
 cp -r ../doc/manual.pdf $BUNDLE
 
+cp -r ../doc/gpl.txt $BUNDLE
+cp -r ../doc/readme.txt $BUNDLE
+cp -r ../doc/thirdpartycode.txt $BUNDLE
+
 # we must add also a qt.conf that contains the new dir of the plugins
 cp ../install/qt.conf $BUNDLE/$APPNAME/Contents/Resources
 

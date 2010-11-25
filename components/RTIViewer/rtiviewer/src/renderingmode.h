@@ -2,42 +2,25 @@
 * RTIViewer                                                         o o     *
 * Single and Multi-View Reflectance Transformation Image Viewer   o     o   *
 *                                                                _   O  _   *
-* Copyright(C) 2008                                                \/)\/    *
-* Visual Computing Lab                                            /\/|      *
-* ISTI - Italian National Research Council                           |      *
-*                                                                    \      *
-* All rights reserved.                                                      *
-*                                                                           *
-* This program is free software; you can redistribute it and/or modify      *   
-* it under the terms of the GNU General Public License as published by      *
-* the Free Software Foundation; either version 2 of the License, or         *
-* (at your option) any later version.                                       *
-*                                                                           *
-* This program is distributed in the hope that it will be useful,           *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of            *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             *
-* GNU General Public License (http://www.gnu.org/licenses/gpl.txt)          *
-* for more details.                                                         *
-*                                                                           *
+* Copyright	(C) 2008-2010                                          \/)\/    *
+* Visual Computing Lab - ISTI CNR					              /\/|      *
+* and											                     |      *
+* Cultural Heritage Imaging							                 \      *
+*																			*
+* This program is free software: you can redistribute it and/or modify		*
+* it under the terms of the GNU General Public License as published by		*
+* the Free Software Foundation, either version 3 of the License, or			*
+* (at your option) any later version.										*
+*																			*
+* This program is distributed in the hope that it will be useful,			*
+* but WITHOUT ANY WARRANTY; without even the implied warranty of			*
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the				*
+* GNU General Public License for more details.								*
+*																			*
+* You should have received a copy of the GNU General Public License			*
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.		*
 ****************************************************************************/
-/****************************************************************************
-History
-$Log: not supported by cvs2svn $
-Revision 1.4  2008/07/28 11:15:57  palma
-Added methods:
-- bool supportRemoteView()
-- bool enabledLighting() = 0
 
-Revision 1.3  2008/07/22 15:54:50  palma
-New layout
-
-Revision 1.2  2008/07/16 08:13:00  palma
-Change method to update ligth position
-
-Revision 1.1  2008/06/19 15:26:59  palma
-Add support for different rendering modes
-
-****************************************************************************/
 
 #ifndef RENDERINGMODE_H
 #define RENDERINGMODE_H

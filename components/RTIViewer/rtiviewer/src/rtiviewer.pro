@@ -82,7 +82,6 @@ HEADERS = rti.h \
     multiviewrti.h \
     defaultrendering.h \
     ptmCoeffVectorized.h \
-    glInfo.h
 
 FORMS = about.ui
 

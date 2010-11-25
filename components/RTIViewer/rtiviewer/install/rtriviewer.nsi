@@ -7,7 +7,7 @@
 !define PRODUCT_WEB_SITE "http://chi-dev.wikidot.com/rtiviewer"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
-!define QT_BASE "C:\Qt\4.6.2"
+!define QT_BASE "C:\Qt\4.7.0"
 !define DIR_INST_NAME "RTIViewer"
 !define APPL_INST_NAME "RTIViewer"
 
@@ -21,6 +21,8 @@
 
 ; Welcome page
 !insertmacro MUI_PAGE_WELCOME
+; License page
+!insertmacro MUI_PAGE_LICENSE "..\doc\gpl.txt"
 ; Directory page
 !insertmacro MUI_PAGE_DIRECTORY
 ; Instfiles page
@@ -81,6 +83,10 @@ Section "MainSection" SEC01
   File "..\install\msvc\msvcp90.dll"
   File "..\install\msvc\msvcr90.dll"
   File "..\install\msvc\vcomp90.dll"
+  
+  File "..\doc\readme.txt"
+  File "..\doc\gpl.txt"
+  File "..\doc\thirdpartycode.txt"
     
 SectionEnd
 
