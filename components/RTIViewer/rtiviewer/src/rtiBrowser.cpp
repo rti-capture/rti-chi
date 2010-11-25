@@ -937,18 +937,23 @@ void RtiBrowser::snapshotActivated()
     if (!img) return;
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save snapshot"), "snapshot.jpg", tr("JPEG (*.jpg *.jpeg);; PNG (*.png)"));
     if (fileName == "") return;
-    QImage snapshotImg(textureWidth, textureHeight, QImage::Format_RGB32);
+	unsigned char* imgBuffer;
+	int tempW = 0;
+	int tempH = 0;
+	img->createImage(&imgBuffer, tempW, tempH, light, subimg);  
+    QImage snapshotImg(tempW, tempH, QImage::Format_RGB32);
     QRgb value;
-    for (int j = 0; j < textureHeight; j++)
+    for (int j = 0; j < tempH; j++)
     {
-        for (int i = 0; i < textureWidth; i++)
+        for (int i = 0; i < tempW; i++)
         {
-            int offset = j * textureWidth + i;
-            value = qRgb(textureData[offset*4], textureData[offset*4 + 1], textureData[offset*4 + 2]);
+            int offset = j * tempW + i;
+            value = qRgb(imgBuffer[offset*4], imgBuffer[offset*4 + 1], imgBuffer[offset*4 + 2]);
             snapshotImg.setPixel(i, j, value);
         }
     }
     snapshotImg.save(fileName, 0, 100);
+	delete[] imgBuffer;
 }
 
 
