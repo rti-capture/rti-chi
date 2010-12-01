@@ -316,7 +316,6 @@ void RtiViewerDlg::configure()
 
 void RtiViewerDlg::about()
 {
-	//QDialog *dlg = new QDialog(this);
 	AboutDlg *dlg = new AboutDlg(this);
 	Ui::aboutDialog aboutdlg;
 	aboutdlg.setupUi(dlg);
