@@ -97,7 +97,6 @@ done
 echo "Now Changing " #--------------------------
 
 EXECNAMES="MacOS/rtiviewer" 
-QTLIBPATH="/usr/local/Trolltech/Qt-4.3.3/lib"
 for x in $EXECNAMES
 do
   install_name_tool -change QtCore.framework/Versions/4/QtCore       @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore       $BUNDLE/rtiviewer.app/Contents/$x

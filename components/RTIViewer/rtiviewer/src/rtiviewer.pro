@@ -1,8 +1,8 @@
 TEMPLATE = app
 TARGET = RTIViewer
 LANGUAGE = C++
-CONFIG += qt debug_and_release xml network opengl console warn_off x86
-
+CONFIG += qt debug_and_release xml network opengl warn_off x86 #console
+ 
 QT += opengl xml network
 
 UI_DIR = ui
