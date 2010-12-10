@@ -78,13 +78,13 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>RTIViewer</string>
+	<string>RTIViewer 1.0.2</string>
 	<key>CFBundleGetInfoString</key>
 	<string>RTIViewer VCG-ISTI-CNR</string>
 	<key>CFBundleIconFile</key>
 	<string>rtiviewer.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.rtiviewer</string>
+	<string>www.c-h-i.org</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>

@@ -45,7 +45,7 @@
 RtiViewerDlg::RtiViewerDlg(QWidget *parent/*=0*/):
         QWidget(parent),
 	rendDlg(NULL),
-	title("RTIViewer 1.0.1"),
+	title("RTIViewer 1.0.2"),
 	filterStr("All (*.ptm *.hsh *.rti *.mview);;Polynamial Texture Maps (*.ptm);; Hemispherical Harmonics Map (*.hsh);; Universal RTI (*.rti);; Multiview RTI (*.mview)"),
 	maxZoom(2)
 {

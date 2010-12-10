@@ -8,9 +8,7 @@
 # make clean
 # make release
 # Note that sometimes you have to copy by hand the icons in the rtiviewer.app/Contents/Resources directory
-
-
-cd ../src
+cd ./../src
 QTPATH="/Library/Frameworks"
 APPNAME="RTIViewer.app"
 APPNAME2="rtiwebmaker"
