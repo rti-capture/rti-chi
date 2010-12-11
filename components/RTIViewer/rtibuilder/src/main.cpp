@@ -49,6 +49,11 @@ int main( int argc, char ** argv )
 {
 	QApplication app( argc, argv );
 
+#if defined(Q_OS_MAC)
+        QString appDir = QCoreApplication::applicationDirPath();
+        QCoreApplication::addLibraryPath(appDir + QString("/../PlugIns"));
+#endif
+
 	if (argc < 2)
 	{
 		cout << std::endl << "Usage:" << endl << endl;
@@ -158,7 +163,7 @@ int main( int argc, char ** argv )
 	int previewHeight = previewWidth * aspect_ratio;
 	QImage *img = image->createPreview(previewWidth, previewHeight);
 	QString previewname = fi.absolutePath() + QString("/") + name + QString("/") + QString("thumb.jpg");
-	img->save(previewname);
+        img->save(previewname, 0, 100);
 
 	int x1,y1,x2,y2;
 
