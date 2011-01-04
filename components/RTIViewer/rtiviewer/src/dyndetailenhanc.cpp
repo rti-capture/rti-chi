@@ -34,7 +34,7 @@
 
 #include "dyndetailenhanc.h"
 
-#include "../../rtibuilder/src/zorder.h"
+#include "../../rtiwebmaker/src/zorder.h"
 
 
 DynamicDetailEControl::DynamicDetailEControl(unsigned int tileSize, unsigned int offset, QWidget *parent) 

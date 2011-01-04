@@ -35,7 +35,7 @@
 #include "detailenhanc.h"
 #include "loadingdlg.h"
 
-#include "../../rtibuilder/src/zorder.h"
+#include "../../rtiwebmaker/src/zorder.h"
 
 #include <omp.h>
 

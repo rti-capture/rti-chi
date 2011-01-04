@@ -23,7 +23,7 @@
 
 
 #include "hsh.h"
-#include "../../rtibuilder/src/zorder.h"
+#include "../../rtiwebmaker/src/zorder.h"
 
 #include <vcg/math/matrix33.h>
 

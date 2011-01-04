@@ -32,7 +32,7 @@ macx-g++:QMAKE_CFLAGS += -O3 -msse2 -fopenmp -funroll-loops -ffast-math -fforce-
 
 INCLUDEPATH += ../../../../vcglib \
     ../../compression/src/ \
-    ../../rtibuilder/src
+    ../../rtiwebmaker/src
 
 SOURCES = ptm.cpp \
     gui.cpp \
@@ -58,7 +58,7 @@ SOURCES = ptm.cpp \
 HEADERS = rti.h \
     ptm.h \
     gui.h \
-    ../../rtibuilder/src/zorder.h \
+    ../../rtiwebmaker/src/zorder.h \
     rtiBrowser.h \
     lightControl.h \
     renderingdialog.h \

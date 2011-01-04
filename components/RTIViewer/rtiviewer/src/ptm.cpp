@@ -24,7 +24,7 @@
 
 // Local headers
 #include "ptm.h"
-#include "../../rtibuilder/src/zorder.h"
+#include "../../rtiwebmaker/src/zorder.h"
 
 // Qt headers
 #include <QStringList>
