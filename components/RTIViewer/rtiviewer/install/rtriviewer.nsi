@@ -54,7 +54,7 @@ Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite on
   File "..\src\release\rtiviewer.exe"
-  File "..\..\rtibuilder\src\release\rtiwebmaker.exe"
+  File "..\..\rtiwebmaker\src\release\rtiwebmaker.exe"
   File "..\doc\manual.pdf"
   
   CreateDirectory "$SMPROGRAMS\${DIR_INST_NAME}"

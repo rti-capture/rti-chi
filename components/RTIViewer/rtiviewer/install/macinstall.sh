@@ -28,7 +28,7 @@ else
   exit 0
 fi
 
-if [ -e ../../rtibuilder/src/$APPNAME2 ]
+if [ -e ../../rtiwebmaker/src/$APPNAME2 ]
 then
 	echo "------------------"
 else
@@ -43,7 +43,7 @@ rm -r -f $BUNDLE
 mkdir $BUNDLE
 cp -r $APPNAME $BUNDLE
 
-cp -r ../../rtibuilder/src/rtiwebmaker $BUNDLE/rtiviewer.app/Contents/MacOS
+cp -r ../../rtiwebmaker/src/rtiwebmaker $BUNDLE/rtiviewer.app/Contents/MacOS
 cp -r ../doc/manual.pdf $BUNDLE
 
 cp -r ../doc/gpl.txt $BUNDLE
