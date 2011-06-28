@@ -1,0 +1,9 @@
+<plugin>
+<name>Dome LP File Plugin Viewer</name>
+<version>1.0.0</version>
+<uuid>fc66a9e6-67ed-4d92-a30b-7f13d3c95bb0</uuid>
+<jarfile path="file" type="relative">Plugins/Preview/PreviewPlugin.jar</jarfile>
+<UI>Plugin.PreviewDomeLPInterface</UI>
+<MainClass>Plugin.PreviewMain</MainClass>
+</plugin>
+

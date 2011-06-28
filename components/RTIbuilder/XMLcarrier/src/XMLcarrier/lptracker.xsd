@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://alba.di.uminho.pt/XMLCarrier" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xc="http://alba.di.uminho.pt/XMLCarrier" 
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:import namespace="http://www.w3.org/1999/xlink"
+        schemaLocation="xlink.xsd"/>
+   
+    <xs:element name="XMLCarrier" xmlns:xc="http://alba.di.uminho.pt/XMLCarrier">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="Header">
+                <xs:complexType>
+                    <xs:sequence minOccurs="0">
+                        <xs:element name="ProjectName" type="xs:string" />
+                        <xs:element name="Description" type="xs:string" />
+                        <xs:element name="Author" type="xs:string" />
+                        <xs:element name="CreationDate" type="xs:string" />
+                        <xs:element name="LastModificationDate" type="xs:string" />
+                        <xs:element name="UserInfo" type="xs:string" />
+                        <xs:element name="Host" type="xs:string" />
+                        <xs:element name="AdditionalInfo">
+                            <xs:complexType>
+                                <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                                    <xs:element name="Info" minOccurs="0" maxOccurs="1">
+                                        <xs:complexType>
+                                            <xs:attribute name="OperatingSystem" use="optional"></xs:attribute>
+                                            <xs:attribute name="MemoryAvailable" use="optional"></xs:attribute>
+                                            <xs:attribute name="Processor" use="optional"></xs:attribute>
+                                            <xs:attribute name="MacAddress" use="optional"></xs:attribute>
+                                        </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="Info2" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:attribute name="NAME"/>
+                                                <xs:attribute name="VALUE"/>
+                                            </xs:complexType>
+                                         </xs:element>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="UUID" />
+                </xs:complexType>
+            </xs:element>
+        <xs:element name="FileSec">
+            <xs:complexType>
+                <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="fileList">
+                        <xs:complexType>
+                            <xs:sequence maxOccurs="unbounded">
+                                <xs:element name="fileInfo">
+                                    <xs:complexType>
+                                        <xs:sequence>
+                                            <xs:element name="fileLink">
+                                                <xs:complexType>
+                                                    <xs:attribute ref="xlink:href"/>
+                                                    <xs:attribute name="LOCTYPE" type="xs:string" />
+                                                    <xs:attribute name="CHECKSUM" type="xs:string" />
+                                                </xs:complexType>
+                                            </xs:element>
+                                        </xs:sequence>
+                                <xs:attribute name="UUID" />
+                                <xs:attribute name="MIMETYPE" />
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>            
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="fileGrp" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="fileRef"/>
+                    </xs:sequence>
+                    <xs:attribute name="UUID" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+      </xs:complexType>
+        </xs:element>
+            <xs:element name="Processes">
+    <xs:complexType>
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="process">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="description" />
+                                <xs:sequence>
+                                    <xs:element name="Input">
+                                        <xs:complexType>
+                                            <xs:sequence maxOccurs="unbounded" minOccurs="0">
+                                                <xs:element name="ref" />
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                    <xs:element name="Output">
+                                        <xs:complexType>
+                                            <xs:sequence maxOccurs="unbounded" minOccurs="0">
+                                                <xs:element name="ref" />
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                    </xs:sequence>
+                    <xs:attribute name="COMPID" />
+                    <xs:attribute name="ID" />
+                    <xs:attribute name="TYPE" />
+                    <xs:attribute name="STATUS" />
+                    <xs:attribute name="SEQ" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+            </xs:element>
+    <xs:element name="dataSec">
+    <xs:complexType>
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="Data" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence maxOccurs="unbounded">
+                        <xs:element name="description"/>
+                        <xs:element name="param" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="value" />
+                                </xs:sequence>
+                                <xs:attribute name="TYPE" />
+                                <xs:attribute name="NAME" />
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="area" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="BEGIN" type="xs:string" use="optional"/>
+                                <xs:attribute name="COORDS" type="xs:string" use="optional" />
+                                <xs:attribute name="END" type="xs:string" use="optional"/>
+                                <xs:attribute name="SHAPE" type="xs:string" use="optional"/>
+                                <xs:attribute name="UUID" type="xs:string" use="optional" />
+                                <xs:attribute name="algorithm" type="xs:string" use="optional" />
+                                <xs:attribute name="binarize" type="xs:string" use="optional" />
+                                <xs:attribute name="fileGrpID" type="xs:string" use="optional" />
+                                <xs:attribute name="hough" type="xs:string" use="optional" />
+                                <xs:attribute name="projectName" type="xs:string" use="optional" />
+                                <xs:attribute name="projectPath" type="xs:string" use="optional" />
+                                <xs:attribute name="scaleFactor" type="xs:string" use="optional" />
+                                <xs:attribute name="EdgeID" type="xs:string" use="optional" />
+                                <xs:attribute name="MedianID" type="xs:string" use="optional" />
+                                <xs:attribute name="r" type="xs:string" use="optional" />
+                                <xs:attribute name="x" type="xs:string" use="optional" />
+                                <xs:attribute name="y" type="xs:string" use="optional" />
+                                <xs:attribute name="threshold" type="xs:string" use="optional" />
+                                <xs:attribute name="BlendID" type="xs:string" use="optional" />
+                                <xs:attribute name="Ref_HighLights" type="xs:string" use="optional" />
+                                <xs:attribute name="Ref_LightPositions" type="xs:string" use="optional" />
+                                <xs:attribute name="bd_r" type="xs:string" use="optional" />
+                                <xs:attribute name="bd_x" type="xs:string" use="optional" />
+                                <xs:attribute name="bd_y" type="xs:string" use="optional" />
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>	
+                    <xs:attribute name="UUID" />
+                    <xs:attribute name="NAME" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+    </xs:complexType>
+    </xs:element>
+</xs:schema>

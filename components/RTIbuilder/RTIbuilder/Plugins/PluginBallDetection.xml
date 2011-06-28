@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <name>Ball Detection</name>
+    <version>1.0.0</version>
+    <uuid>d6b14f9e-343f-4ea0-a11c-fb70c41fab64</uuid>
+    <jarfile path="file" type="relative">Plugins/BallDetection/BallDetectionPlugin.jar</jarfile>
+    <UI>Plugin.BallDetectionInterface</UI>
+    <MainClass>Plugin.PluginDemoMain</MainClass>
+</plugin>

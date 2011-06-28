@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<plugin>
+    <name>Plugin HSHfitter</name>
+    <version>1.0.0</version>
+    <uuid>829a0cfe-8f31-4581-ad95-fb6457587137</uuid>
+    <jarfile path="file" type="relative">Plugins/HSHFitter/HSHfitterPlugin.jar</jarfile>
+    <UI>Plugin.HSHfitterInterface</UI>
+    <MainClass>Plugin.PluginDemoMain</MainClass>
+    <properties FITTER_PATH="C:\RTIBuilder\InstallerDevelDistrib\DistribContent\Fitters\HSHfitter\hshfitter.exe"/>
+</plugin>

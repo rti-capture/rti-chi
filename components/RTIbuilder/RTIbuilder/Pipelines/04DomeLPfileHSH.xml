@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pipeline>
+    <name>Dome LP File (HSH Fitter)</name>
+    <plugins>
+        <xmlfile order="1" path="file" type="relative" uuid="fc66a9e6-67ed-4d92-a30b-7f13d3c95bb0">Plugins/PluginDomeLPFilePreview.xml</xmlfile>
+		<xmlfile order="2" path="file" type="relative" uuid="829a0cfe-8f31-4581-ad95-fb6457587137">Plugins/PluginHSHfitter.xml</xmlfile>
+    </plugins>
+</pipeline>

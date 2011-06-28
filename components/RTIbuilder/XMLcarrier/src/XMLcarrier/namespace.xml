@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<XMLCarrier xmlns:xc="http://alba.di.uminho.pt/XMLCarrierNS" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <xc:Header uuid="abcdef0123456789">
+        <xc:ProjectName>MyProject</xc:ProjectName>
+        <xc:Description>Teste</xc:Description>
+        <xc:Author>Matheus</xc:Author>
+        <xc:Date>28-08-2008 15:39:27</xc:Date>
+        <xc:UserInfo>matheus</xc:UserInfo>
+        <xc:Host>matheus-laptop</xc:Host>
+        <xc:AdditionalInfo>
+            <xc:Info OperatingSystem="Linux i386"/>
+            <xc:Info MacAddress=""/>
+            <xc:Info Processor="1"/>
+            <xc:Info MemoryAvailable="5177344"/>
+        </xc:AdditionalInfo>
+    </xc:Header>
+    <xc:FileSec>
+	<xc:fileList>	
+            <xc:fileInfo MIMETYPE="image/JPG" UUID="c4ca4238-a0b9-3382-8dcc-509a6f75849b">
+                <xc:fileLink CHECKSUM="0123-abdcf-1234" LOCTYPE="URL" xlink:href="file://home/matheus/1.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+            <xc:fileInfo MIMETYPE="image/JPG" UUID="c4ca4238-a0b9-3382-8dcc-509a6f75849c">
+                <xc:fileLink CHECKSUM="0123-abdcff-1234" LOCTYPE="URL" xlink:href="file://home/matheus/2.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+            <xc:fileInfo MIMETYPE="image/JPG" UUID="c4ca4238-a0b9-3382-8dcc-509a6f75849d">
+                <xc:fileLink CHECKSUM="0123-abdcfff-1234" LOCTYPE="URL" xlink:href="file://home/matheus/3.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+	</xc:fileList>
+	<xc:fileGrp UUID="c4ca4238-a0b9-3382-8dcc-509a6f75849e">
+		<xc:fileRef>c4ca4238-a0b9-3382-8dcc-509a6f75849b</xc:fileRef>
+		<xc:fileRef>c4ca4238-a0b9-3382-8dcc-509a6f75849c</xc:fileRef>
+	</xc:fileGrp>
+    </xc:FileSec>
+    <xc:Processes/>
+    <xc:dataSec>
+            <xc:Data NAME="Nome" UUID="3e8942f4-4677-49ec-ac36-99bcae364832" attr="ana">
+            <xc:description>Isto e uma descricao</xc:description>
+            <xc:param NAME="testeee" TYPE="String">
+                <xc:value>valor</xc:value>
+            </xc:param>
+        </xc:Data>
+		<xc:Data NAME="nome" UUID="ea53d8bd-5f6c-4eaa-8b4b-461797282c1a">
+            <xc:description>descricao</xc:description>
+            <xc:area BEGIN="begin" COORDS="coords" END="end" SHAPE="shape" UUID="a655102e-9a97-47d3-bcac-b5737a36809c" attr="ana" fileGrpID="9d80ca22-b0e8-4143-a226-eca991709d63"/>
+        </xc:Data>
+    </xc:dataSec>
+</XMLCarrier>

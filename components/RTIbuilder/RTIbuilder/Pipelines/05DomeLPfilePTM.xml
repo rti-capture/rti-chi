@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pipeline>
+    <name>Dome LP File (PTM Fitter)</name>
+    <plugins>
+        <xmlfile order="1" path="file" type="relative" uuid="fc66a9e6-67ed-4d92-a30b-7f13d3c95bb0">Plugins/PluginDomeLPFilePreview.xml</xmlfile>
+		<xmlfile order="2" path="file" type="relative" uuid="1bcfa75b-b90a-469a-b3fa-d232431edba1">Plugins/PluginPTMfitter.xml</xmlfile>
+    </plugins>
+</pipeline>
+

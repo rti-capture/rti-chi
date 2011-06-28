@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<XMLCarrier>
+    <Header uuid="abcdef0123456789">
+        <ProjectName>MyProject</ProjectName>
+        <Description>Teste</Description>
+        <Author>Matheus</Author>
+        <Date>28-08-2008 15:39:27</Date>
+        <UserInfo>matheus</UserInfo>
+        <Host>matheus-laptop</Host>
+        <AdditionalInfo>
+            <Info OperatingSystem="Linux i386"/>
+            <Info MacAddress="Cannot retrieve information"/>
+            <Info Processor="1"/>
+            <Info MemoryAvailable="5177344"/>
+        </AdditionalInfo>
+    </Header>
+    <FileSec>
+        <fileInfo MIMETYPE="image/JPG" UUID="12345abcd">
+            <fileLink CHECKSUM="0123-abdc-1234" LOCTYPE="URL" REF="file://home/matheus/1.jpg"/>
+        </fileInfo>
+        <fileInfo MIMETYPE="image/JPG" UUID="12345abcd">
+            <fileLink CHECKSUM="0123-abdc-1234" LOCTYPE="URL" REF="file://home/matheus/2.jpg"/>
+        </fileInfo>
+        <fileInfo MIMETYPE="image/JPG" UUID="12345abcd">
+            <fileLink CHECKSUM="0123-abdc-1234" LOCTYPE="URL" REF="file://home/matheus/3.jpg"/>
+        </fileInfo>
+    </FileSec>
+    <Processes>
+        <process ID="123" STATUS="DONE" TYPE="A">
+            <description>Ball Detection bla bla bla</description>
+            <Info VERSION="BDV01">
+                <UserInfo>matheus@laptop</UserInfo>
+                <Date DATEFINISHED="01/09/2008 22:35:35" STARTED="01/09/2008 22:35:35"/>
+                <Host>matheus</Host>
+                <MacAddress>00:01:34:08</MacAddress>
+            </Info>
+            <Input>
+                <ref>01</ref>
+            </Input>
+            <Output>
+                <ref>02</ref>
+            </Output>
+        <fork>
+                <process ID="234" STATUS="DONE" TYPE="A">
+                    <description>Ball Detection bla bla bla</description>
+                    <Info VERSION="BDV01">
+                        <UserInfo>matheus@laptop</UserInfo>
+                        <Date DATEFINISHED="01/09/2008 22:35:35" STARTED="01/09/2008 22:35:35"/>
+                        <Host>matheus</Host>
+                        <MacAddress>00:01:34:08</MacAddress>
+                    </Info>
+                    <Input>
+                        <ref>01</ref>
+                    </Input>
+                    <Output>
+                        <ref>02</ref>
+                    </Output>
+                </process>
+            </fork>
+        </process>
+    </Processes>
+    <MessagePassing>
+        <Data UUID="00000000-0000-0001-0000-000000000011">  
+            	<param NAME="numAreas" TYPE="String">
+                	<value>2</value>
+            	</param>
+        </Data>
+    </MessagePassing>
+</XMLCarrier>

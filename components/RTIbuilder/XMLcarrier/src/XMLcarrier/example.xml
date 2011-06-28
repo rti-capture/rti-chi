@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<XMLCarrier xmlns:xc="http://alba.di.uminho.pt/XMLCarrierNS" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <xc:Header UUID="67066a2f-9647-4ba0-a751-b96c1823f858">
+        <xc:ProjectName>example</xc:ProjectName>
+        <xc:Description>descricao!!</xc:Description>
+        <xc:Author>gomes</xc:Author>
+        <xc:CreationDate>2008/8/26 10:34:24</xc:CreationDate>
+        <xc:LastModificationDate>2008/8/26 10:34:26</xc:LastModificationDate>
+        <xc:UserInfo>gomes</xc:UserInfo>
+        <xc:Host>gomes-laptop</xc:Host>
+        <xc:AdditionalInfo>
+            <xc:Info MacAddress="aa:bb:ccd!!" MemoryAvailable="33804288" OperatingSystem="Linux i386" Processor="2"/>
+            <xc:Info/>
+        </xc:AdditionalInfo>
+    </xc:Header>
+    <xc:FileSec>
+        <xc:fileList>
+            <xc:fileInfo MIMETYPE="mimetype" UUID="c61d50b6-76b0-41dc-875f-0c74bc90df77">
+                <xc:fileLink CHECKSUM="" LOCTYPE="URL" xlink:href="/home/gomes/piscos/38_new.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+            <xc:fileInfo MIMETYPE="mimetype" UUID="ebadb3ba-d954-454b-99fe-ec7572a98344">
+                <xc:fileLink CHECKSUM="" LOCTYPE="URL" xlink:href="/home/gomes/piscos/33_new.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+            <xc:fileInfo MIMETYPE="mimetype" UUID="1813b8e7-1b8c-4997-bc5a-63276ee306cb">
+                <xc:fileLink CHECKSUM="" LOCTYPE="URL" xlink:href="/home/gomes/piscos/37_new.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+            <xc:fileInfo MIMETYPE="mimetype" UUID="38563df4-76e0-4969-afd6-a417aef99251">
+                <xc:fileLink CHECKSUM="" LOCTYPE="URL" xlink:href="/home/gomes/piscos/34_new.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+            <xc:fileInfo MIMETYPE="mimetype" UUID="5a9197a4-5816-4c4b-9ccd-423bcdce25a3">
+                <xc:fileLink CHECKSUM="" LOCTYPE="URL" xlink:href="/home/gomes/piscos/35_new.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+            <xc:fileInfo MIMETYPE="mimetype" UUID="6c77ca05-6559-4b19-b052-109b8f4b03cf">
+                <xc:fileLink CHECKSUM="" LOCTYPE="URL" xlink:href="/home/gomes/piscos/32_new.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+        <xc:fileInfo MIMETYPE="image/JPG" UUID="dffb9996-7c4a-4e35-b84b-0656cda28c73">
+                <xc:fileLink CHECKSUM="" LOCTYPE="URL" xlink:href="/home/gomes/piscos/subimages/BALLDETECT/edge1.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+            <xc:fileInfo MIMETYPE="image/JPG" UUID="6c996963-cafa-4fad-a213-287abacd63bf">
+                <xc:fileLink CHECKSUM="" LOCTYPE="URL" xlink:href="/home/gomes/piscos/subimages/BALLDETECT/median1.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+            <xc:fileInfo MIMETYPE="image/JPG" UUID="ca8fd478-3945-4435-a121-25cfc57cf948">
+                <xc:fileLink CHECKSUM="" LOCTYPE="URL" xlink:href="/home/gomes/piscos/subimages/BALLDETECT/edge2.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+            <xc:fileInfo MIMETYPE="image/JPG" UUID="757bd2ab-5476-4f5b-a247-9de3e9baa87f">
+                <xc:fileLink CHECKSUM="" LOCTYPE="URL" xlink:href="/home/gomes/piscos/subimages/BALLDETECT/median2.jpg" xlink:type="simple"/>
+            </xc:fileInfo>
+        </xc:fileList>
+        <xc:fileGrp UUID="a65932d6-0756-46dc-ab8b-5b94be81e6eb">
+            <xc:fileRef>c61d50b6-76b0-41dc-875f-0c74bc90df77</xc:fileRef>
+            <xc:fileRef>ebadb3ba-d954-454b-99fe-ec7572a98344</xc:fileRef>
+            <xc:fileRef>1813b8e7-1b8c-4997-bc5a-63276ee306cb</xc:fileRef>
+            <xc:fileRef>38563df4-76e0-4969-afd6-a417aef99251</xc:fileRef>
+            <xc:fileRef>5a9197a4-5816-4c4b-9ccd-423bcdce25a3</xc:fileRef>
+            <xc:fileRef>6c77ca05-6559-4b19-b052-109b8f4b03cf</xc:fileRef>
+        </xc:fileGrp>
+        <xc:fileGrp UUID="464e373f-d289-4213-9ee7-21085082756d">
+            <xc:fileRef>c61d50b6-76b0-41dc-875f-0c74bc90df77</xc:fileRef>
+            <xc:fileRef>ebadb3ba-d954-454b-99fe-ec7572a98344</xc:fileRef>
+            <xc:fileRef>1813b8e7-1b8c-4997-bc5a-63276ee306cb</xc:fileRef>
+            <xc:fileRef>38563df4-76e0-4969-afd6-a417aef99251</xc:fileRef>
+            <xc:fileRef>5a9197a4-5816-4c4b-9ccd-423bcdce25a3</xc:fileRef>
+            <xc:fileRef>6c77ca05-6559-4b19-b052-109b8f4b03cf</xc:fileRef>
+        </xc:fileGrp>
+    <xc:fileGrp UUID="c375b11b-245f-475b-bc77-eb38753c6d03">
+            <xc:fileRef>c61d50b6-76b0-41dc-875f-0c74bc90df77</xc:fileRef>
+            <xc:fileRef>ebadb3ba-d954-454b-99fe-ec7572a98344</xc:fileRef>
+            <xc:fileRef>1813b8e7-1b8c-4997-bc5a-63276ee306cb</xc:fileRef>
+            <xc:fileRef>38563df4-76e0-4969-afd6-a417aef99251</xc:fileRef>
+            <xc:fileRef>5a9197a4-5816-4c4b-9ccd-423bcdce25a3</xc:fileRef>
+            <xc:fileRef>6c77ca05-6559-4b19-b052-109b8f4b03cf</xc:fileRef>
+        </xc:fileGrp>
+        <xc:fileGrp UUID="0cb0cfc7-a319-484c-9860-b471ab5264d7">
+            <xc:fileRef>c61d50b6-76b0-41dc-875f-0c74bc90df77</xc:fileRef>
+            <xc:fileRef>ebadb3ba-d954-454b-99fe-ec7572a98344</xc:fileRef>
+            <xc:fileRef>1813b8e7-1b8c-4997-bc5a-63276ee306cb</xc:fileRef>
+            <xc:fileRef>38563df4-76e0-4969-afd6-a417aef99251</xc:fileRef>
+            <xc:fileRef>5a9197a4-5816-4c4b-9ccd-423bcdce25a3</xc:fileRef>
+            <xc:fileRef>6c77ca05-6559-4b19-b052-109b8f4b03cf</xc:fileRef>
+        </xc:fileGrp>
+    <xc:fileGrp UUID="ec6f609c-6ee8-486f-a02c-efa7f76b5d95">
+            <xc:fileRef>c61d50b6-76b0-41dc-875f-0c74bc90df77</xc:fileRef>
+            <xc:fileRef>ebadb3ba-d954-454b-99fe-ec7572a98344</xc:fileRef>
+            <xc:fileRef>1813b8e7-1b8c-4997-bc5a-63276ee306cb</xc:fileRef>
+            <xc:fileRef>38563df4-76e0-4969-afd6-a417aef99251</xc:fileRef>
+            <xc:fileRef>5a9197a4-5816-4c4b-9ccd-423bcdce25a3</xc:fileRef>
+            <xc:fileRef>6c77ca05-6559-4b19-b052-109b8f4b03cf</xc:fileRef>
+        </xc:fileGrp>
+        <xc:fileGrp UUID="f0fe6285-b5db-46d5-9b83-345cf6f90fc0">
+            <xc:fileRef>c61d50b6-76b0-41dc-875f-0c74bc90df77</xc:fileRef>
+            <xc:fileRef>ebadb3ba-d954-454b-99fe-ec7572a98344</xc:fileRef>
+            <xc:fileRef>1813b8e7-1b8c-4997-bc5a-63276ee306cb</xc:fileRef>
+            <xc:fileRef>38563df4-76e0-4969-afd6-a417aef99251</xc:fileRef>
+            <xc:fileRef>5a9197a4-5816-4c4b-9ccd-423bcdce25a3</xc:fileRef>
+            <xc:fileRef>6c77ca05-6559-4b19-b052-109b8f4b03cf</xc:fileRef>
+        </xc:fileGrp>
+    </xc:FileSec>
+    <xc:Processes>
+        <xc:process COMPID="" ID="4d3e6ad4-6890-4615-84e7-08e07edb8721" SEQ="" STATUS="STOPPED" TYPE="INTERFACE">
+            <xc:description/>
+            <xc:Input/>
+            <xc:Output/>
+        </xc:process>
+        <xc:process COMPID="c6d431ec-b330-3461-ae8a-dfe210c69fe6" ID="07a1378f-697c-42fa-8d2b-64e7449e519c" SEQ="" STATUS="STOPPED" TYPE="BALLDETECTION">
+            <xc:description/>
+            <xc:Input>
+                <xc:ref>d506a78b-936e-4101-b965-ca252725bb01</xc:ref>
+            </xc:Input>
+            <xc:Output>
+                <xc:ref>d46e2e33-49b9-49d2-ae33-6d2331773a2f</xc:ref>
+            </xc:Output>
+        </xc:process>
+        <xc:process COMPID="b7c2c120-4cc6-37d3-b6d0-c16480557cd0" ID="d2e2c62d-6704-4563-ad5f-092434f0b141" SEQ="" STATUS="STOPPED" TYPE="HLTDETECTION">
+            <xc:description/>
+            <xc:Input>
+                <xc:ref>d46e2e33-49b9-49d2-ae33-6d2331773a2f</xc:ref>
+            </xc:Input>
+            <xc:Output>
+                <xc:ref>a69869ff-d01f-437f-b8a0-6bedd00ae4f3</xc:ref>
+            </xc:Output>
+        </xc:process>
+        <xc:process COMPID="d86e7076-4651-3e96-ace6-d6fbaae01db1" ID="1488dd6f-0058-43d0-bfd7-75cec7c734e7" SEQ="" STATUS="STOPPED" TYPE="LPCOMPUTE">
+            <xc:description/>
+            <xc:Input>
+                <xc:ref>a69869ff-d01f-437f-b8a0-6bedd00ae4f3</xc:ref>
+            </xc:Input>
+            <xc:Output>
+                <xc:ref>f8574890-9484-4dea-9619-c872b2729ad0</xc:ref>
+            </xc:Output>
+        </xc:process>
+    </xc:Processes>
+    <xc:dataSec>
+        <xc:Data NAME="" UUID="d506a78b-936e-4101-b965-ca252725bb01">
+            <xc:description/>
+            <xc:area BEGIN="x:20.0 y:558.0" COORDS="x:20.0 y:558.0;x:20.0 y:693.0;x:182.0 y:693.0;x:182.0 y:558.0;" END="x:182.0 y:693.0" SHAPE="Rectangle" UUID="6ec28006-98ea-424e-b900-ece72ee8df90" algorithm="0" binarize="false" fileGrpID="a65932d6-0756-46dc-ab8b-5b94be81e6eb" hough="true"/>
+            <xc:area BEGIN="x:370.0 y:610.0" COORDS="x:370.0 y:610.0;x:370.0 y:788.0;x:518.0 y:788.0;x:518.0 y:610.0;" END="x:518.0 y:788.0" SHAPE="Rectangle" UUID="60f38a9c-d985-4e9d-ac6d-90dd0cb0b0a9" algorithm="0" binarize="false" fileGrpID="464e373f-d289-4213-9ee7-21085082756d" hough="true"/>
+        </xc:Data>
+    <xc:Data NAME="" UUID="d46e2e33-49b9-49d2-ae33-6d2331773a2f">
+            <xc:description/>
+            <xc:area BEGIN="x:20.0 y:558.0" COORDS="x:20.0 y:558.0;x:20.0 y:693.0;x:182.0 y:693.0;x:182.0 y:558.0;" END="x:182.0 y:693.0" EdgeID="dffb9996-7c4a-4e35-b84b-0656cda28c73" MedianID="6c996963-cafa-4fad-a213-287abacd63bf" SHAPE="Rectangle" UUID="6ec28006-98ea-424e-b900-ece72ee8df90" fileGrpID="a65932d6-0756-46dc-ab8b-5b94be81e6eb" r="31.0" x="46.0" y="51.0"/>
+            <xc:area BEGIN="x:370.0 y:610.0" COORDS="x:370.0 y:610.0;x:370.0 y:788.0;x:518.0 y:788.0;x:518.0 y:610.0;" END="x:518.0 y:788.0" EdgeID="ca8fd478-3945-4435-a121-25cfc57cf948" MedianID="757bd2ab-5476-4f5b-a247-9de3e9baa87f" SHAPE="Rectangle" UUID="60f38a9c-d985-4e9d-ac6d-90dd0cb0b0a9" fileGrpID="464e373f-d289-4213-9ee7-21085082756d" r="63.0" x="70.0" y="9.0"/>
+        </xc:Data>
+    <xc:Data NAME="" UUID="d46e2e33-49b9-49d2-ae33-6d2331773a2f">
+            <xc:description/>
+            <xc:area BEGIN="x:20.0 y:558.0" COORDS="x:20.0 y:558.0;x:20.0 y:693.0;x:182.0 y:693.0;x:182.0 y:558.0;" END="x:182.0 y:693.0" SHAPE="Rectangle" UUID="6ec28006-98ea-424e-b900-ece72ee8df90" fileGrpID="c375b11b-245f-475b-bc77-eb38753c6d03" r="31.0" threshold="180" x="66.0" y="609.0"/>
+            <xc:area BEGIN="x:370.0 y:610.0" COORDS="x:370.0 y:610.0;x:370.0 y:788.0;x:518.0 y:788.0;x:518.0 y:610.0;" END="x:518.0 y:788.0" SHAPE="Rectangle" UUID="60f38a9c-d985-4e9d-ac6d-90dd0cb0b0a9" fileGrpID="0cb0cfc7-a319-484c-9860-b471ab5264d7" r="63.0" threshold="180" x="438.0" y="688.0"/>
+        </xc:Data>
+    <xc:Data NAME="" UUID="a69869ff-d01f-437f-b8a0-6bedd00ae4f3">
+            <xc:description/>
+            <xc:area BEGIN="x:20.0 y:558.0" COORDS="x:20.0 y:558.0;x:20.0 y:693.0;x:182.0 y:693.0;x:182.0 y:558.0;" END="x:182.0 y:693.0" SHAPE="Rectangle" UUID="6ec28006-98ea-424e-b900-ece72ee8df90" fileGrpID="c375b11b-245f-475b-bc77-eb38753c6d03" img1="c61d50b6-76b0-41dc-875f-0c74bc90df77" img2="ebadb3ba-d954-454b-99fe-ec7572a98344" img3="1813b8e7-1b8c-4997-bc5a-63276ee306cb" img4="38563df4-76e0-4969-afd6-a417aef99251" img5="5a9197a4-5816-4c4b-9ccd-423bcdce25a3" img6="6c77ca05-6559-4b19-b052-109b8f4b03cf" numBalls="6" x1="28.2" x2="34.2" x3="30.285715" x4="33.9" x5="32.941177" x6="35.57143" y1="25.4" y2="24.8" y3="25.285715" y4="21.9" y5="25.411764" y6="28.5"/>
+            <xc:area BEGIN="x:370.0 y:610.0" COORDS="x:370.0 y:610.0;x:370.0 y:788.0;x:518.0 y:788.0;x:518.0 y:610.0;" END="x:518.0 y:788.0" SHAPE="Rectangle" UUID="60f38a9c-d985-4e9d-ac6d-90dd0cb0b0a9" fileGrpID="0cb0cfc7-a319-484c-9860-b471ab5264d7" img1="c61d50b6-76b0-41dc-875f-0c74bc90df77" img2="ebadb3ba-d954-454b-99fe-ec7572a98344" img3="1813b8e7-1b8c-4997-bc5a-63276ee306cb" img4="5a9197a4-5816-4c4b-9ccd-423bcdce25a3" img5="6c77ca05-6559-4b19-b052-109b8f4b03cf" numBalls="5" x1="84.333336" x2="83.75" x3="84.333336" x4="89.0" x5="104.39286" y1="76.0" y2="76.0" y3="76.0" y4="69.0" y5="95.14286"/>
+        </xc:Data>
+    <xc:Data NAME="" UUID="a69869ff-d01f-437f-b8a0-6bedd00ae4f3">
+            <xc:description/>
+            <xc:area BEGIN="x:20.0 y:558.0" COORDS="x:20.0 y:558.0;x:20.0 y:693.0;x:182.0 y:693.0;x:182.0 y:558.0;" END="x:182.0 y:693.0" SHAPE="Rectangle" UUID="6ec28006-98ea-424e-b900-ece72ee8df90" bd_r="31.0" bd_x="46.0" bd_y="51.0" fileGrpID="ec6f609c-6ee8-486f-a02c-efa7f76b5d95" hlt_x1="28.2" hlt_x2="34.2" hlt_x3="30.285715" hlt_x4="33.9" hlt_x5="32.941177" hlt_x6="35.57143" hlt_y1="25.4" hlt_y2="24.8" hlt_y3="25.285715" hlt_y4="21.9" hlt_y5="25.411764" hlt_y6="28.5" img1="c61d50b6-76b0-41dc-875f-0c74bc90df77" img2="ebadb3ba-d954-454b-99fe-ec7572a98344" img3="1813b8e7-1b8c-4997-bc5a-63276ee306cb" img4="38563df4-76e0-4969-afd6-a417aef99251" img5="5a9197a4-5816-4c4b-9ccd-423bcdce25a3" img6="6c77ca05-6559-4b19-b052-109b8f4b03cf" numImgs="6"/>
+            <xc:area BEGIN="x:370.0 y:610.0" COORDS="x:370.0 y:610.0;x:370.0 y:788.0;x:518.0 y:788.0;x:518.0 y:610.0;" END="x:518.0 y:788.0" SHAPE="Rectangle" UUID="60f38a9c-d985-4e9d-ac6d-90dd0cb0b0a9" bd_r="63.0" bd_x="68.0" bd_y="78.0" fileGrpID="f0fe6285-b5db-46d5-9b83-345cf6f90fc0" hlt_x1="84.333336" hlt_x2="83.75" hlt_x3="84.333336" hlt_x4="-1.0" hlt_x5="89.0" hlt_x6="104.39286" hlt_y1="76.0" hlt_y2="76.0" hlt_y3="76.0" hlt_y4="-1.0" hlt_y5="69.0" hlt_y6="95.14286" img1="c61d50b6-76b0-41dc-875f-0c74bc90df77" img2="ebadb3ba-d954-454b-99fe-ec7572a98344" img3="1813b8e7-1b8c-4997-bc5a-63276ee306cb" img4="38563df4-76e0-4969-afd6-a417aef99251" img5="5a9197a4-5816-4c4b-9ccd-423bcdce25a3" img6="6c77ca05-6559-4b19-b052-109b8f4b03cf" numImgs="6"/>
+        </xc:Data>
+    <xc:Data NAME="" UUID="f8574890-9484-4dea-9619-c872b2729ad0">
+            <xc:description/>
+            <xc:area BEGIN="x:20.0 y:558.0" COORDS="x:20.0 y:558.0;x:20.0 y:693.0;x:182.0 y:693.0;x:182.0 y:558.0;" END="x:182.0 y:693.0" SHAPE="Rectangle" UUID="6ec28006-98ea-424e-b900-ece72ee8df90" fileGrpID="ec6f609c-6ee8-486f-a02c-efa7f76b5d95" img1="c61d50b6-76b0-41dc-875f-0c74bc90df77" img2="ebadb3ba-d954-454b-99fe-ec7572a98344" img3="1813b8e7-1b8c-4997-bc5a-63276ee306cb" img4="38563df4-76e0-4969-afd6-a417aef99251" img5="5a9197a4-5816-4c4b-9ccd-423bcdce25a3" img6="6c77ca05-6559-4b19-b052-109b8f4b03cf" numImgs="6" x1="-0.1769224" x2="0.20115474" x3="-0.0452807" x4="0.17799571" x5="0.12293573" x6="0.2907353" y1="0.35384494" y2="0.38973728" y3="0.36224657" y4="0.558538" y5="0.35390577" y6="0.15899579"/>
+            <xc:area BEGIN="x:370.0 y:610.0" COORDS="x:370.0 y:610.0;x:370.0 y:788.0;x:518.0 y:788.0;x:518.0 y:610.0;" END="x:518.0 y:788.0" SHAPE="Rectangle" UUID="60f38a9c-d985-4e9d-ac6d-90dd0cb0b0a9" fileGrpID="f0fe6285-b5db-46d5-9b83-345cf6f90fc0" img1="c61d50b6-76b0-41dc-875f-0c74bc90df77" img2="ebadb3ba-d954-454b-99fe-ec7572a98344" img3="1813b8e7-1b8c-4997-bc5a-63276ee306cb" img4="38563df4-76e0-4969-afd6-a417aef99251" img5="5a9197a4-5816-4c4b-9ccd-423bcdce25a3" img6="6c77ca05-6559-4b19-b052-109b8f4b03cf" numImgs="6" x1="0.62172526" x2="0.6069399" x3="0.62172526" x4="NaN" x5="0.7477065" x6="0.72927785" y1="-0.37886378" y2="-0.38025153" y3="-0.37886378" y4="NaN" y5="-0.17254764" y6="-0.56630725"/>
+        </xc:Data>
+    </xc:dataSec>
+</XMLCarrier>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<XMLCarrier xmlns="http://alba.di.uminho.pt/XMLCarrier" xmlns:xc="http://alba.di.uminho.pt/XMLCarrier" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://alba.di.uminho.pt/XMLCarrier lptracker.xsd">
+    <xc:Header/>
+    <xc:fileSec/>
+    <xc:Processes/>
+    <xc:dataSec/>
+    <xc:computedData/>
+    <xc:Log/>
+</XMLCarrier>

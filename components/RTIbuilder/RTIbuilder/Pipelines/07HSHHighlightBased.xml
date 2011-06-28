@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pipeline>
+    <name>Highlight Based (HSH Fitter)</name>
+    <plugins>
+        <xmlfile order="1" path="file" type="relative" uuid="9e275ec5-51a0-4ed2-afe3-c7ef08a8075d">Plugins/PluginFolderPreview.xml</xmlfile>
+        <xmlfile order="2" path="file" type="relative" uuid="d6b14f9e-343f-4ea0-a11c-fb70c41fab64">Plugins/PluginBallDetection.xml</xmlfile>
+        <xmlfile order="3" path="file" type="relative" uuid="7169813b-ef73-4ca9-a405-75b14e6ee55e">Plugins/PluginHighlight.xml</xmlfile>
+		<xmlfile order="4" path="file" type="relative" uuid="829a0cfe-8f31-4581-ad95-fb6457587137">Plugins/PluginHSHfitter.xml</xmlfile>
+	</plugins>
+</pipeline>

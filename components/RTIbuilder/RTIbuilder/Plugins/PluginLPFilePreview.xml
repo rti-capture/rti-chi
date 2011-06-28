@@ -1,0 +1,9 @@
+<plugin>
+<name>Lp File Plugin Viewer</name>
+<version>1.0.0</version>
+<uuid>8c4307cb-dd74-4052-8513-abe96c9dcd21</uuid>
+<jarfile path="file" type="relative">Plugins/Preview/PreviewPlugin.jar</jarfile>
+<UI>Plugin.PreviewLPInterface</UI>
+<MainClass>Plugin.PreviewMain</MainClass>
+</plugin>
+

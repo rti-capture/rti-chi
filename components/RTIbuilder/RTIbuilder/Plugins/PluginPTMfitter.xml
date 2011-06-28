@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<plugin>
+    <name>Plugin PTMfitter</name>
+    <version>1.0.0</version>
+    <uuid>1bcfa75b-b90a-469a-b3fa-d232431edba1</uuid>
+    <jarfile path="file" type="relative">Plugins/PTMfitter/PTMfitterPlugin.jar</jarfile>
+    <UI>Plugin.PTMfitterInterface</UI>
+    <MainClass>Plugin.PluginDemoMain</MainClass>
+    <properties FITTER_PATH="C:\RTIBuilder\ptmFitter_Bin\PTMfitter.exe"/>
+</plugin>

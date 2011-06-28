@@ -1,0 +1,9 @@
+<plugin>
+<name>Folder Preview Plugin</name>
+<version>1.0.0</version>
+<uuid>9e275ec5-51a0-4ed2-afe3-c7ef08a8075d</uuid>
+<jarfile path="file" type="relative">Plugins/Preview/PreviewPlugin.jar</jarfile>
+<UI>Plugin.PreviewFolderInterface</UI>
+<MainClass>Plugin.PreviewMain</MainClass>
+</plugin>
+

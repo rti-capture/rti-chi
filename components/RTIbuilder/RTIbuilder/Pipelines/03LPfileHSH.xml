@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pipeline>
+    <name>LP file (HSH Fitter)</name>
+    <plugins>
+        <xmlfile order="1" path="file" type="relative" uuid="8c4307cb-dd74-4052-8513-abe96c9dcd21">Plugins/PluginLPFilePreview.xml</xmlfile>
+		<xmlfile order="2" path="file" type="relative" uuid="829a0cfe-8f31-4581-ad95-fb6457587137">Plugins/PluginHSHfitter.xml</xmlfile>
+    </plugins>
+</pipeline>
+

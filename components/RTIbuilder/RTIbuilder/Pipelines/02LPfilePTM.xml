@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pipeline>
+    <name>LP file (PTM Fitter)</name>
+    <plugins>
+        <xmlfile order="1" path="file" type="relative" uuid="8c4307cb-dd74-4052-8513-abe96c9dcd21">Plugins/PluginLPFilePreview.xml</xmlfile>
+		<xmlfile order="2" path="file" type="relative" uuid="1bcfa75b-b90a-469a-b3fa-d232431edba1">Plugins/PluginPTMfitter.xml</xmlfile>
+    </plugins>
+</pipeline>
+

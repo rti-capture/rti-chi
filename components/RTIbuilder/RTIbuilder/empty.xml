@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<XMLCarrier xmlns="http://alba.di.uminho.pt/XMLCarrier" xmlns:xc="http://alba.di.uminho.pt/XMLCarrier" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://alba.di.uminho.pt/XMLCarrier lptracker.xsd">
+    <xc:Header UUID="7bf3eef3-357a-4237-8fb2-9bdd91051437">
+        <xc:ProjectName>empty</xc:ProjectName>
+        <xc:Description/>
+        <xc:Author>rcosta</xc:Author>
+        <xc:CreationDate>2010/7/8 22:23:30</xc:CreationDate>
+        <xc:LastModificationDate>2010/7/8 22:23:30</xc:LastModificationDate>
+        <xc:UserInfo>rcosta</xc:UserInfo>
+        <xc:Host>rcosta-laptop</xc:Host>
+        <xc:Timestamp>1</xc:Timestamp>
+        <xc:AdditionalInfo>
+            <xc:Info MacAddress="" MemoryAvailable="96272384" OperatingSystem="Windows 7 amd64" Processor="8"/>
+        </xc:AdditionalInfo>
+    </xc:Header>
+    <xc:fileSec/>
+    <xc:Processes>
+        <xc:process COMPID="9e275ec5-51a0-4ed2-afe3-c7ef08a8075d" ID="892dca95-a28b-441b-aefe-d1e9a9322cc4" SEQ="1" STATUS="NONE" TYPE="PIPELINE">
+            <xc:description/>
+            <xc:Input/>
+            <xc:Output/>
+        </xc:process>
+        <xc:process COMPID="d6b14f9e-343f-4ea0-a11c-fb70c41fab64" ID="5bd021d9-627b-4cd5-ab87-fe8ed31f922a" SEQ="2" STATUS="NONE" TYPE="PIPELINE">
+            <xc:description/>
+            <xc:Input/>
+            <xc:Output/>
+        </xc:process>
+        <xc:process COMPID="7169813b-ef73-4ca9-a405-75b14e6ee55e" ID="9f3b94d6-5aac-4fc0-a29b-2ab18290b340" SEQ="3" STATUS="NONE" TYPE="PIPELINE">
+            <xc:description/>
+            <xc:Input/>
+            <xc:Output/>
+        </xc:process>
+        <xc:process COMPID="1bcfa75b-b90a-469a-b3fa-d232431edba1" ID="f950d2fc-8108-4eca-a83d-39a03c731896" SEQ="4" STATUS="NONE" TYPE="PIPELINE">
+            <xc:description/>
+            <xc:Input/>
+            <xc:Output/>
+        </xc:process>
+    </xc:Processes>
+    <xc:dataSec/>
+    <xc:computedData/>
+    <xc:Log/>
+</XMLCarrier>

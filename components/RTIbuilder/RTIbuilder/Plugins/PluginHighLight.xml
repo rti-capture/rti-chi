@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <name>Plugin HighLight Detection</name>
+    <version>1.0.0</version>
+    <uuid>7169813b-ef73-4ca9-a405-75b14e6ee55e</uuid>
+    <jarfile path="file" type="relative">Plugins/HighLight/HighLightDetectionPlugin.jar</jarfile>
+    <UI>Plugin.HighLightDetectionInterface</UI>
+    <MainClass>Plugin.PluginDemoMain</MainClass>
+</plugin>
