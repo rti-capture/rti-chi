@@ -16,6 +16,9 @@
 #include "StringDefs.h"
 #include "XMLReader.h"
 #include "globals.h"
+#include <QSpinBox>
+
+
 
 
 IconWindow::IconWindow(StringDefs *pStringDefs, QString category, QString equipmentroot, QString projectroot, QWidget *parent)
@@ -51,6 +54,9 @@ IconWindow::IconWindow(StringDefs *pStringDefs, QString category, QString equipm
 
     centralWidget->setLayout(mainLayout);
     populate(m_names);
+
+    buttonLayerSetup();
+    buttonLayer->click();
 }
 
 
@@ -244,3 +250,28 @@ void IconWindow::setSelectionCategory(QString c)
     m_selectioncategory = c;
 }
 
+
+
+void IconWindow::buttonLayerSetup(void)
+{
+    QGroupBox *pGroupBox = new QGroupBox(tr(""));
+    buttonLayer = new QRadioButton(tr(""));
+    pSpinBox = new QSpinBox;
+
+    pSpinBox->setRange(8, 128);
+    pSpinBox->setValue(64);
+
+    QHBoxLayout *layerLayout = new QHBoxLayout;
+    layerLayout->addWidget(buttonLayer);
+    layerLayout->addWidget(pSpinBox);
+    layerLayout->addStretch();
+
+    QGridLayout *layout = new QGridLayout;
+    layout->addLayout(layerLayout, 3, 0, 1, 2);
+    layout->setRowStretch(4, 1);
+    pGroupBox->setLayout(layout);
+
+    connect(buttonLayer, SIGNAL(toggled(bool)),
+            this, SLOT(changeSize(bool)));
+    connect(pSpinBox, SIGNAL(valueChanged(int)), this, SLOT(changeSize()));
+}

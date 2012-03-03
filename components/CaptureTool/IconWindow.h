@@ -31,7 +31,7 @@ class QPushButton;
 QT_END_NAMESPACE
 
 class IconSelectionRect;
-class IconSizeSpinBox;
+class QSpinBox;
 class StringDefs;
 
 
@@ -92,7 +92,8 @@ private:
     QPushButton                 *m_pApplyButton;
     QDialogButtonBox            *m_pButtonBox;
 
-
+    QRadioButton *buttonLayer;
+    QSpinBox *pSpinBox;
 
     void                                        populate                   (QStringList fileNames);
 
@@ -102,7 +103,7 @@ private:
     void                                        checkCurrentStyle           (void);
 
     void                                        initButtons                 (void);
-   
+    void                                        buttonLayerSetup            (void);   
 
 };
 
