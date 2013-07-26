@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="capture"
 	ProjectGUID="{F6F29C7E-6BFA-4758-B8CE-25FFCE9E1AF3}"
 	RootNamespace="capture"
 	Keyword="MFCProj"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -44,6 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories=".\EDSDK\Header"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -69,9 +71,12 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="EDSDK.lib winmm.lib"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories=".\EDSDK\Library"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				EntryPointSymbol=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -91,9 +96,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -128,6 +130,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories=".\EDSDK\Header"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
@@ -152,10 +155,13 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="EDSDK.lib"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories=".\EDSDK\Library"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -175,9 +181,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -213,7 +216,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LightControl.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\selectCameraDialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Serial.cpp"
 				>
 			</File>
 			<File
@@ -283,6 +294,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LightControl.h"
+				>
+			</File>
+			<File
 				RelativePath=".\port.h"
 				>
 			</File>
@@ -292,6 +307,10 @@
 			</File>
 			<File
 				RelativePath=".\selectCameraDialog.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SerialClass.h"
 				>
 			</File>
 			<File
@@ -321,6 +340,10 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
+				RelativePath=".\res\camera1.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\capture.ico"
 				>
 			</File>
@@ -341,18 +364,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\icon3.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\OPENFOLD.ICO"
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\CaptureClientChangeLog.txt"
-			>
-		</File>
-		<File
-			RelativePath=".\VisualStudio_ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 		<Global

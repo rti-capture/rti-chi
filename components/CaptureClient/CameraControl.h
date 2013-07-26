@@ -20,7 +20,7 @@
 #include <queue>
 
 // Capture Client Version Info
-#define CONTROLLER_VERSION_INFO "1.0.0"
+#define CONTROLLER_VERSION "1.7.0.CHI"
 
 class CameraControl
 {

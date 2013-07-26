@@ -57,22 +57,26 @@ END_MESSAGE_MAP()
 CcaptureDlg::CcaptureDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CcaptureDlg::IDD, pParent)
 	, strPort(_T("COM1"))
-	, numSequenceSize(32)
+	, numSequenceSize(48)
 	, strSavePath(_T(""))
 	, strRootPrefix(_T(""))
 	, strStatus(_T(""))
 	, boolVerbose(TRUE)
-	, boolCameraDryRun(FALSE)
-	, boolLightsDryRun(FALSE)
+	, boolCameraDryRun(TRUE)
+	, boolLightsDryRun(TRUE)
 	, strCameraInfo(_T(""))
 	, strConfigFile(_T(""))
 	, numLightsDelay(1000)
-	, boolTurntableDryRun(FALSE)
+	, boolTurntableDryRun(TRUE)
 	, boolEnableTurntable(FALSE)
 	, strTurntablePort(_T(""))
-	, numViewpoints(0)
-	, numViewSeperation(0)
-	, numRotationDelay(0)
+	, numViewpoints(1)
+	, numViewSeperation(4)
+	, numRotationDelay(1000)
+	, numTurntableSpeed(100)
+	, bEnableMultispectral(FALSE)
+	, boolMultispectralOnly(FALSE)
+	, boolMultispectralAndNormal(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	status.editBox = &editStatus;
@@ -114,6 +118,15 @@ void CcaptureDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_VIEWSEPERATION, editViewSeperation);
 	DDX_Control(pDX, IDC_EDIT_ROTATIONDELAY, editRotationDelay);
 	DDX_Control(pDX, IDC_CHECK_TURNTABLEDRYRUN, chkDryRunTurntable);
+	DDX_Text(pDX, IDC_EDIT_TURNTABLESPEED, numTurntableSpeed);
+	DDX_Control(pDX, IDC_EDIT_TURNTABLESPEED, editTurntableSpeed);
+	DDX_Check(pDX, IDC_CHECK_MULTISPECTRAL, bEnableMultispectral);
+	DDX_Control(pDX, IDC_COMBO_YELLOW_COLOR, comboYellowColor);
+	DDX_Control(pDX, IDC_COMBO_BLUE_COLOR, comboBlueColor);
+	DDX_Control(pDX, IDC_RADIO_MULTI, radioMulti);
+	DDX_Control(pDX, IDC_RADIO_BOTH, radioBoth);
+	DDX_Radio(pDX, IDC_RADIO_MULTI, boolMultispectralOnly);
+	DDX_Radio(pDX, IDC_RADIO_BOTH, boolMultispectralAndNormal);
 }
 
 BEGIN_MESSAGE_MAP(CcaptureDlg, CDialog)
@@ -134,6 +147,10 @@ BEGIN_MESSAGE_MAP(CcaptureDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_LOADCONFIG, &CcaptureDlg::OnBnClickedButtonLoadconfig)
 	ON_CBN_SELCHANGE(IDC_COMBO_IMAGEQUALITY, &CcaptureDlg::OnCbnSelchangeComboImagequality)
 	ON_BN_CLICKED(IDC_CHECK_ENABLETURNTABLE, &CcaptureDlg::OnBnClickedCheckEnableturntable)
+	ON_EN_CHANGE(IDC_EDIT_TURNTABLESPEED, &CcaptureDlg::OnEnChangeEditTurntablespeed)
+	ON_BN_CLICKED(IDC_CHECK_MULTISPECTRAL, &CcaptureDlg::OnBnClickedCheckMultispectral)
+	ON_BN_CLICKED(IDC_RADIO_MULTI, &CcaptureDlg::OnBnClickedRadioMulti)
+	ON_BN_CLICKED(IDC_RADIO_BOTH, &CcaptureDlg::OnBnClickedRadioBoth)
 END_MESSAGE_MAP()
 
 
@@ -181,8 +198,8 @@ BOOL CcaptureDlg::OnInitDialog()
 
 	// Set dialog title and controller version
 	char titlebuffer[100];
-	strcpy(titlebuffer,"PTM Capture ");
-	strcat(titlebuffer,CONTROLLER_VERSION_INFO);
+	strcpy(titlebuffer,"RTI Capture ");
+	strcat(titlebuffer,CONTROLLER_VERSION);
 	SetWindowTextA(titlebuffer);
 
 	// Try to open the default config file, if it exists
@@ -401,12 +418,12 @@ void CcaptureDlg::OnBnClickedButtonBrowse()
 void CcaptureDlg::OnBnClickedButtonCaptureptm()
 {
 	UpdateData(true);
-	if (cameracontrol.camera == NULL && !boolCameraDryRun) 
+	if (cameracontrol.camera == NULL && boolCameraDryRun) 
 	{
 		MessageBox("Camera not connected!","Connection Error",MB_OK);
 		return;
 	}
-	if (strPort == "" && !boolLightsDryRun)
+	if (strPort == "" && boolLightsDryRun)
 	{
 		MessageBox("Communications Port not entered!","Connection Error",MB_OK);
 		return;
@@ -438,8 +455,11 @@ void CcaptureDlg::OnBnClickedButtonCaptureptm()
 	capturesequence.numSequenceSize = numSequenceSize;
 	capturesequence.numLightsDelay = numLightsDelay;
 
-	capturesequence.cameraDryRun = boolCameraDryRun;
-	capturesequence.lightsDryRun = boolLightsDryRun;
+	capturesequence.cameraDryRun = !boolCameraDryRun;
+	capturesequence.lightsDryRun = !boolLightsDryRun;
+
+	capturesequence.useTurntable = boolEnableTurntable;
+	capturesequence.turntableDryRun = !boolTurntableDryRun;
 
 	capturesequence.cameracontrol = &cameracontrol;
 	capturesequence.status = &status;
@@ -464,15 +484,32 @@ void CcaptureDlg::OnBnClickedButtonCaptureptm()
 			return;
 		} 
 
-		capturesequence.useTurntable = true;
+		if (numTurntableSpeed  <= 1 || numTurntableSpeed  >= 4000)
+		{
+			MessageBox("Turntable speed must be between 1 and 4000!","Settings Error",MB_OK);
+			return;
+		} 
 
 		capturesequence.strTurntablePort = strTurntablePort;
 		capturesequence.numViewpoints = numViewpoints;
 		capturesequence.numViewSeperation = numViewSeperation;
 		capturesequence.numRotationDelay = numRotationDelay;
-		
-		capturesequence.turntableDryRun = boolTurntableDryRun;
+		capturesequence.numTurntableSpeed = numTurntableSpeed;
+	
 	}
+	
+	if (bEnableMultispectral) 
+	{
+		capturesequence.enablemultispectral = true;
+		capturesequence.multionly = ((boolMultispectralOnly==0)?true:false);
+		capturesequence.multiandnormal = ((boolMultispectralAndNormal==0)?true:false);
+	}
+	else 
+	{
+		capturesequence.enablemultispectral = false;
+	}
+
+
 
 	status.AppendStatusMsg( "Capture Started...", true);
 
@@ -535,6 +572,13 @@ void CcaptureDlg::OnBnClickedButtonSaveconfig()
 		configfile << "SavePath = " << strSavePath << endl;
 		configfile << "RootPrefix = " << strRootPrefix << endl;
 		configfile << "LightsDelay = " << numLightsDelay << endl;
+		
+		//configfile << "TurntableEnabled = " << boolEnableTurntable << endl;
+		//configfile << "TurntablePort = " << strTurntablePort << endl;
+		//configfile << "Viewpoints = " << numViewpoints << endl;
+		//configfile << "ViewSeperation = " << numViewSeperation << endl;
+		//configfile << "RotationDelay = " << numRotationDelay << endl;
+		//configfile << "TurntableSpeed = " << numTurntableSpeed << endl;
 		configfile.close();
 		strConfigFile = dlgFile.GetFileName();
 	}
@@ -554,6 +598,25 @@ bool CcaptureDlg::OpenConfigFile(std::string filename)
 			numLightsDelay = config.read<int>("LightsDelay");
 		else 
 			numLightsDelay = 1000;
+		
+		if (config.keyExists("TurntableEnabled"))
+		{
+			boolEnableTurntable = config.read<bool>("TurntableEnabled");
+			strTurntablePort = config.read<string>("TurntablePort").c_str();
+			numViewpoints = config.read<int>("Viewpoints");
+			numViewSeperation = config.read<float>("ViewSeperation");
+			numRotationDelay = config.read<int>("RotationDelay");			
+			numTurntableSpeed = config.read<int>("TurntableSpeed");
+			UpdateData(false);
+			OnBnClickedCheckEnableturntable();
+		}
+		else
+		{
+			boolEnableTurntable = false;
+			UpdateData(false);
+			OnBnClickedCheckEnableturntable();
+		}
+
 		if (cameracontrol.camera != NULL) 
 		{
 			// int av = config.read<int>("Av");
@@ -623,6 +686,43 @@ void CcaptureDlg::OnBnClickedCheckEnableturntable()
 	editViewSeperation.EnableWindow(boolEnableTurntable);
 	editRotationDelay.EnableWindow(boolEnableTurntable);
 	chkDryRunTurntable.EnableWindow(boolEnableTurntable);
+	editTurntableSpeed.EnableWindow(boolEnableTurntable);
 
 	UpdateData(false);
+}
+
+void CcaptureDlg::OnEnChangeEditTurntablespeed()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialog::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+}
+
+void CcaptureDlg::OnBnClickedCheckMultispectral()
+{
+	UpdateData(true);
+
+	radioMulti.EnableWindow(bEnableMultispectral);
+	radioBoth.EnableWindow(bEnableMultispectral);
+	//comboYellowColor.EnableWindow(bEnableMultispectral);
+	//comboBlueColor.EnableWindow(bEnableMultispectral);
+	//radioMulti.SetCheck(false);
+	//radioBoth.SetCheck(true);
+	boolMultispectralAndNormal = true;
+	boolMultispectralOnly = false;
+
+	UpdateData(false);
+}
+
+void CcaptureDlg::OnBnClickedRadioMulti()
+{
+	radioBoth.SetCheck(false);
+}
+
+void CcaptureDlg::OnBnClickedRadioBoth()
+{
+	radioMulti.SetCheck(false);
 }

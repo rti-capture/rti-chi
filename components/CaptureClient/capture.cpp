@@ -54,8 +54,8 @@ BOOL CcaptureApp::InitInstance()
 
 
 	// Console create code, comment if the debug window is not needed.
-	//AllocConsole();
-    //freopen ("CONOUT$", "w", stdout ); 
+	// AllocConsole();
+    // freopen ("CONOUT$", "w", stdout ); 
 
 	EdsError err = EdsInitializeSDK();
 

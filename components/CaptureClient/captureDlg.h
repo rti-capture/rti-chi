@@ -102,4 +102,18 @@ private:
 	CEdit editViewSeperation;
 	CEdit editRotationDelay;
 	CButton chkDryRunTurntable;
+	afx_msg void OnEnChangeEditTurntablespeed();
+	int numTurntableSpeed;
+	CEdit editTurntableSpeed;
+public:
+	afx_msg void OnBnClickedCheckMultispectral();
+	BOOL bEnableMultispectral;
+	CComboBox comboYellowColor;
+	CComboBox comboBlueColor;
+	CButton radioMulti;
+	CButton radioBoth;
+	afx_msg void OnBnClickedRadioMulti();
+	afx_msg void OnBnClickedRadioBoth();
+	BOOL boolMultispectralOnly;
+	BOOL boolMultispectralAndNormal;
 };

@@ -46,14 +46,22 @@
 #define IDC_EDIT_VIEWSEPERATION         1028
 #define IDC_EDIT5                       1029
 #define IDC_EDIT_ROTATIONDELAY          1029
+#define IDC_EDIT_ROTATIONDELAY2         1030
+#define IDC_EDIT_TURNTABLESPEED         1030
+#define IDC_CHECK_MULTISPECTRAL         1031
+#define IDC_RADIO_BOTH                  1032
+#define IDC_RADIO_MULTI                 1033
+#define IDC_COMBO_YELLOW_COLOR          1034
+#define IDC_COMBO_BLUE_COLOR            1035
+#define IDC_RADIO1                      1036
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        135
+#define _APS_NEXT_RESOURCE_VALUE        137
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1027
+#define _APS_NEXT_CONTROL_VALUE         1038
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

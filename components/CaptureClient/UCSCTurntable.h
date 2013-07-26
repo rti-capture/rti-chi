@@ -9,6 +9,7 @@ class UCSCTurntable : public Turntable
 public:
 	void Initialize(std::string strPort);
 	void Rotate(float degrees);
+	void SetSpeed(int speed);
 	void Close();
 private:
 	int position;

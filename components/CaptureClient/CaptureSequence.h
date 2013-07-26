@@ -7,6 +7,7 @@
 #include "CameraControl.h"
 #include "StatusBuffer.h"
 #include <string>
+#include "LightControl.h"
 
 const int MAX_LIGHTS = 200;
 
@@ -45,7 +46,11 @@ public:
 	int numViewpoints;
 	float numViewSeperation;
 	int numRotationDelay;
+	int numTurntableSpeed;
 
+	bool enablemultispectral;
+	bool multionly;
+	bool multiandnormal;
 
 private:
 	int photosTaken;
@@ -57,6 +62,8 @@ private:
 	std::ofstream logfile;
 
 	void SingleRelease(int numShot);
-	void ToggleOneFiber( int  numFiber, BOOL on ); 
+	//void ToggleOneFiber( int  numFiber, BOOL on ); 
 	void captureTurntableSequence(void);
+
+	LightControl lightControl;
 };

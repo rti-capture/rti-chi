@@ -8,6 +8,7 @@
 #include <iostream>
 #include <math.h>
 #include "UCSCTurntable.h"
+#include "LightControl.h"
 
 using namespace std;
 
@@ -39,7 +40,7 @@ int CaptureSequence::startSequence()
 		}
 		string strLogFile = strFullFolder + "\\" + strRootPrefix + ".log";
 		logfile.open(strLogFile.c_str());
-		logfile << "Capture Client Version : " << CONTROLLER_VERSION_INFO << endl;
+		logfile << "Capture Client Version : " << CONTROLLER_VERSION << endl;
 		logfile << "Capture started at " << strTime << endl;
 		
 		if (strPatchPanel.empty()) 
@@ -56,6 +57,36 @@ int CaptureSequence::startSequence()
 		photosTaken = 0;
 	}
 	
+	logfile << "LightPort = " << strPort << endl;
+	logfile << "SequenceSize = " << numSequenceSize << endl;
+	logfile << "SavePath = " << strSavePath << endl;
+	logfile << "RootPrefix = " << strRootPrefix << endl;
+	logfile << "LightsDelay = " << numLightsDelay << endl;
+	logfile << "TurntableEnabled = " << useTurntable << endl;
+	logfile << "TurntablePort = " << strTurntablePort << endl;
+	logfile << "Viewpoints = " << numViewpoints << endl;
+	logfile << "ViewSeperation = " << numViewSeperation << endl;
+	logfile << "RotationDelay = " << numRotationDelay << endl;
+	logfile << endl;
+
+	if ( !lightsDryRun ) {
+		if (!lightControl.isLightMappingLoaded()) {
+		  	status->AppendStatusMsg("Error loading LightMapping.txt file!", false);
+			status->AppendStatusMsg("Make sure the file is in the same folder as the capture client executable.", false);
+			return 1;
+		}
+		
+		bool lightsReady = lightControl.initializeLights(strPort);
+		if (lightsReady) {
+			status->AppendStatusMsg( "Initialized light controller.", false);
+			lightControl.resetAllLights();
+			Sleep(numLightsDelay);
+		} else {
+			status->AppendStatusMsg( "Error initializing light controller!", false);
+			status->AppendStatusMsg( "Make sure the controller is connected and the COM port is specified correctly.", false);
+			return 1;
+		}
+	}
 
 	status->AppendStatusMsg((char *) strTime.c_str(), false);
 	status->AppendStatusMsg( "Staring capture sequence #", false);
@@ -73,7 +104,7 @@ int CaptureSequence::startSequence()
 				break;	// In case of interrupt, simply bail out
 			}
 			cout << " checking for busy wait ";
-			while (cameracontrol->isCameraBusy()) {cout << ".";}
+			while (cameracontrol->isCameraBusy()) {/*cout << ".";*/}
 			cout << endl;
 
 			SingleRelease(i);
@@ -86,6 +117,8 @@ int CaptureSequence::startSequence()
 		logfile.close();
 		status->AppendStatusMsg( "Photos taken : ", photosTaken, false);
 	}
+	if ( !lightsDryRun )
+		lightControl.close();
 	return 0;
 }
 
@@ -96,6 +129,7 @@ void CaptureSequence::captureTurntableSequence(void)
 	char buffer[10];
 
 	table->Initialize(strTurntablePort);
+	table->SetSpeed(numTurntableSpeed);
 	for (int view=0; view<numViewpoints; view++) {
 		sprintf_s(buffer,"_%03d",view);
 		strViewPrefix.assign(buffer);
@@ -104,28 +138,37 @@ void CaptureSequence::captureTurntableSequence(void)
 				break;	// In case of interrupt, simply bail out
 			}
 			cout << " checking for busy wait ";
-			while (cameracontrol->isCameraBusy()) {cout << ".";}
+			while (cameracontrol->isCameraBusy()) {/*cout << ".";*/}
 			cout << endl;
 
 			SingleRelease(i);
 		}
-		table->Rotate(numViewSeperation);
+		if (view<numViewpoints-1) table->Rotate(numViewSeperation);
+		Sleep(numRotationDelay);
 	}
 	table->Close();
 }
 
 void CaptureSequence::SingleRelease(int numShot) 
 {
-	int    numFiber = PatchPanel[numShot-1];
+	int    numFiber = PatchPanel[numShot-1]; 
 
 	if (numFiber == 0) {
 	  status->AppendStatusMsg( "Patch panel is 0, skipping image #", numShot, TRUE);
 	  return;
 	}
 
+	cout << " Shot = " << numShot << " Light = " << numFiber << endl;
+
+	status->AppendStatusMsg( "Turning on light #", numFiber, TRUE /* Verbose only */ );
+	if ( !lightsDryRun ) {
+		lightControl.flush();
+		Sleep(100);
+		lightControl.turnOnLight(numFiber);
+	}
+		
 	if (numShot == 1) {
-		// first shot is treated as a special case, turn the lamp on, give it two seconds OR numLightsDelay.
-		ToggleOneFiber( numFiber, true );
+		// first shot is treated as a special case, give it two seconds OR numLightsDelay.
 		Sleep(max(2000,numLightsDelay));
 	} else {
 		// Use the delay specified in the dialog box
@@ -136,49 +179,33 @@ void CaptureSequence::SingleRelease(int numShot)
 
 	if ( !cameraDryRun ) 
 	{
-		char buffer[10];
+		char buffer[20];
+		std::string strSaveFile;
 		sprintf_s(buffer,"_%02d",numShot);
-		std::string strSaveFile = strFullFolder + "\\" + strRootPrefix + strViewPrefix + buffer;
+		strSaveFile = strFullFolder + "\\" + strRootPrefix + strViewPrefix + buffer;
 		status->AppendStatusMsg( "Saving as ", (char *)strSaveFile.c_str(), TRUE /* Verbose only */ );
 		//Sleep(2000);
 		cameracontrol->takePicture(strSaveFile);
-		while (cameracontrol->isShutterOpen()) {cout << ".";}
+		while (cameracontrol->isShutterOpen()) {/*cout << ".";*/}
 		//Sleep(1000);
 
-		logfile << strRootPrefix << buffer << endl;
+		logfile << strRootPrefix << strViewPrefix << buffer << endl;
 		photosTaken++;
-
 	}
-
 	
-	ToggleOneFiber( numFiber, false );
+	status->AppendStatusMsg( "Turning off light #", numFiber, TRUE /* Verbose only */ );
+	if ( !lightsDryRun ) {
+		lightControl.turnOffLight(numFiber);
+	}
 	Sleep(100);
-
-	if (numShot < numSequenceSize) {
-		// In all shots except the last, switch the next light on
-		numFiber = PatchPanel[numShot];
-		if (numFiber != 0) {
-			ToggleOneFiber( numFiber, true );
-			Sleep(100);
-		}
-	}
-
-	if ( cameraDryRun ) 
-	{
-		return;
-	} 
-	else 
-	{	
-		/* Unlock the U, clean up camera stuff */
-	}
 }
-
+/*
 void CaptureSequence::ToggleOneFiber( int  numFiber, BOOL on ) {
 	char buffer[64];
 
 	//char szPort[MAX_PATH];
 
-	const int kCmdBytes = 12;
+	const int kCmdBytes = 14;
 	unsigned char CommandByte;
 	unsigned char cmd[kCmdBytes];
 	unsigned int i;
@@ -188,25 +215,28 @@ void CaptureSequence::ToggleOneFiber( int  numFiber, BOOL on ) {
 	// needs to be a multiple of 8 to ensure the bytes are properly padded.
 	unsigned int kNumFibers = numLights;
 	if (numLights == MAX_LIGHTS)
+	{
+		status->AppendStatusMsg( "Max lights set to numSequence", TRUE);
 		kNumFibers = numSequenceSize;
+	}
 	kNumFibers = ceil((double)kNumFibers/8)*8;
 
 	// Can we check that one of these is actually on, and give status after?
 	if ( !on ) 
 	{
-		status->AppendStatusMsg( "Turning off light #", numFiber, TRUE /* Verbose only */ );
+		status->AppendStatusMsg( "Turning off light #", numFiber, true );
 		numFiber = 0;	// actually turn off all the lights just for safety
 	} 
 	else 
 	{
-		status->AppendStatusMsg( "Turning on light #", numFiber, TRUE /* Verbose only */ );
+		status->AppendStatusMsg( "Turning on light #", numFiber, true );
 	}
 
 	CommandByte = 0;
 	cmd[0] = (unsigned char)'A';
 	cmd[1] = (unsigned char)0;
 	numbytes = 2;
-	//cout << numFiber << " " << on << "  " ;
+	cout << "Num Fiber = " << numFiber << "  Status = " << on << "  " ;
 	for (i = 0; i < kNumFibers; i++) 
 	{
 		CommandByte >>= 1;
@@ -218,22 +248,28 @@ void CaptureSequence::ToggleOneFiber( int  numFiber, BOOL on ) {
 			CommandByte = 0;
 		}
 	 }
-	//cout << endl;
-
+	cout << endl;
+ 
 	while (numbytes < kCmdBytes) cmd[numbytes++] = 0;
 
-	sprintf_s(buffer, 64, "%X %X %X %X %X %X %X %X %X %X %X %X", cmd[0], cmd[1], cmd[2], cmd[3],
-		cmd[4], cmd[5], cmd[6], cmd[7], cmd[8], cmd[9], cmd[10], cmd[11]);
+	sprintf_s(buffer, 64, "%X %X %X %X %X %X %X %X %X %X %X %X %X %X", cmd[0], cmd[1], cmd[2], cmd[3],
+		cmd[4], cmd[5], cmd[6], cmd[7], cmd[8], cmd[9], cmd[10], cmd[11], cmd[12], cmd[13]);
 
-	status->AppendStatusMsg( "Control message: ", buffer, TRUE /* Verbose only */ );
+	status->AppendStatusMsg( "Control message: ", buffer, true );
 
 	// If not dry run mode, open the selected serial port and write control message
 	if ( !lightsDryRun ) 
 	{
+		cout << "num bytes = " << numbytes << endl;
+		cout << "Command = " ;
+		for (int i=0; i<numbytes; i++) 
+			cout << (int)cmd[i] << " ";
+		cout << endl;
+
 		if (!PortInitialize(strPort.c_str())) 
 		{
 			// Should this error be fatal?  Especially w/o a cancel button working?
-			status->AppendStatusMsg( "ERROR: failed to initialize port ", (char *)strPort.c_str(), FALSE /* Not verbose only */ );
+			status->AppendStatusMsg( "ERROR: failed to initialize light control port ", (char *)strPort.c_str(), false );
 		} 
 		else 
 		{
@@ -242,11 +278,19 @@ void CaptureSequence::ToggleOneFiber( int  numFiber, BOOL on ) {
 		}
 	}
 }
+*/
 
 
 
 bool CaptureSequence::loadSettings() 
 {
+  //load the light mappings file
+  lightControl.loadLightToControllerMapping();
+  if (!lightControl.isLightMappingLoaded()) {
+	  	status->AppendStatusMsg("Error loading LightMapping.txt file!", false);
+  }
+
+  // load the patch panel
   HANDLE handle = CreateFile("PatchPanel.txt",  // file name
                               GENERIC_READ,     // open for reading
                               0,                // do not share
@@ -261,7 +305,7 @@ bool CaptureSequence::loadSettings()
 	{
       PatchPanel[i] = i+1;
 	}
-	status->AppendStatusMsg("Default patch panel installed: no file found ", FALSE /* Not verbose only */ );
+	status->AppendStatusMsg("No patch panel file found! Default installed", FALSE /* Not verbose only */ );
 	strPatchPanel = "";
 	numLights = MAX_LIGHTS;
     return FALSE;
@@ -348,33 +392,21 @@ bool CaptureSequence::loadSettings()
 
 	free(buf);
 
-	numLights = count;
+	numLights = count;  // in the multispectral case, how about the lights 49-56? CHANGE
 	
-	// FIX ME: get rid of these magic numbers!
-	/*
-	if (count != 32) 
+	status->AppendStatusMsg("Patch panel installed from PatchPanel.txt", FALSE);
+	for (int i = 1; i <= count; i++) 
 	{
-	  status->AppendStatusMsg("ERROR: PatchPanel.txt truncated", FALSE);
+	if (PatchPanel[i-1] == 0) 
+	{
+	  sprintf_s(buffer, 64, "image %d will be skipped", i);
 	} 
 	else 
 	{
-	*/
-	  status->AppendStatusMsg("Patch panel installed from PatchPanel.txt", FALSE);
-	  for (int i = 1; i <= count; i++) 
-	  {
-		if (PatchPanel[i-1] == 0) 
-		{
-		  sprintf_s(buffer, 64, "image %d will be skipped", i);
-		} 
-		else 
-		{
-		  sprintf_s(buffer, 64, "image %d will use light %d", i, PatchPanel[i-1]);
-		}
-		status->AppendStatusMsg("Patch panel: ", buffer, FALSE);
-	  }
-	/*
+	  sprintf_s(buffer, 64, "image %d will use light %d", i, PatchPanel[i-1]);
 	}
-	*/
+	status->AppendStatusMsg("Patch panel: ", buffer, FALSE);
+	}
   }
  
   return true;
