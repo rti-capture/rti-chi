@@ -38,10 +38,12 @@ SOURCES        =  \
                ../../rtiviewer/src/normalenhanc.cpp \
                ../../rtiviewer/src/unsharpmasking.cpp \
                ../../rtiviewer/src/coeffenhanc.cpp\
-			   ../../rtiviewer/src/detailenhanc.cpp\
-			   ../../rtiviewer/src/dyndetailenhanc.cpp\
-			   ../../rtiviewer/src/hsh.cpp\
-			   ../../rtiviewer/src/universalrti.cpp\
+               ../../rtiviewer/src/detailenhanc.cpp\
+               ../../rtiviewer/src/dyndetailenhanc.cpp\
+               ../../rtiviewer/src/hsh.cpp\
+               ../../rtiviewer/src/universalrti.cpp\
+               ../../rtiviewer/src/normalsrendering.cpp\
+               ../../rtiviewer/src/rendercontrolutils.cpp
 
 HEADERS        = \
                zorder.h \
@@ -53,12 +55,16 @@ HEADERS        = \
                ../../rtiviewer/src/normalenhanc.h \
                ../../rtiviewer/src/unsharpmasking.h \
                ../../rtiviewer/src/coeffenhanc.h\
-			   ../../rtiviewer/src/detailenhanc.h\
-			   ../../rtiviewer/src/dyndetailenhanc.h\
-			   ../../rtiviewer/src/defaultrendering.h\
-			   ../../rtiviewer/src/hsh.h\
-			   ../../rtiviewer/src/universalrti.h\
+               ../../rtiviewer/src/detailenhanc.h\
+               ../../rtiviewer/src/dyndetailenhanc.h\
+               ../../rtiviewer/src/defaultrendering.h\
+               ../../rtiviewer/src/hsh.h\
+               ../../rtiviewer/src/universalrti.h\
+               ../../rtiviewer/src/normalsrendering.h\
+               ../../rtiviewer/src/rendercontrolutils.h
 
+
+DEFINES += _YES_I_WANT_TO_USE_DANGEROUS_STUFF
 
 mac: LIBS       += ../../compression/src/lib/libjpeg2000.a
 win32-msvc2005: LIBS  += ../../compression/src/lib/jpeg2000.lib
