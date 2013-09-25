@@ -209,3 +209,8 @@ void LightControl::setLight(const vcg::Point3f& l, bool refresh)
 	emit lightChanged(light, refresh);
 	update();
 }
+
+vcg::Point3f LightControl::getLight()
+{
+    return light;
+}

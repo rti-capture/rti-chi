@@ -99,6 +99,8 @@ public slots:
 	*/
 	void updateRenderingList(int currRendering, bool remote);
 
+    void setRenderingMode(int currRendering);
+
 //public Qt signal
 signals:
 
@@ -124,6 +126,11 @@ public:
 	  Sets a new rendering mode list.
 	*/
 	void setRenderingMode(QMap<int, RenderingMode*>* l, int currRendering, bool remote = false);
+
+    /*!
+      Get the rendering-specific control.
+     */
+    QWidget * getRenderingControl();
 	
 };
 

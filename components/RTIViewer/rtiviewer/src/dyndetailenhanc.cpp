@@ -1,4 +1,4 @@
-/****************************************************************************
+﻿/****************************************************************************
 * RTIViewer                                                         o o     *
 * Single and Multi-View Reflectance Transformation Image Viewer   o     o   *
 *                                                                _   O  _   *
@@ -30,7 +30,7 @@
 #include <QApplication>
 #include <QLabel>
 #include <QGridLayout>
-# include <QPainter>
+#include <QPainter>
 
 #include "dyndetailenhanc.h"
 
@@ -42,7 +42,12 @@ DynamicDetailEControl::DynamicDetailEControl(unsigned int tileSize, unsigned int
 	config(NULL)
 {
 	QLabel* label1 = new QLabel("Tile size (px)");
-	QLabel* label2 = new QLabel("Offset (1-20�)");
+
+#if _MSC_VER
+	QLabel* label2 = new QLabel("Offset (1-20°)");
+#elif __MINGW32__
+    QLabel* label2 = new QLabel(trUtf8("Offset (1-20°)"));
+#endif
 
 	tileSizeCmb = new QComboBox(this);
 	tileSizeCmb->setDuplicatesEnabled(false);
@@ -56,7 +61,11 @@ DynamicDetailEControl::DynamicDetailEControl(unsigned int tileSize, unsigned int
 
 	offsetCmb = new QSpinBox(this);
 	offsetCmb->setRange(MIN_OFFSET, MAX_OFFSET);
-	offsetCmb->setSuffix(" �");
+#if _MSC_VER
+	offsetCmb->setSuffix("°");
+#elif __MINGW32__
+    offsetCmb->setSuffix(trUtf8("°"));
+#endif
 	offsetCmb->setValue(offset);
 	offsetCmb->setKeyboardTracking(false);
 	connect(offsetCmb, SIGNAL(valueChanged(int)), this, SIGNAL(offsetChanged(int)));
@@ -88,10 +97,19 @@ void DynamicDetailEControl::setAdvacedDlg(QDialog *dlg)
 
 void DynamicDetailEControl::changeTileSize(int s)
 {
-	int value = tileSizeCmb->itemData(s).toInt();
-	emit tileSizeChanged(value);
+    int value = tileSizeCmb->itemData(s).toInt();
+    emit tileSizeChanged(value);
 }
 
+void DynamicDetailEControl::setTileSize(int s)
+{
+    tileSizeCmb->setCurrentIndex(tileSizeCmb->findData(QVariant(s)));
+}
+
+void DynamicDetailEControl::setOffset(int o)
+{
+    offsetCmb->setValue(o);
+}
 
 void DynamicDetailEControl::showAdvancedSettings()
 {
@@ -132,8 +150,10 @@ QWidget* DynamicDetailEnh::getControl(QWidget* parent)
 	DynamicDetailEControl* control = new DynamicDetailEControl(tileSize, degreeOffset, parent);
 	control->setAdvacedDlg(advancedControl);
 	connect(control, SIGNAL(tileSizeChanged(int)), this, SLOT(setTileSize(int)));
-	connect(control, SIGNAL(offsetChanged(int)), this, SLOT(setOffset(int)));
-	connect(advancedControl, SIGNAL(configUpdated(SharpnessMeasuresDyn, SphereSamplingDyn, float, float, float, SmoothingFilterDyn, int)),
+    connect(this, SIGNAL(tileSizeChanged(int)), control, SLOT(setTileSize(int)));
+    connect(control, SIGNAL(offsetChanged(int)), this, SLOT(setOffset(int)));
+    connect(this, SIGNAL(offsetChanged(int)), control, SLOT(setOffset(int)));
+    connect(advancedControl, SIGNAL(configUpdated(SharpnessMeasuresDyn, SphereSamplingDyn, float, float, float, SmoothingFilterDyn, int)),
 			this, SLOT(updateConfig(SharpnessMeasuresDyn, SphereSamplingDyn, float, float, float, SmoothingFilterDyn, int)));
 	disconnect(this, SIGNAL(refreshImage()), 0, 0);
 	connect(this, SIGNAL(refreshImage()), parent, SIGNAL(updateImage()));
@@ -229,6 +249,7 @@ void DynamicDetailEnh::calcDetails(RenderingInfo info, int levelWidth)
 	lights.empty();
 	lights = std::vector<vcg::Point3f>(ni*nj);
 	std::vector<std::vector<vcg::Point3f>*> tempLight(ni*nj);
+    std::vector<int> pointerIndex(ni*nj);
 	// Selects the better light vectors for each tile.
 	#pragma omp parallel for
 	for (int j = 0; j < nj; j++)
@@ -237,15 +258,23 @@ void DynamicDetailEnh::calcDetails(RenderingInfo info, int levelWidth)
 		{
 			int x0 = i*deltaW;
 			int y0 = j*deltaH;
-			if (y0 + deltaH > info.height)
-				tempLight[j*ni + i] = tempLight[(j-1)*ni +i];
-			else if (x0 + deltaW > info.width)
-				tempLight[j*ni + i] = tempLight[j*ni + i - 1];
-			else
+            if (y0 + deltaH >= info.height)
+                pointerIndex[j*ni + i] = (j-1)*ni +i;
+            else if (x0 + deltaW >= info.width)
+                pointerIndex[j*ni + i] = j*ni + i - 1;
+            else
+            {
+                pointerIndex[j*ni + i] = -1;
 				tempLight[j*ni + i] = getBestLight(x0 + info.offx , y0 + info.offy, deltaW, deltaH, levelWidth, *samples);
+            }
 		}
 	}
-	// Computes a global smoothing.
+    for (int i = 0; i < tempLight.size(); i++)
+    {
+        if (pointerIndex[i] != -1)
+            tempLight[i] = tempLight[pointerIndex[i]];
+    }
+    // Computes a global smoothing.
 	calcLocalLight(tempLight, lights, ni, nj);
 	// Applies the final smothing filter.
 	calcSmoothing(lights, ni, nj);
@@ -263,9 +292,9 @@ void DynamicDetailEnh::calcDetails(RenderingInfo info, int levelWidth)
 		painter.setPen(pen);
 		if (drawingMode == 1)
 		{
-			for (int j = 0; j < nj - 1; j++)
+            for (int j = 0; j < nj - 1; j++)
 			{
-				for (int i = 0; i < ni - 1; i++)
+                for (int i = 0; i < ni - 1; i++)
 				{
 					vcg::Point3f light = lights[j*ni + i];
 					vcg::Point2f center = vcg::Point2f(i*deltaW + deltaW/2, j*deltaH + deltaH/2);
@@ -307,9 +336,9 @@ void DynamicDetailEnh::calcDetails(RenderingInfo info, int levelWidth)
 					float lum = coefficient[offset2].evalPoly(l.X(), l.Y()) / 255.0;
 					for (int k = 0; k < 3; k++)
 							bufferPtr[offset*4 + k] = tobyte(lum*color[offset2*3 +k]);
+					bufferPtr[offset*4 + 3] = 255;
 					offset2++;
 					offset++;
-					bufferPtr[offset*4 + 3] = 255;
 				}
 			}
 		}
@@ -339,9 +368,9 @@ void DynamicDetailEnh::calcDetails(RenderingInfo info, int levelWidth)
 						for (int k = 0; k < 3; k++)
 							bufferPtr[offset*4 + k] = tobyte(lum*color[offset2*3 +k]);
 					}
+					bufferPtr[offset*4 + 3] = 255;
 					offset2++;
 					offset++;
-					bufferPtr[offset*4 + 3] = 255;
 				}
 			}
 		}
@@ -362,9 +391,10 @@ void DynamicDetailEnh::calcDetails(RenderingInfo info, int levelWidth)
 					bufferPtr[offset4] = tobyte(red[offset2].evalPoly(l.X(), l.Y()));
 					bufferPtr[offset4 + 1] = tobyte(green[offset2].evalPoly(l.X(), l.Y()));
 					bufferPtr[offset4 + 2] = tobyte(blue[offset2].evalPoly(l.X(), l.Y()));
+					bufferPtr[offset4 + 3] = 255;
 					offset2++;
 					offset++;
-					bufferPtr[offset4 + 3] = 255;
+					
 				}
 			}
 		}
@@ -394,9 +424,10 @@ void DynamicDetailEnh::calcDetails(RenderingInfo info, int levelWidth)
 						bufferPtr[offset*4 + 1] = tobyte(green[offset2].evalPoly(l.X(), l.Y()));
 						bufferPtr[offset*4 + 2] = tobyte(blue[offset2].evalPoly(l.X(), l.Y()));
 					}
+					bufferPtr[offset*4 + 3] = 255;
 					offset2++;
 					offset++;
-					bufferPtr[offset*4 + 3] = 255;
+					
 				}
 			}
 		}
@@ -721,7 +752,7 @@ vcg::Point3f DynamicDetailEnh::getLight(int x, int y, int width, int height, int
 		l3 = lights[id1];
 		l1 = (lights[id1] + lights[id2])/2;
 		l4 = (lights[id1] + lights[id4])/2;
-		l3 = (lights[id1] + lights[id2] + lights[id3] + lights[id4])/4; 
+        l2 = (lights[id1] + lights[id2] + lights[id3] + lights[id4])/4;
 		v3 = vcg::Point2f(0, h - 1);
 		v1 = vcg::Point2f(0, height*ytile);
 		v2 = v1 + vcg::Point2f(width, 0);
@@ -876,8 +907,8 @@ void DynamicDetailEnh::calcLocalLight(std::vector<std::vector<vcg::Point3f>*>& s
 			else
 			{
 				avg[offset] = vcg::Point3f(0,0,0);
-				for (int ii = sx; ii <= ex; ii++)
-					for(int jj = sy; jj <= ey; jj++)
+                for (int ii = sx; ii <= ex; ii++)
+                    for(int jj = sy; jj <= ey; jj++)
 						avg[offset] += source[jj*nx + ii]->at(0);
 			}
 		}
@@ -966,6 +997,7 @@ void DynamicDetailEnh::calcSmoothing(std::vector<vcg::Point3f>& light, int nx, i
 void DynamicDetailEnh::setOffset(int x)
 {
 	degreeOffset = x;
+    emit offsetChanged(x);
 	emit refreshImage();
 }
 
@@ -975,6 +1007,7 @@ void DynamicDetailEnh::setOffset(int x)
 void DynamicDetailEnh::setTileSize(int s)
 {
 	tileSize = s;
+    emit tileSizeChanged(s);
 	emit refreshImage();
 }
 
@@ -1080,6 +1113,51 @@ DynamicDetConfDlg::DynamicDetConfDlg(QWidget *parent) : QDialog(parent)
 }
 
 
+int DynamicDetailEnh::getDegreeOffset()
+{
+    return degreeOffset;
+}
+
+int DynamicDetailEnh::getTileSize()
+{
+    return tileSize;
+}
+
+SharpnessMeasuresDyn DynamicDetailEnh::getSharpnessOperator()
+{
+    return sharpnessOp;
+}
+
+SphereSamplingDyn DynamicDetailEnh::getSphereSampling()
+{
+    return sphereSampl;
+}
+
+float DynamicDetailEnh::getK1()
+{
+    return k1;
+}
+
+float DynamicDetailEnh::getK2()
+{
+    return k2;
+}
+
+float DynamicDetailEnh::getThreshold()
+{
+    return threshold;
+}
+
+SmoothingFilterDyn DynamicDetailEnh::getFilter()
+{
+    return filter;
+}
+
+int DynamicDetailEnh::getNIterSmoothing()
+{
+    return nIterFilter;
+}
+
 void DynamicDetConfDlg::setCurrentValue(SharpnessMeasuresDyn sharpnessOp, SphereSamplingDyn sphereSampl, float k1, float k2, float threshold, SmoothingFilterDyn smoothFilter, int nIter)
 {
 	sharpnessOpCmb->setCurrentIndex(sharpnessOpCmb->findData(QVariant(sharpnessOp)));
@@ -1115,3 +1193,5 @@ void DynamicDetConfDlg::k2Changed(double value)
 {
 	k1Snb->setValue(1 - value);
 }
+
+

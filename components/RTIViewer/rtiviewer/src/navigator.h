@@ -102,10 +102,10 @@ private:
 	int rtiHeight; /*!< Height of the original RTI image. */
 	
 	
-	int browserWidth; /*!< Width of the image displaied in the widget. */
-	int browserHeight; /*!< Height of the image displaied in the widget. */
+    int browserWidth; /*!< Width of the image displayed in the widget. */
+    int browserHeight; /*!< Height of the image displayed in the widget. */
 
-	QRectF pos; /*!< Left-top corner cordinates of the image displaied in the widget. */
+    QRectF pos; /*!< Left-top corner cordinates of the image displayed in the widget. */
 	QRectF selection;  /*!< Coordinates of the Sub-image in the current view of the browser. */
 
 	QPoint dragPoint; /*!< Last point saves throughout a dragging event. */

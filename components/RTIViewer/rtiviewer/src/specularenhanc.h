@@ -26,24 +26,17 @@
 #define SPECULARENHANC_H
 
 #include "renderingmode.h"
+#include "rendercontrolutils.h"
 
 #include <vcg/space/point3.h>
-
-#include <QSlider>
 
 //! Widget for Specular Enhancement settings.
 /*!
   The class defines the widget thta is showed in the Rendering Dialog to set the parameters of the rendering mode Specular Enhancement.
 */
-class SpecularEControl : public QWidget
+class SpecularEControl : public QWidget, public RenderControlUtils
 {
 	Q_OBJECT
-
-private:
-	
-	QSlider* sliderKd; /*!< Slider to set the diffusive constant. */
-	QSlider* sliderKs; /*!< Slider to set the specular constant. */
-	QSlider* sliderExp; /*!< Slider to set the specular exponent. */
 
 public:
 
@@ -55,6 +48,8 @@ public:
 	  \param parent
 	*/
 	SpecularEControl(int kd, int ks, int exp,  QWidget *parent = 0);
+
+    bool eventFilter(QObject* watched, QEvent* event);
 
 signals:
 
@@ -119,6 +114,10 @@ public:
 	virtual void applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCoeff& greenCoeff, const PyramidCoeff& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer);
 
 	virtual void applyHSH(const PyramidCoeffF& redCoeff, const PyramidCoeffF& greenCoeff, const PyramidCoeffF& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer);
+
+    float getKd();
+    float getKs();
+    float getExp();
 
 public slots:
 	

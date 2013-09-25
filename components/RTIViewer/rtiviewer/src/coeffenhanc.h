@@ -26,23 +26,18 @@
 #define COEFFENHANCEMENT_H
 
 #include "renderingmode.h"
+#include "rendercontrolutils.h"
 
 #include <vcg/space/point3.h>
-
-#include <QSlider>
 
 //! Widget for Coefficient Enhancement settings.
 /*!
   The class defines the widget that is showed in the Rendering Dialogto to set the parameters of the rendering mode Coefficient Enhancement.
 */
-class CoeffEnhancControl : public QWidget
+class CoeffEnhancControl : public QWidget, public RenderControlUtils
 {
 	Q_OBJECT
 
-private:
-	
-	QSlider* sliderGain; /*!< Slider to set the gain parameter. */
- 
 public:
 
 	//! Constructor.
@@ -50,6 +45,8 @@ public:
 	  /param gain value for the gain parameter.
 	*/
 	CoeffEnhancControl(int gain, QWidget *parent = 0);
+
+    bool eventFilter(QObject* watched, QEvent* event);
 
 signals:
 
@@ -98,6 +95,8 @@ public:
 	virtual void applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCoeff& greenCoeff, const PyramidCoeff& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer);
 
 	void applyHSH(const PyramidCoeffF& redCoeff, const PyramidCoeffF& greenCoeff, const PyramidCoeffF& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer){}
+
+    float getGain();
 
 private:
 

@@ -29,44 +29,34 @@
 
 #include "specularenhanc.h"
 
-#include <QGridLayout>
-#include <QLabel>
-
 #include <omp.h>
 
 SpecularEControl::SpecularEControl(int kd, int ks, int exp, QWidget *parent) : QWidget(parent)
 {
-	QLabel* label1 = new QLabel("Kd");
-	sliderKd = new QSlider(Qt::Horizontal);
-	sliderKd->setRange(0, 100);
-	sliderKd->setValue(kd);
-	sliderKd->setTracking(false);
-	connect(sliderKd, SIGNAL(valueChanged(int)), this, SIGNAL(kdChanged(int)));
-
-	QLabel* label2 = new QLabel("Ks");
-	sliderKs = new QSlider(Qt::Horizontal);
-	sliderKs->setRange(0, 100);
-	sliderKs->setValue(ks);
-	sliderKs->setTracking(false);
-	connect(sliderKs, SIGNAL(valueChanged(int)), this, SIGNAL(ksChanged(int)));
-
-	QLabel* label3 = new QLabel("N");
-	sliderExp = new QSlider(Qt::Horizontal);
-	sliderExp->setRange(0, 100);
-	sliderExp->setValue(exp);
-	sliderExp->setTracking(false);
-	connect(sliderExp, SIGNAL(valueChanged(int)), this, SIGNAL(expChanged(int)));
-
-	QGridLayout *layout = new QGridLayout;
-	layout->addWidget(label1, 0, 0);
-	layout->addWidget(sliderKd, 0, 1);
-	layout->addWidget(label2, 1, 0);
-	layout->addWidget(sliderKs, 1, 1);
-	layout->addWidget(label3, 2, 0);
-	layout->addWidget(sliderExp, 2, 1);
-	setLayout(layout);
+    groups.append(new RenderControlGroup(this, "Diffuse Color", kd));
+//    groups.append(new RenderControlGroup(this, "Kd", kd));
+    connect(groups.at(0)->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(kdChanged(int)));
+    groups.append(new RenderControlGroup(this, "Specularity", ks));
+//    groups.append(new RenderControlGroup(this, "Ks", ks));
+    connect(groups.at(1)->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(ksChanged(int)));
+    groups.append(new RenderControlGroup(this, "Highlight Size", exp));
+//    groups.append(new RenderControlGroup(this, "N", exp));
+    connect(groups.at(2)->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(expChanged(int)));
+    setLayout(createLayout());
 }
 
+bool SpecularEControl::eventFilter(QObject* watched, QEvent* event)
+{
+    int s;
+    if ((s = getSliderIndex(watched, event)) != -1)
+        if (s == 0)
+            emit (kdChanged(groups.at(s)->slider->value()));
+        else if (s == 1)
+            emit (ksChanged(groups.at(s)->slider->value()));
+        else
+            emit (expChanged(groups.at(s)->slider->value()));
+    return false;
+}
 
 SpecularEnhancement::SpecularEnhancement() :
 kd(0.4f),
@@ -91,9 +81,9 @@ QString SpecularEnhancement::getTitle()
 
 QWidget* SpecularEnhancement::getControl(QWidget* parent)
 {
-	int initKd = (kd - minKd)*100/(maxKd - minKd);
-	int initKs = (ks - minKs)*100/(maxKs - minKs);
-	int initExp = (exp - minExp)*100/(maxExp - minExp);
+    int initKd = roundParam((kd - minKd)*100/(maxKd - minKd));
+    int initKs = roundParam((ks - minKs)*100/(maxKs - minKs));
+    int initExp = roundParam((exp - minExp)*100.0/(maxExp - minExp));
 	SpecularEControl* control = new SpecularEControl(initKd, initKs, initExp, parent);
 	connect(control, SIGNAL(kdChanged(int)), this, SLOT(setKd(int)));
 	connect(control, SIGNAL(ksChanged(int)), this, SLOT(setKs(int)));
@@ -121,10 +111,24 @@ bool SpecularEnhancement::enabledLighting()
 }
 
 
+float SpecularEnhancement::getKd()
+{
+    // Get kd as a value normalized to the range [0,100]
+
+    return (kd - minKd)*100.0/(maxKd - minKd);
+}
+
 void SpecularEnhancement::setKd(int value)
 {
 	kd = minKd + value * (maxKd - minKd)/100;
 	emit refreshImage();
+}
+
+float SpecularEnhancement::getKs()
+{
+    // Get ks as a value normalized to the range [0,100]
+
+    return (ks - minKs)*100.0/(maxKs - minKs);
 }
 
 void SpecularEnhancement::setKs(int value)
@@ -133,12 +137,18 @@ void SpecularEnhancement::setKs(int value)
 	emit refreshImage();
 }
 
+float SpecularEnhancement::getExp()
+{
+    // Get exp as a value normalized to the range [0,100]
+
+    return (exp - minExp)*100.0/(maxExp - minExp);
+}
+
 void SpecularEnhancement::setExp(int value)
 {
 	exp = minExp + value * (maxExp - minExp)/100;
 	emit refreshImage();
 }
-
 
 void SpecularEnhancement::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& rgb, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
 {
@@ -232,10 +242,13 @@ void SpecularEnhancement::applyHSH(const PyramidCoeffF& redCoeff, const PyramidC
     float hweights[9];
 	vcg::Point3d temp(info.light.X(), info.light.Y(), info.light.Z());
 	temp.Normalize();
-    float phi = atan2(temp.Y(), temp.X());
-    float theta = acos(temp.Z()/temp.Norm());
+	float phi = atan2(temp.Y(), temp.X());
+	if (phi<0) 
+		phi = 2*M_PI+phi;
+    float theta = qMin<float>(acos(temp.Z()/temp.Norm()), M_PI / 2 - 0.04);
+
 	int offsetBuf = 0;
-	getHSH(theta, phi, hweights);
+	getHSH(theta, phi, hweights, sqrt((float)info.ordlen));
 	
 	#pragma omp parallel for schedule(static,CHUNK) 
 	for (int y = info.offy; y < info.offy + info.height; y++)

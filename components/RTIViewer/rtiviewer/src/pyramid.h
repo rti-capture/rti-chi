@@ -29,6 +29,8 @@
 #include <vcg/space/point3.h>
 #include "ptmCoeffVectorized.h"
 
+#include <QDebug>
+
 //! Wrapper class for mip-mapping
 /*!
   A wrapper class for mip-mapping of elements of type \a T and with a number of level \a nLevel. 
@@ -309,12 +311,16 @@ public:
 	*/
 	bool allocateLevel(int level, int l)
 	{
+//        qDebug() << "level " << level;
+//        qDebug() << "nLevel " << nLevel;
 		if (level < nLevel)
 		{
-			if (value[level])
+            if (value[level])
 				delete value[level];
-			value[level] = new PTMCoefficient[l];
-			lenght[level] = l;
+//           qDebug() << "before new[], l = " << l;
+            value[level] = new PTMCoefficient[l];
+//            qDebug() << "after new[], value[level] = " << value[level];
+            lenght[level] = l;
 			return true;
 		}
 		return false;

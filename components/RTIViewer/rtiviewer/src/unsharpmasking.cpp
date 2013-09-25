@@ -29,25 +29,22 @@
 
 #include "unsharpmasking.h"
 
-#include <QGridLayout>
-#include <QLabel>
 #include <QApplication>
 
 UnsharpMControl::UnsharpMControl(int gain, QWidget *parent) : QWidget(parent)
 {
-	QLabel* label1 = new QLabel("Gain");
-	sliderGain = new QSlider(Qt::Horizontal);
-	sliderGain->setRange(0, 100);
-	sliderGain->setValue(gain);
-	sliderGain->setTracking(false);
-	connect(sliderGain, SIGNAL(valueChanged(int)), this, SIGNAL(gainChanged(int)));
-
-	QGridLayout *layout = new QGridLayout;
-	layout->addWidget(label1, 0, 0);
-	layout->addWidget(sliderGain, 0, 1);
-	setLayout(layout);
+    groups.append(new RenderControlGroup(this, "Gain", gain));
+    connect(groups.at(0)->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(gainChanged(int)));
+    setLayout(createLayout());
 }
 
+bool UnsharpMControl::eventFilter(QObject* watched, QEvent* event)
+{
+    int s;
+    if ((s = getSliderIndex(watched, event)) != -1)
+        emit (gainChanged(groups.at(s)->slider->value()));
+    return false;
+}
 
 UnsharpMasking::UnsharpMasking(int n) :
 	gain(1.0f),
@@ -64,8 +61,6 @@ UnsharpMasking::~UnsharpMasking()
 {
 
 }
-
-
 	
 QString UnsharpMasking::getTitle() 
 {
@@ -79,7 +74,7 @@ QString UnsharpMasking::getTitle()
 
 QWidget* UnsharpMasking::getControl(QWidget* parent)
 {
-	int initGain = (gain - minGain)*100/(maxGain - minGain);
+    int initGain = roundParam((gain - minGain)*100/(maxGain - minGain));
 	UnsharpMControl* control = new UnsharpMControl(initGain, parent);
 	connect(control, SIGNAL(gainChanged(int)), this, SLOT(setGain(int)));
 	disconnect(this, SIGNAL(refreshImage()), 0, 0);
@@ -106,12 +101,18 @@ bool UnsharpMasking::enabledLighting()
 }
 
 
+float UnsharpMasking::getGain()
+{
+    // Get gain as a value normalized to the range [0,100]
+
+    return (gain - minGain)*100.0/(maxGain - minGain);
+}
+
 void UnsharpMasking::setGain(int value)
 {
 	gain = minGain + value * (maxGain - minGain)/100;
 	emit refreshImage();
 }
-
 
 void UnsharpMasking::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& rgb, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
 {

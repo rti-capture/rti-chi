@@ -172,10 +172,13 @@ public:
 		vcg::Point3d temp(info.light.X(), info.light.Y(), info.light.Z());
 		temp.Normalize();
         float phi = atan2(temp.Y(), temp.X());
-        float theta = acos(temp.Z()/temp.Norm());
+		if (phi<0) 
+			phi = 2*M_PI+phi;
+        float theta = qMin<float>(acos(temp.Z()/temp.Norm()), M_PI / 2 - 0.04);
+		
 
 		//int offsetBuf = 0;
-		getHSH(theta, phi, hweights);
+		getHSH(theta, phi, hweights, sqrt((float)info.ordlen));
 		
 		#pragma omp parallel for schedule(static,CHUNK)
 		for (int y = info.offy; y < info.offy + info.height; y++)

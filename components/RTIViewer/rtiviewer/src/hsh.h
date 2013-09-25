@@ -36,6 +36,7 @@
 #include "renderingmode.h"
 #include "defaultrendering.h"
 #include "specularenhanc.h"
+#include "normalsrendering.h"
 
 #include <jpeg2000.h>
 

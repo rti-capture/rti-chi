@@ -25,6 +25,7 @@
 #pragma once
 
 //#include <emmintrinsics.h>
+#include <QDebug>
 
 #include <emmintrin.h>
 
@@ -148,7 +149,9 @@ public:
             #if _MSC_VER
             void* ptr = _aligned_malloc(size,ALIGN_SIZE);
             #else
+//            qDebug() << "doing malloc. size: " <<size;
             void* ptr = malloc(size);
+//            qDebug() << "did malloc. ptr: " <<ptr;
             #endif
             return ptr;
         };

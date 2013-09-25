@@ -25,9 +25,18 @@
 #ifndef RTIBROWSER_H
 #define RTIBROWSER_H
 
+#include "gui.h"
 #include "rti.h"
 #include "renderingmode.h"
 #include "util.h"
+#include "diffusegain.h"
+#include "specularenhanc.h"
+#include "normalenhanc.h"
+#include "unsharpmasking.h"
+#include "coeffenhanc.h"
+#include "detailenhanc.h"
+#include "dyndetailenhanc.h"
+#include "normalsrendering.h"
 
 #include <vcg/space/point3.h>
 #include <vcg/math/matrix33.h>
@@ -42,6 +51,10 @@
 #include <QShortcut>
 #include <QTimer>
 
+// RtiViewerDlg and RtiBrowser point to each other. Forward declare
+// RtiViewerDlg to resolve the circular dependency.
+
+class RtiViewerDlg;
 
 //! RTI browser class.
 /*!
@@ -75,16 +88,20 @@ public:
 	*/
 	QSize getSize();
 
+    QRectF getSubimage();
+
+    QSize getImageSize();
+
 	/*!
-	  Returns the list of rendering mode of the current RTI image.
+      Returns the list of rendering modes of the current RTI image.
 	*/
-	QMap<int, RenderingMode*>* getRenderingMode();
+    QMap<int, RenderingMode*>* getRenderingModes();
 
 	/*!
 	  Return the index of the rendering mode applied in the browser.
 	*/
 	int getCurrentRendering();
-	
+
 protected:
 
 	/*!
@@ -136,6 +153,7 @@ protected:
 private:
 
 	Rti* img; /*!< RTI image to display. */
+    RtiViewerDlg* gui; /*! Pointer to the main RTIViewer window */
 	
 	vcg::Point3f light; /*!< Light vector. */
 	bool lightChanged; /*!< Holds whether the light direction is changing by the user with the middle button of the mouse. */
@@ -182,9 +200,19 @@ private:
 
 	int currentMode; /*!< Current rendering mode applied to the image. */
 
+    bool addingHighlightBox;
+    bool editingHighlightBox;
+    bool drawingHighlightBox;
+    bool haveHighlightBox;
+    float bmStartX;
+    float bmStartY;
+    float bmEndX;
+    float bmEndY;
+    QRectF highlightBox;
+
 	// Shortcut for special rendering mode.
 	QShortcut defaultMode;
-	QShortcut normalsMode;
+//	QShortcut normalsMode;
 	QShortcut lumUnsharpMode;
 	QShortcut smoothMode;
 	QShortcut contrastMode;
@@ -221,7 +249,7 @@ private:
 	/*!
 	  Updates the texture info. If \a refresh is true the texture in the browser is updated.
 	*/
-	void updateTexture(bool refresh = true);
+    void updateTexture(bool refresh = true);
 
 	/*!
 	  Moves the sub-image.
@@ -234,6 +262,16 @@ private:
 	*/
 	void updateLight();
 
+    QPointF getCorner(int corner, QRectF rect);
+
+    void imageToBrowser(float & x, float & y);
+
+    void browserToImage(float & x, float & y);
+
+    void saveSnapshotMetadata(QString fileName);
+
+    void createParameterChild(QDomDocument xmp, QDomElement parametersBag, QString name, float value);
+
 // private Qt slots
 private slots:
 
@@ -241,7 +279,6 @@ private slots:
 	void zoomInActivated();
 	void zoomOutActivated();
 	void defaultModeActivated();
-	void normalsModeActivated();
 	void lumModeActivated();
 	void smoothModeActivated();
 	void contrastModeActivated();
@@ -305,6 +342,11 @@ signals:
 	*/
 	void updateZoomValue(float value, float minValue);
 
+    /*!
+      Emitted when a highlight box has been drawn.
+    */
+    void highlightBoxDrawn(QRectF box);
+
 // public Qt slots
 public slots:
 	
@@ -347,6 +389,41 @@ public slots:
 	  Set the zoom factor.
 	*/
 	void updateZoom(int zoomVal);
+
+    /*!
+      Set the x coordinate of the pan.
+    */
+    void setPanX(double x);
+
+    /*!
+      Set the y coordinate of the pan.
+    */
+    void setPanY(double y);
+
+    /*!
+      Set the pan.
+    */
+    void setPan(QPointF point);
+
+    /*!
+      Set a flag that the user will draw a highlight box.
+    */
+    void addHighlightBox();
+
+    /*!
+      Set a flag that the user will change a highlight box.
+    */
+    void editHighlightBox();
+
+    /*!
+      Set a new highlight box.
+    */
+    void setHighlightBox(bool drawHighlightBox, QRectF box);
+
+    /*!
+      Delete the highlight box.
+    */
+    void deleteHighlightBox();
 
 };
 

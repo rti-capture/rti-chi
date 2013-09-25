@@ -25,6 +25,7 @@
 #include "renderingdialog.h"
 
 #include <QVBoxLayout>
+#include <QDebug>
 
 RenderingDialog::RenderingDialog(QMap<int, RenderingMode*>* l, int currRendering, QWidget *parent, bool remote) : QWidget(parent) 
 {
@@ -129,6 +130,12 @@ void RenderingDialog::setRenderingMode(QMap<int, RenderingMode*>* l, int currRen
 	}	
 }
 
+void RenderingDialog::setRenderingMode(int currRendering)
+{
+    int index = modeList->findData(QVariant(currRendering));
+    modeList->setCurrentIndex(index);
+    renderingModeUpdate(index);
+}
 
 void RenderingDialog::updateRenderingList(int currRendering, bool remote)
 {
@@ -161,4 +168,9 @@ void RenderingDialog::updateRenderingList(int currRendering, bool remote)
 		modeList->setCurrentIndex(selected);
 		renderingModeUpdate(selected);
 	}
+}
+
+QWidget * RenderingDialog::getRenderingControl()
+{
+    return control;
 }

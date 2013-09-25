@@ -226,7 +226,12 @@ public slots:
 //accessor
 public:
 	
-	/*!
+    /*!
+      Gets the light direction.
+    */
+    vcg::Point3f getLight();
+
+    /*!
 	  Sets the maximum shift on x-axis.
 	*/
 	void setMaxXAngle(int degree)

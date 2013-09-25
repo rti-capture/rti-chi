@@ -190,6 +190,11 @@ signals:
 	*/
 	void offsetChanged(int offset);
 
+public slots:
+    void setTileSize(int s);
+
+    void setOffset(int o);
+
 private slots:
 
 	/*!
@@ -260,6 +265,16 @@ public:
 	virtual void applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCoeff& greenCoeff, const PyramidCoeff& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer);
 
 	void applyHSH(const PyramidCoeffF& redCoeff, const PyramidCoeffF& greenCoeff, const PyramidCoeffF& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer){}
+
+    int getDegreeOffset();
+    int getTileSize();
+    SharpnessMeasuresDyn getSharpnessOperator();
+    SphereSamplingDyn getSphereSampling();
+    float getK1();
+    float getK2();
+    float getThreshold();
+    SmoothingFilterDyn getFilter();
+    int getNIterSmoothing();
 
 private:
 
@@ -355,6 +370,10 @@ signals:
 	  Emitted to refresh the image in the browser.
 	*/
 	void refreshImage();
+
+    void tileSizeChanged(int s);
+
+    void offsetChanged(int o);
 };
 
 

@@ -42,12 +42,14 @@
 #include "coeffenhanc.h"
 #include "detailenhanc.h"
 #include "dyndetailenhanc.h"
+#include "normalsrendering.h"
 #include <jpeg2000.h>
 
 // Qt headers
 #include <QFile>
 #include <QImage>
 #include <QVector>
+#include <QDebug>
 
 #include <vcg/math/base.h>
 
@@ -74,7 +76,8 @@ public:
 		// Create list of supported rendering mode.
 		list = new QMap<int, RenderingMode*>();
 		list->insert(DEFAULT, new DefaultRendering());
-		list->insert(DIFFUSE_GAIN, new DiffuseGain());
+        list->insert(NORMALS, new NormalsRendering());
+        list->insert(DIFFUSE_GAIN, new DiffuseGain());
 		list->insert(SPECULAR_ENHANCEMENT, new SpecularEnhancement());
 		list->insert(NORMAL_ENHANCEMENT, new NormalEnhancement());
 		list->insert(UNSHARP_MASKING_IMG, new UnsharpMasking(0));
@@ -183,7 +186,7 @@ protected:
 		{
 			QSize size = mipMapSize[level];
 			const PTMCoefficient* coeffLevel = coeff.getLevel(level);
-			int lenght = size.width()*size.height();
+            int lenght = size.width()*size.height();
 			vcg::Point3f* normalsLevel = new vcg::Point3f[lenght];
 			if (!lrgb)
 				memcpy(normalsLevel, norm.getLevel(level), sizeof(vcg::Point3f)*lenght);
@@ -222,13 +225,13 @@ protected:
 	*/
 	void generateMipMap(int level, int width, int height, CallBackPos * cb = 0, int offset = 0, int limit = 0)
 	{
-		if (level > 3) return;
+        if (level > 3) return;
 		int width2 = ceil(width/2.0);
 		int height2 = ceil(height/2.0);
-		allocateSubLevel(level, width2, height2);
+        allocateSubLevel(level, width2, height2);
 		int th_id;
-		#pragma omp parallel for
-		for (int i = 0; i < height - 1; i+=2)
+        #pragma omp parallel for
+        for (int i = 0; i < height - 1; i+=2)
 		{
 			th_id = omp_get_thread_num();
 			if (th_id == 0)
@@ -245,7 +248,7 @@ protected:
 				calculateMipMap(offset, level, index1, index2, index3, index4);
 			}
 		}
-		if (width2 % 2 != 0)
+        if (width2 % 2 != 0)
 		{
 			for (int i = 0; i < height - 1; i+=2)
 			{
@@ -265,11 +268,11 @@ protected:
 				calculateMipMap(offset, level, index1, index2);
 			}
 		}
-		if (height % 2 != 0 && width % 2 != 0)
+        if (height % 2 != 0 && width % 2 != 0)
 		{
 			calculateMipMap((height2*width2 - 1), level, (height * width -1));
 		}
-		mipMapSize[level] = QSize(width2, height2);
+        mipMapSize[level] = QSize(width2, height2);
 		generateMipMap(level+1, width2, height2, cb, offset + limit/2.0, limit/2.0);
 	}
 

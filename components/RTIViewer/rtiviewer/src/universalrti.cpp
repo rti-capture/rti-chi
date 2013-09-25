@@ -58,7 +58,7 @@ int UniversalRti::load(QString name, CallBackPos *cb)
 #endif
 
 	remote = false;
-	if (cb != NULL)	(*cb)(0, "Loading URTI...");
+    if (cb != NULL)	(*cb)(0, "Loading RTI...");
 	filename = name;
 
 #ifdef WIN32
@@ -124,9 +124,9 @@ int UniversalRti::load(QString name, CallBackPos *cb)
 
 	switch(rtiType)
 	{
-		case 0: type = "URTI"; return -1; break;
+        case 0: type = "RTI"; return -1; break;
 		case 1: 
-			type = "URTI PTM";
+            type = "RTI PTM";
 			if (basisType == 1)
 				image = new LRGBPtm();
 			else
@@ -134,15 +134,15 @@ int UniversalRti::load(QString name, CallBackPos *cb)
 			((Ptm*)image)->setVersion("PTM_1.2");
 			return -1;
 			break;
-		case 2: type = "URTI SH"; return -1;break;
+        case 2: type = "RTI SH"; return -1;break;
 		case 3: 
-			type = "URTI HSH";
+            type = "RTI HSH";
 			image = new Hsh();
 			break;
-		case 4: type = "URTI ADAPTIVE PTM"; return -1; break;
-		default: type = "URTI"; return -1;
+        case 4: type = "RTI ADAPTIVE PTM"; return -1; break;
+        default: type = "RTI"; return -1;
 	}
-	QString text = "Loading URTI...";
+    QString text = "Loading RTI...";
 	int ret = image->loadData(file, w, h, basisTerm, true, cb, text);
 	if (ret != 0)
 		return -1;
@@ -152,7 +152,7 @@ int UniversalRti::load(QString name, CallBackPos *cb)
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
         float diff = first.msecsTo(second) / 1000.0;
-	printf("URTI Loading: %.5f s\n", diff);
+    printf("RTI Loading: %.5f s\n", diff);
 #endif
 
 	return 0;

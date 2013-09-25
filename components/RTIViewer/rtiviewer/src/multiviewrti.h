@@ -43,7 +43,8 @@
 #include <QCheckBox>
 
 
-#include <vcg/math/matrix.h>
+//#include <vcg/math/old_deprecated_matrix.h>
+#include <eigenlib/Eigen/Eigen>
 
 
 
@@ -135,7 +136,7 @@ private slots:
 };
 
 
-//! Defaut Rending for Multiview RTI image.
+//! Defaut Rendering for Multiview RTI image.
 /*!
   The class defines the default rendering for Multiview RTI image.
 */
@@ -285,7 +286,8 @@ protected:
 	int startX, startY;
 	float separationX, separationY;
 	bool useFlow;
-	vcg::ndim::Matrix<int>* viewpointLayout;
+	//vcg::ndim::Matrix<int>* viewpointLayout;
+	Eigen::MatrixXi viewpointLayout;
 	std::vector<UniversalRti*> images;
 	std::vector<OpticalFlowData> flow;
 

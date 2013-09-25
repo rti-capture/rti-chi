@@ -33,7 +33,10 @@
 #include <vcg/space/point3.h>
 #include <vcg/math/base.h>
 
-#include <QString> 
+#include <QString>
+#include <QDomDocument>
+#include <QDomElement>
+#include <QDomText>
 
 #include <stdio.h>
 
@@ -52,7 +55,6 @@
 enum BrowserMode
 {
 	DEFAULT_MODE, /*!< Rendering di default. */
-	NORMALS_MODE, /*!< Normals map. */
 	SMOOTH_MODE, /*!< Map to show smoothed normals or smoothed luminance. */
 	CONTRAST_MODE, /*!< Map to show contrast signal for normals or luminance. */
 	ENHANCED_MODE, /*!< Map to show enhanced normals or enhanced luminance. */
@@ -502,19 +504,92 @@ static int computeMaximumOnCircle(float* a, float &lx, float &ly)
 /*!
   Returns the first nine Hemispherical Harmonics computed in the theta and phi angles.
 */
-static void getHSH(float theta, float phi, float* hweights)
+static void getHSH(float theta, float phi, float* hweights, int order)
 {
 	float cosPhi = cos(phi);
 	float cosTheta = cos(theta);
+	float cosTheta2 = cosTheta * cosTheta;
 	hweights[0] = 1/sqrt(2*M_PI);
-	hweights[1] = sqrt(6/M_PI)      *  (cosPhi*sqrt(cosTheta-cosTheta*cosTheta));
+	hweights[1] = sqrt(6/M_PI)      *  (cosPhi*sqrt(cosTheta-cosTheta2));
 	hweights[2] = sqrt(3/(2*M_PI))  *  (-1. + 2.*cosTheta);
-	hweights[3] = sqrt(6/M_PI)      *  (sqrt(cosTheta - cosTheta*cosTheta)*sin(phi));
-	hweights[4] = sqrt(30/M_PI)     *  (cos(2.*phi)*(-cosTheta + cosTheta*cosTheta));
-	hweights[5] = sqrt(30/M_PI)     *  (cosPhi*(-1. + 2.*cosTheta)*sqrt(cosTheta - cosTheta*cosTheta));
-	hweights[6] = sqrt(5/(2*M_PI))  *  (1 - 6.*cosTheta + 6.*cosTheta*cosTheta);
-	hweights[7] = sqrt(30/M_PI)     *  ((-1 + 2.*cosTheta)*sqrt(cosTheta - cosTheta*cosTheta)*sin(phi));
-	hweights[8] = sqrt(30/M_PI)     *  ((-cosTheta + cosTheta*cosTheta)*sin(2.*phi));
+	hweights[3] = sqrt(6/M_PI)      *  (sqrt(cosTheta - cosTheta2)*sin(phi));
+	if (order > 2)
+	{
+		hweights[4] = sqrt(30/M_PI)     *  (cos(2.*phi)*(-cosTheta + cosTheta2));
+		hweights[5] = sqrt(30/M_PI)     *  (cosPhi*(-1. + 2.*cosTheta)*sqrt(cosTheta - cosTheta2));
+		hweights[6] = sqrt(5/(2*M_PI))  *  (1 - 6.*cosTheta + 6.*cosTheta2);
+		hweights[7] = sqrt(30/M_PI)     *  ((-1 + 2.*cosTheta)*sqrt(cosTheta - cosTheta2)*sin(phi));
+		hweights[8] = sqrt(30/M_PI)     *  ((-cosTheta + cosTheta2)*sin(2.*phi));
+	}
+	if (order > 3)
+	{
+		hweights[9]  = 2*sqrt(35/M_PI)	*	(cos(3.0*phi)*pow((cosTheta - cosTheta2), (float)1.5));
+		hweights[10] = sqrt(210/M_PI)	*	(cos(2.0*phi)*(-1 + 2*cosTheta)*(-cosTheta + cosTheta2));
+		hweights[11] = 2*sqrt(21/M_PI)  *	(cos(phi)*sqrt(cosTheta - cosTheta2)*(1 - 5*cosTheta + 5*cosTheta2));
+		hweights[12] = sqrt(7/(2*M_PI)) *	(-1 + 12*cosTheta - 30*cosTheta2 + 20*cosTheta2*cosTheta);
+		hweights[13] = 2*sqrt(21/M_PI)  *	(sqrt(cosTheta - cosTheta2)*(1 - 5*cosTheta + 5*cosTheta2)*sin(phi));
+		hweights[14] = sqrt(210/M_PI)  *	(-1 + 2*cosTheta)*(-cosTheta + cosTheta2)*sin(2*phi);
+		hweights[15] = 2*sqrt(35/M_PI)  *	pow((cosTheta - cosTheta2), (float)1.5)*sin(3*phi);
+	}
 }
+
+static int roundParam(float value)
+{
+    // Apparently, Visual Studio does not support the standard C++ round
+    // function, so we include this simple one here.
+
+    // WARNING: This function is designed only for use on numbers in the
+    // range [0,100]. It does not correctly round negative numbers away
+    // from 0 or worry about various rounding subtleties, such as those in
+    // http://blog.frama-c.com/index.php?post/2013/05/02/nearbyintf1
+
+    return (int)floor(value + 0.5);
+}
+
+/*====================================================================
+ * XML helper functions
+ *===================================================================*/
+
+static QDomElement createChild(QDomDocument & xmp, QDomNode & parent, const QString & localName)
+{
+    // Create a child element, append it to the parent,
+    // and return the child.
+
+    QDomElement child = xmp.createElement(localName);
+    parent.appendChild(child);
+    return child;
+}
+
+static QDomElement createChild(QDomDocument & xmp, QDomNode & parent, const QString & localName, const QString & value)
+{
+    // Create a child element with a text node, append it
+    // to the parent, and return the child.
+
+    QDomElement child = xmp.createElement(localName);
+    QDomText text = xmp.createTextNode(value);
+    child.appendChild(text);
+    parent.appendChild(child);
+    return child;
+}
+
+/*====================================================================
+ * XML namespace constants
+ *===================================================================*/
+
+const QString rtiURI = "http://culturalheritageimaging.org/ns/rti/1.0#";
+
+const QString rdfURI = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+
+const QString xmpURI = "http://ns.adobe.com/xap/1.0/";
+
+const QString dcURI = "http://purl.org/dc/elements/1.1/";
+
+const QString stDimURI = "http://ns.adobe.com/xap/1.0/sType/Dimensions#";
+
+/*====================================================================
+ * RTIViewer URL constant
+ *===================================================================*/
+
+const QString rtiViewerURL = "http://www.culturalheritageimaging.org/tools/RTIViewer/1.1.0a";
 
 #endif  /* UTIL_H */

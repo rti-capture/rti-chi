@@ -27,6 +27,7 @@
 
 // Local headers
 #include "rtiBrowser.h"
+#include "bookmarkcontrol.h"
 #include "lightControl.h"
 #include "navigator.h"
 #include "renderingdialog.h"
@@ -39,7 +40,6 @@
 
 // Qt headers
 #include <QWidget>
-#include <QPushButton>
 #include <QToolBar>
 #include <QAction>
 #include <QFrame>
@@ -49,9 +49,24 @@
 #include <QDir>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QGroupBox>
+#include <QDoubleSpinBox>
 
 #include <QDesktopServices>
 #include <QUrl>
+
+// RtiViewerDlg points to BookmarkControl and RtiBrowser, both of which
+// point to RtiViewerDlg. Forward-declare BookmarkControl and RtiBrowser
+// to resolve the circular dependencies.
+
+class BookmarkControl;
+class RtiBrowser;
+
+/*====================================================================
+ *
+ * RtiViewerDlg class header
+ *
+ *===================================================================*/
 
 //! Main window class.
 /*!
@@ -61,14 +76,16 @@ class RtiViewerDlg : public QWidget
 {
 	Q_OBJECT
 
-// private data members
+    /*====================================================================
+     * Private data members
+     *===================================================================*/
+
 private:
 	
-	QFrame* browserFrame; /*!< Frame for the browser. */
 	RtiBrowser* browser; /*!< Browser for RTI image. */
 	LightControl* light; /*!< Widget to set the light direction. */
+    BookmarkControl * bookmarkControl; /*!< Widget to manage bookmarks. */
 
-	QFrame* navFrame; /*!< Frame for the navigator. */
 	Navigator* navigator; /*!< Widget to navigate the image. */
 		
 	QToolBar* toolBar; /*!< Toolbar. */
@@ -77,7 +94,6 @@ private:
 	QAction* aboutAct; /*!< Action to show about info. */
 	QAction* configAct; /*!< Action to open application settings window. */
 	QAction* snapshotAct; /*!< Action to save a snapshot of current RTI image. */
-
 	
 	RenderingDialog* rendDlg; /*!< Widget to choose the rendering mode to apply to RTI image. */
 
@@ -85,6 +101,10 @@ private:
 	QLineEdit* filesize; /*!< Read-only text box to show the size of RTI image. */
 	QLineEdit* fileformat; /*!< Read-only text box to show the format of RTI image. */
 	QSpinBox* zoomFact; /*!< Control to set the zoom factor. */
+    QDoubleSpinBox* xLightSpinner; /*!< Control to set the x coordinate of the light. */
+    QDoubleSpinBox* yLightSpinner; /*!< Control to set the y coordinate of the light. */
+    QDoubleSpinBox* xPanSpinner; /*!< Control to set the x coordinate of the pan. */
+    QDoubleSpinBox* yPanSpinner; /*!< Control to set the y coordinate of the pan. */
 
 	HttpThread* getter; /*!< Secondary thread to get the RTI image from a remote server. */
 	QMutex* mutex; /*!< Mutex to provide a mutual exclusion lock between the GUI thread and the HTTP thread. */
@@ -101,6 +121,10 @@ private:
 	const int maxZoom;
 
 
+    /*====================================================================
+     * Public methods
+     *===================================================================*/
+
 public:
 
 	//! Constructor
@@ -110,20 +134,107 @@ public:
 	*/
 	RtiViewerDlg(QWidget *parent=0);
 
-	int openFile(QString path);
+    //! Open an image file
+    /*!
+      Opens the image file specified by \a path.
+      \path Full path of the image file
+    */
+    int openFile(QString path);
+
+    //! Get the zoom value
+    /*!
+      Get the current value of the zoom as an integer.
+      \return The zoom value
+    */
+    int getZoom();
+
+    /*!
+      Get the full path of the currently open RTI file
+      \return The file path
+    */
+
+    QFileInfo getRTIFileInfo();
 
 
-// private methods
+    /*====================================================================
+     * Protected methods
+     *===================================================================*/
+
+protected:
+
+    void dragEnterEvent ( QDragEnterEvent * event )
+    {
+        if (event->mimeData()->hasUrls())
+            event->acceptProposedAction();
+    }
+
+    void dropEvent ( QDropEvent * event )
+    {
+        if (event->mimeData()->hasUrls())
+        {
+            QString path = (event->mimeData()->urls()).at(0).path();
+            path.remove(0, 1);
+            openFile(path);
+        }
+    }
+
+    /*====================================================================
+     * Private methods
+     *===================================================================*/
+
 private:
 
-	/*!
+    QFrame * initBrowserFrame();
+
+    QGridLayout* initToolbarAndLight();
+
+    void initToolbar();
+
+    void initLight();
+
+    QGroupBox *initLightGroup();
+
+    QGroupBox *initZoomGroup();
+
+    QGroupBox *initPanGroup();
+
+    QVBoxLayout* initZoomLayout(QGroupBox * lightGroupBox, QGroupBox * zoomGroupBox, QGroupBox * panGroupBox);
+
+    QGridLayout * initToolbarAndLightLayout(QVBoxLayout * xyzoomLayout);
+
+    QGroupBox * initRendGroup();
+
+    QTabWidget * initTabWidget();
+
+    QFrame * initFileFrame();
+
+    QFrame *initNavigatorFrame();
+
+    QFrame *initFileNavFrame(QFrame * navigatorFrame, QFrame * fileFrame);
+
+    void initBookmarkControl();
+
+    QTabWidget *initTabs(QFrame * fileNavFrame);
+
+    QGridLayout * initMainLayout();
+
+    void initHttpThread();
+
+    void initAppSettings();
+
+    /*!
 	  Parses xml file used in the visualization of remote RTI image.
 	  \param b pointer to file buffer
 	  \return a pointer to a RTI image.
 	*/
 	Rti* parseXml(const QBuffer* b);
 
-// private Qt slots
+    void spinnerChanged(QDoubleSpinBox * spinner1, QDoubleSpinBox * spinner2, float value, bool xChanged);
+
+    /*====================================================================
+     * Private slots
+     *===================================================================*/
+
 private slots:
 
 	/*!
@@ -132,7 +243,10 @@ private slots:
 	*/
 	void httpErrorOccurred(QString error);
 
-// public Qt slots
+    /*====================================================================
+     * Public slots
+     *===================================================================*/
+
 public slots:
 
 	/*!
@@ -143,12 +257,12 @@ public slots:
 
 	/*!
 	  Manages the opening of a file from a remote disk.
-	  \return -1 if the openig fails, 0 otherwise
+      \return -1 if the opening fails, 0 otherwise
 	*/
 	int openRemote();
 
 	/*!
-	  Shows the about dialog.
+      Shows the About dialog.
 	*/
 	void about();
 
@@ -157,31 +271,44 @@ public slots:
 	*/
 	void configure();
 
+    /*!
+      Set the zoom value.
+    */
+    void setZoomValue(float value, float minValue);
 
-	/*!
-	  Set the zoom value.
-	*/
-	void setZoomValue(float value, float minValue);
+    /*!
+      Set the zoom value.
+    */
+    void setZoomValue(int value);
 
-protected:
+    /*!
+      Set the light spin boxes.
+     */
+    void setLightSpinBoxes(vcg::Point3f light);
 
-	void dragEnterEvent ( QDragEnterEvent * event )
-	{
-		if (event->mimeData()->hasUrls())
-			event->acceptProposedAction();
-	}
+    /*!
+      Update the interface after the X light spin box changes.
+     */
+    void xLightSpinnerChanged(double x);
 
-	void dropEvent ( QDropEvent * event )
-	{
-		if (event->mimeData()->hasUrls())
-		{
-			QString path = (event->mimeData()->urls()).at(0).path();
-			path.remove(0, 1);
-			openFile(path);
-		}
-	}
+    /*!
+      Update the interface after the Y light spin box changes.
+     */
+    void yLightSpinnerChanged(double y);
+
+    /*!
+      Update the interface after the view changes.
+     */
+    void viewChanged(QRectF subimg);
+
 };
 
+
+/*====================================================================
+ *
+ * FileOpenEater class header
+ *
+ *===================================================================*/
 
 class FileOpenEater : public QObject
 {
@@ -214,6 +341,14 @@ protected:
 };
 
 
+/*====================================================================
+ *
+ * AboutDlg class header
+ * NOTE: This has been moved to a separate file
+ *
+ *===================================================================*/
+
+/*
 class AboutDlg: public QDialog
 {
 	Q_OBJECT
@@ -232,6 +367,7 @@ public slots:
 	}
 
 };
+*/
 
 #endif /* RTIVIEWERDLG_H */
 

@@ -29,27 +29,24 @@
 
 #include "coeffenhanc.h"
 
-#include <QGridLayout>
-#include <QLabel>
 #include <QApplication>
 
 #include <omp.h>
 
 CoeffEnhancControl::CoeffEnhancControl(int gain, QWidget *parent) : QWidget(parent)
 {
-	QLabel* label1 = new QLabel("Gain");
-	sliderGain = new QSlider(Qt::Horizontal);
-	sliderGain->setRange(0, 100);
-	sliderGain->setValue(gain);
-	sliderGain->setTracking(false);
-	connect(sliderGain, SIGNAL(valueChanged(int)), this, SIGNAL(gainChanged(int)));
-
-	QGridLayout *layout = new QGridLayout;
-	layout->addWidget(label1, 0, 0);
-	layout->addWidget(sliderGain, 0, 1);
-	setLayout(layout);
+    groups.append(new RenderControlGroup(this, "Gain", gain));
+    connect(groups.at(0)->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(gainChanged(int)));
+    setLayout(createLayout());
 }
 
+bool CoeffEnhancControl::eventFilter(QObject* watched, QEvent* event)
+{
+    int s;
+    if ((s = getSliderIndex(watched, event)) != -1)
+        emit (gainChanged(groups.at(s)->slider->value()));
+    return false;
+}
 
 CoeffEnhancement::CoeffEnhancement() :
 	gain(1.0f),
@@ -74,7 +71,7 @@ QString CoeffEnhancement::getTitle()
 
 QWidget* CoeffEnhancement::getControl(QWidget* parent)
 {
-	int initGain = (gain - minGain)*100/(maxGain - minGain);
+    int initGain = roundParam((gain - minGain)*100/(maxGain - minGain));
 	CoeffEnhancControl* control = new CoeffEnhancControl(initGain, parent);
 	connect(control, SIGNAL(gainChanged(int)), this, SLOT(setGain(int)));
 	disconnect(this, SIGNAL(refreshImage()), 0, 0);
@@ -101,12 +98,16 @@ bool CoeffEnhancement::enabledLighting()
 }
 
 
+float CoeffEnhancement::getGain()
+{
+    return (gain - minGain)*100.0/(maxGain - minGain);
+}
+
 void CoeffEnhancement::setGain(int value)
 {
 	gain = minGain + value * (maxGain - minGain)/100;
 	emit refreshImage();
 }
-
 
 void CoeffEnhancement::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& rgb, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
 {

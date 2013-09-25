@@ -25,11 +25,19 @@
 #include "hsh.h"
 #include "../../rtiwebmaker/src/zorder.h"
 
-#include <vcg/math/matrix33.h>
+//#include <vcg/math/lin_algebra.h>
+//#include <vcg/math/matrix33.h>
+
+#include <eigenlib/Eigen/Eigen>
 
 #include <QTime>
+#include <QDebug>
 
 #if _MSC_VER
+#include <windows.h>
+#elif __MINGW32__
+#define WIN32_WINNT 0x0500
+#define WINVER 0x0500
 #include <windows.h>
 #endif
 
@@ -40,7 +48,8 @@ Hsh::Hsh() :
 	// Create list of supported rendering mode.
 	list = new QMap<int, RenderingMode*>();
 	list->insert(DEFAULT, new DefaultRendering());
-	list->insert(SPECULAR_ENHANCEMENT ,new SpecularEnhancement());
+    list->insert(NORMALS, new NormalsRendering());
+    list->insert(SPECULAR_ENHANCEMENT ,new SpecularEnhancement());
 }
 
 
@@ -117,7 +126,7 @@ int Hsh::load(QString name, CallBackPos *cb)
 	//read number of coefficients per pixel
 	fread(&ordlen, sizeof(int), 1, file);
 
-#if _MSC_VER
+#if _MSC_VER || __MINGW32__
 	MEMORYSTATUSEX statex;
 	statex.dwLength = sizeof (statex);
 	GlobalMemoryStatusEx (&statex);
@@ -325,18 +334,21 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 
 	//Compute normals.
 	if (cb != NULL) (*cb)(75 , "Normals generation...");
-	vcg::Point3d l0(sin(M_PI/4)*cos(M_PI/6), sin(M_PI/4)*sin(M_PI/6), cos(M_PI/4));
-	vcg::Point3d l1(sin(M_PI/4)*cos(5*M_PI / 6), sin(M_PI/4)*sin(5*M_PI / 6), cos(M_PI/4));
-	vcg::Point3d l2(sin(M_PI/4)*cos(3*M_PI / 2), sin(M_PI/4)*sin(3*M_PI / 2), cos(M_PI/4));
-    float hweights0[9], hweights1[9], hweights2[9];
-	getHSH(M_PI / 4, M_PI / 6, hweights0);
-	getHSH(M_PI / 4, 5*M_PI / 6, hweights1);
-	getHSH(M_PI / 4, 3*M_PI / 2, hweights2);
-	vcg::Matrix33d L, LInverse;
-	L.SetRow(0, l0);
-	L.SetRow(1, l1);
-	L.SetRow(2, l2);
-    LInverse = vcg::Inverse<double>(L);
+	Eigen::Vector3d l0(sin(M_PI/4)*cos(M_PI/6), sin(M_PI/4)*sin(M_PI/6), cos(M_PI/4));
+	Eigen::Vector3d l1(sin(M_PI/4)*cos(5*M_PI / 6), sin(M_PI/4)*sin(5*M_PI / 6), cos(M_PI/4));
+	Eigen::Vector3d l2(sin(M_PI/4)*cos(3*M_PI / 2), sin(M_PI/4)*sin(3*M_PI / 2), cos(M_PI/4));
+    float hweights0[16], hweights1[16], hweights2[16];
+	getHSH(M_PI / 4, M_PI / 6, hweights0, ordlen);
+	getHSH(M_PI / 4, 5*M_PI / 6, hweights1, ordlen);
+	getHSH(M_PI / 4, 3*M_PI / 2, hweights2, ordlen);
+	
+	
+	Eigen::Matrix3d L;
+	L.setIdentity();
+	L.row(0) = l0;
+	L.row(1) = l1;
+	L.row(2) = l2;
+	Eigen::Matrix3d LInverse = L.inverse();
 	
 	for (int level = 0; level < MIP_MAPPING_LEVELS; level++)
 	{
@@ -352,28 +364,28 @@ int Hsh::loadData(FILE* file, int width, int height, int basisTerm, bool urti, C
 			for (int x = 0; x < mipMapSize[level].width(); x++)
 			{
 				int offset= y * mipMapSize[level].width() + x;
-				vcg::Point3d f(0, 0, 0);
+				Eigen::Vector3d f(0, 0, 0);
 				for (int k = 0; k < ordlen; k++)
 				{
-					f[0] += rPtr[offset*ordlen + k] * hweights0[k];
-					f[1] += rPtr[offset*ordlen + k] * hweights1[k];
-					f[2] += rPtr[offset*ordlen + k] * hweights2[k];
+					f(0) += rPtr[offset*ordlen + k] * hweights0[k];
+					f(1) += rPtr[offset*ordlen + k] * hweights1[k];
+					f(2) += rPtr[offset*ordlen + k] * hweights2[k];
 				}
 				for (int k = 0; k < ordlen; k++)
 				{
-					f[0] += gPtr[offset*ordlen + k] * hweights0[k];
-					f[1] += gPtr[offset*ordlen + k] * hweights1[k];
-					f[2] += gPtr[offset*ordlen + k] * hweights2[k];
+					f(0) += gPtr[offset*ordlen + k] * hweights0[k];
+					f(1) += gPtr[offset*ordlen + k] * hweights1[k];
+					f(2) += gPtr[offset*ordlen + k] * hweights2[k];
 				}
 				for (int k = 0; k < ordlen; k++)
 				{
-					f[0] += bPtr[offset*ordlen + k] * hweights0[k];
-					f[1] += bPtr[offset*ordlen + k] * hweights1[k];
-					f[2] += bPtr[offset*ordlen + k] * hweights2[k];
+					f(0) += bPtr[offset*ordlen + k] * hweights0[k];
+					f(1) += bPtr[offset*ordlen + k] * hweights1[k];
+					f(2) += bPtr[offset*ordlen + k] * hweights2[k];
 				}
-				f /= 3;
-				vcg::Point3d normal = LInverse * f;
-				temp[offset] = vcg::Point3f(normal.X(), normal.Y(), normal.Z());
+				f /= 3.0;
+				Eigen::Vector3d normal = LInverse * f;
+				temp[offset] = vcg::Point3f(normal(0), normal(1), normal(2));
 				temp[offset].Normalize();
 			}
 		}
@@ -549,30 +561,10 @@ int Hsh::createImage(unsigned char** buffer, int& width, int& height, const vcg:
 		offy = offy/2;
 	}
 	(*buffer) = new unsigned char[width*height*4];
-	int offsetBuf = 0;
-	
-	if (mode == NORMALS_MODE)
-	{
-		// Creates the maps of normals.
-		const vcg::Point3f* normalsLevel = normals.getLevel(level);
-		for (int y = offy; y < offy + height; y++)
-		{
-			for (int x = offx; x < offx + width; x++)
-			{
-				int offset = y * mipMapSize[level].width() + x;
-				for (int i = 0; i < 3; i++)
-					(*buffer)[offsetBuf + i] = toColor(normalsLevel[offset][i]);
-				(*buffer)[offsetBuf + 3] = 255;
-				offsetBuf += 4;
-			}
-		}
-	}
-	else
-	{
-		// Applies the current rendering mode.
-		RenderingInfo info = {offx, offy, height, width, level, mode, light, ordlen};
-		list->value(currentRendering)->applyHSH(redCoefficients, greenCoefficients, blueCoefficients, mipMapSize, normals, info, (*buffer));
-	}
+
+    // Applies the current rendering mode.
+    RenderingInfo info = {offx, offy, height, width, level, mode, light, ordlen};
+    list->value(currentRendering)->applyHSH(redCoefficients, greenCoefficients, blueCoefficients, mipMapSize, normals, info, (*buffer));
 
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
@@ -603,6 +595,7 @@ QImage* Hsh::createPreview(int width, int height)
 			break;
 		}
 	}
+
 	
 	// Creates the preview.
 	unsigned char* buffer = new unsigned char[imageH*imageW*4];
@@ -612,11 +605,11 @@ QImage* Hsh::createPreview(int width, int height)
 	const float* greenPtr = greenCoefficients.getLevel(level);
 	const float* bluePtr = blueCoefficients.getLevel(level);
 	int tempW = mipMapSize[level].width();
-        float hweights[9];
+        float hweights[16];
         float phi = 0.0f;
         float theta = acos(1.0);
-	getHSH(theta, phi, hweights);
-	int offset = 0;
+    getHSH(theta, phi, hweights, sqrt((float)ordlen));
+    int offset = 0;
 		
 	for (int y = 0; y < imageH; y++)
 	{
@@ -639,7 +632,8 @@ QImage* Hsh::createPreview(int width, int height)
 			offsetBuf += 4;
 		}
 	}
-	QImage* image = new QImage(buffer, imageW, imageH, QImage::Format_RGB32);
+    QImage* image = new QImage(buffer, imageW, imageH, QImage::Format_RGB32);
+
 	return image;
 }
 
@@ -752,6 +746,21 @@ int Hsh::loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, 
 		coeffPtr[i] = jpegimage.componentData(i);
 	
 
+	Eigen::Vector3d l0(sin(M_PI/4)*cos(M_PI/6), sin(M_PI/4)*sin(M_PI/6), cos(M_PI/4));
+	Eigen::Vector3d l1(sin(M_PI/4)*cos(5*M_PI / 6), sin(M_PI/4)*sin(5*M_PI / 6), cos(M_PI/4));
+	Eigen::Vector3d l2(sin(M_PI/4)*cos(3*M_PI / 2), sin(M_PI/4)*sin(3*M_PI / 2), cos(M_PI/4));
+    float hweights0[16], hweights1[16], hweights2[16];
+	getHSH(M_PI / 4, M_PI / 6, hweights0, ordlen);
+	getHSH(M_PI / 4, 5*M_PI / 6, hweights1, ordlen);
+	getHSH(M_PI / 4, 3*M_PI / 2, hweights2, ordlen);
+	
+	Eigen::Matrix3d L;
+	L.setIdentity();
+	L.row(0) = l0;
+	L.row(1) = l1;
+	L.row(2) = l2;
+	Eigen::Matrix3d LInverse = L.inverse();
+
 	for (int y = yinf; y < ysup; y++)
 		for (int x = xinf; x < xsup; x++)
 		{
@@ -764,42 +773,28 @@ int Hsh::loadCompressedHttp(QBuffer* b, int xinf, int yinf, int xsup, int ysup, 
 				blueCoefficients.setElement(level, offset*ordlen + k, ((float)coeffPtr[ordlen*2 + k][offset2] / 255.0) * gmin[k] + gmax[k]);
 			}
 
-			//Computes normal
-			vcg::Point3d l0(sin(M_PI/4)*cos(M_PI/6), sin(M_PI/4)*sin(M_PI/6), cos(M_PI/4));
-			vcg::Point3d l1(sin(M_PI/4)*cos(5*M_PI / 6), sin(M_PI/4)*sin(5*M_PI / 6), cos(M_PI/4));
-			vcg::Point3d l2(sin(M_PI/4)*cos(3*M_PI / 2), sin(M_PI/4)*sin(3*M_PI / 2), cos(M_PI/4));
-                        float hweights0[9], hweights1[9], hweights2[9];
-			getHSH(M_PI / 4, M_PI / 6, hweights0);
-			getHSH(M_PI / 4, 5*M_PI / 6, hweights1);
-			getHSH(M_PI / 4, 3*M_PI / 2, hweights2);
-			vcg::Matrix33d L, LInverse;
-			L.SetRow(0, l0);
-			L.SetRow(1, l1);
-			L.SetRow(2, l2);
-                        LInverse = vcg::Inverse<double>(L);
-
-			vcg::Point3d f(0, 0, 0);
+			Eigen::Vector3d f(0, 0, 0);
 			for (int k = 0; k < ordlen; k++)
 			{
-				f[0] += redCoefficients.getLevel(level)[offset*ordlen + k] * hweights0[k];
-				f[1] += redCoefficients.getLevel(level)[offset*ordlen + k] * hweights1[k];
-				f[2] += redCoefficients.getLevel(level)[offset*ordlen + k] * hweights2[k];
+				f(0) += redCoefficients.getLevel(level)[offset*ordlen + k] * hweights0[k];
+				f(1) += redCoefficients.getLevel(level)[offset*ordlen + k] * hweights1[k];
+				f(2) += redCoefficients.getLevel(level)[offset*ordlen + k] * hweights2[k];
 			}
 			for (int k = 0; k < ordlen; k++)
 			{
-				f[0] += greenCoefficients.getLevel(level)[offset*ordlen + k] * hweights0[k];
-				f[1] += greenCoefficients.getLevel(level)[offset*ordlen + k] * hweights1[k];
-				f[2] += greenCoefficients.getLevel(level)[offset*ordlen + k] * hweights2[k];
+				f(0) += greenCoefficients.getLevel(level)[offset*ordlen + k] * hweights0[k];
+				f(1) += greenCoefficients.getLevel(level)[offset*ordlen + k] * hweights1[k];
+				f(2) += greenCoefficients.getLevel(level)[offset*ordlen + k] * hweights2[k];
 			}
 			for (int k = 0; k < ordlen; k++)
 			{
-				f[0] += blueCoefficients.getLevel(level)[offset*ordlen + k] * hweights0[k];
-				f[1] += blueCoefficients.getLevel(level)[offset*ordlen + k] * hweights1[k];
-				f[2] += blueCoefficients.getLevel(level)[offset*ordlen + k] * hweights2[k];
+				f(0) += blueCoefficients.getLevel(level)[offset*ordlen + k] * hweights0[k];
+				f(1) += blueCoefficients.getLevel(level)[offset*ordlen + k] * hweights1[k];
+				f(2) += blueCoefficients.getLevel(level)[offset*ordlen + k] * hweights2[k];
 			}
-			f /= 3;
-			vcg::Point3d normal = LInverse * f;
-			normals.setElement(level, offset, vcg::Point3f(normal.X(), normal.Y(), normal.Z()).Normalize());
+			f /= 3.0;
+			Eigen::Vector3d normal = LInverse * f;
+			normals.setElement(level, offset, vcg::Point3f(normal(0), normal(1), normal(2)).Normalize());
 
 		}
 	return 0;

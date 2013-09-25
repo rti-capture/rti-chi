@@ -24,39 +24,33 @@
 
 #include "diffusegain.h"
 
-#include <QHBoxLayout>
-#include <QLabel>
-
 #include <omp.h>
 
 const float d256 = 1.0f/256.0f;
 
-DiffuseGControl::DiffuseGControl(int initValue, QWidget *parent) : QWidget(parent)
+DiffuseGControl::DiffuseGControl(int gain, QWidget *parent) : QWidget(parent)
 {
-	QLabel* label = new QLabel("Gain");
-	sliderGain = new QSlider(Qt::Horizontal);
-	sliderGain->setRange(0, 100);
-	sliderGain->setValue(initValue);
-	sliderGain->setTracking(false);
-	connect(sliderGain, SIGNAL(valueChanged(int)), this, SIGNAL(gainChanged(int)));
-	
-	QHBoxLayout *layout = new QHBoxLayout;
-	layout->addWidget(label);
-	layout->addWidget(sliderGain);
-	setLayout(layout);
+    groups.append(new RenderControlGroup(this, "Gain", gain));
+    connect(groups.at(0)->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(gainChanged(int)));
+    setLayout(createLayout());
 }
 
+bool DiffuseGControl::eventFilter(QObject* watched, QEvent* event)
+{
+    int s = getSliderIndex(watched, event);
+    if (s != -1)
+       emit (gainChanged(groups.at(s)->slider->value()));
+    return false;
+}
 
 DiffuseGain::DiffuseGain() :
 	gain(2.0f),
 	minGain(1.0f),
-	maxGain(10.0f)
+    maxGain(10.0f)
 	{	}
 
 DiffuseGain::~DiffuseGain() {}
 
-
-	
 QString DiffuseGain::getTitle() 
 {
 	return "Diffuse Gain";
@@ -64,10 +58,10 @@ QString DiffuseGain::getTitle()
 
 QWidget* DiffuseGain::getControl(QWidget* parent)
 {
-	int initValue = (gain - minGain)*100/(maxGain - minGain);
+    int initValue = roundParam((gain - minGain)*100/(maxGain - minGain));
 	DiffuseGControl* control = new DiffuseGControl(initValue, parent);
-	connect(control, SIGNAL(gainChanged(int)), this, SLOT(setGain(int)));
-	disconnect(this, SIGNAL(refreshImage()), 0, 0);
+    connect(control, SIGNAL(gainChanged(int)), this, SLOT(setGain(int)));
+    disconnect(this, SIGNAL(refreshImage()), 0, 0);
 	connect(this, SIGNAL(refreshImage()), parent, SIGNAL(updateImage()));
 	return control;
 }
@@ -91,12 +85,18 @@ bool DiffuseGain::enabledLighting()
 }
 
 
+float DiffuseGain::getGain()
+{
+    // Get the gain as a value normalized to the range [0,100]
+
+    return ((gain - minGain)*100.0/(maxGain - minGain));
+}
+
 void DiffuseGain::setGain(int value)
 {
 	gain = minGain + value * (maxGain - minGain)/100;
 	emit refreshImage();
 }
-
 
 void DiffuseGain::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& rgb, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
 {

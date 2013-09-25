@@ -287,6 +287,17 @@ public:
 
 	void applyHSH(const PyramidCoeffF& redCoeff, const PyramidCoeffF& greenCoeff, const PyramidCoeffF& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer){}
 
+    OffsetNum getNOffset();
+    TileSize getMinTileSize();
+    int getMinLevel();
+    SharpnessMeasures getSharpnessOperator();
+    SphereSampling getSphereSampling();
+    float getK1();
+    float getK2();
+    float getThreshold();
+    SmoothingFilter getFilter();
+    int getNIterSmoothing();
+
 	/*!
 	  Returns the light vector used for a specific pixel.
 	  \param x, y  coordinates of the pixel.
@@ -381,10 +392,10 @@ private:
 public slots:
 
 
-	/*!
-	  Updates the advanced settings.
-	*/
-	void updateConfig(OffsetNum o, TileSize size, int level, SharpnessMeasures m, SphereSampling ss, float v1, float v2, float t, SmoothingFilter f, int nIter);
+    /*!
+      Updates the advanced settings.
+    */
+    void updateConfig(OffsetNum o, TileSize size, int level, SharpnessMeasures m, SphereSampling ss, float v1, float v2, float t, SmoothingFilter f, int nIter);
 
 signals:
 

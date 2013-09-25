@@ -26,36 +26,33 @@
 #define DIFFUSEGAIN_H
 
 #include "renderingmode.h"
-
-#include <QSlider>
+#include "rendercontrolutils.h"
 
 //! Widget for Diffuse Gain settings.
 /*!
   The class defines the widget that is showed in the Rendering Dialog to set the parameters of the rendering mode Diffuse Gain.
 */
-class DiffuseGControl : public QWidget
+class DiffuseGControl : public QWidget, public RenderControlUtils
 {
 	Q_OBJECT
-
-private:
-		
-	QSlider* sliderGain; /*!< Slider to set the gain value. */
 
 public:
 
 	//! Constructor
 	/*!
-	  \param initValue value for the gain parameter.
+      \param gain value for the gain parameter.
 	  \param parent
 	*/
-	DiffuseGControl(int initValue, QWidget *parent = 0);
+    DiffuseGControl(int gain, QWidget *parent = 0);
+
+    bool eventFilter(QObject* watched, QEvent* event);
 
 signals:
 
 	/*!
 	  Emitted when the user changes the gain value.
 	*/
-	void gainChanged(int value);
+    void gainChanged(int value);
 
 };
 
@@ -83,7 +80,7 @@ public:
 	//! Deconstructor.
 	~DiffuseGain();
 	
-	virtual QString getTitle();
+    virtual QString getTitle();
 	virtual QWidget* getControl(QWidget* parent = 0);
 	virtual bool isLightInteractive();
 	virtual bool supportRemoteView();
@@ -94,6 +91,8 @@ public:
 	virtual void applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCoeff& greenCoeff, const PyramidCoeff& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer);
 
 	void applyHSH(const PyramidCoeffF& redCoeff, const PyramidCoeffF& greenCoeff, const PyramidCoeffF& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer){}
+
+    float getGain();
 
 private:
 

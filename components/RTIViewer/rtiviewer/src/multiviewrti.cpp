@@ -99,11 +99,12 @@ MultiviewRti::MultiviewRti(): Rti(),
 	currentRendering = DEFAULT;
 	// Create list of supported rendering mode.
 	list = new QMap<int, RenderingMode*>();
+	viewpointLayout = Eigen::MatrixXi(1, 1);
 }
 
 MultiviewRti::~MultiviewRti()
 {
-	delete viewpointLayout;
+	//delete viewpointLayout;
 	for(int i = 0; i < images.size(); i++)
 		delete images[i];
 	for(int i = 0; i < flow.size(); i++)
@@ -199,7 +200,8 @@ int MultiviewRti::load(QString name, CallBackPos *cb)
 	w = images[0]->width();
 	h = images[0]->height();
 
-	viewpointLayout = new vcg::ndim::Matrix<int>(maxViewY, maxViewX);
+	//viewpointLayout = new vcg::ndim::Matrix<int>(maxViewY, maxViewX);
+	viewpointLayout.resize(maxViewY, maxViewX);
 	for (int i = 0; i < maxViewY; i++)
 	{
 		line = stream.readLine();
@@ -208,7 +210,8 @@ int MultiviewRti::load(QString name, CallBackPos *cb)
 			return -1;
 		for (int j = 0; j < maxViewX; j++)
 		{
-			(*viewpointLayout)[i][j] = strList.at(j).toInt(&error) - 1;
+			//(*viewpointLayout)[i][j] = strList.at(j).toInt(&error) - 1;
+			viewpointLayout(i, j) = strList.at(j).toInt(&error) - 1;
 			if (!error) return -1;
 		}
 	}
@@ -434,13 +437,15 @@ int MultiviewRti::createImage(unsigned char** buffer, int& width, int& height, c
 		{
 			leftUpImage.valid = false;
 			rightUpImage.valid = false;
-			int leftIndex = (*viewpointLayout)[newDown][newLeft];
+			//int leftIndex = (*viewpointLayout)[newDown][newLeft];
+			int leftIndex = viewpointLayout(newDown, newLeft);
 			if (leftImage.buffer)
 				delete[] leftImage.buffer;
 			images[leftIndex]->createImage(&leftImage.buffer, tempW, tempH, light, QRectF(0,0,w,h));
 			leftImage.valid = true;
 			unsigned char* tLeft = new unsigned char[tempW*tempH*4];
-			int rightIndex = (*viewpointLayout)[newDown][newRight];
+			//int rightIndex = (*viewpointLayout)[newDown][newRight];
+			int rightIndex = viewpointLayout(newDown, newRight);
 			if (rightImage.buffer)
 				delete[] rightImage.buffer;
 			images[rightIndex]->createImage(&rightImage.buffer, tempW, tempH, light, QRectF(0,0,w,h));
@@ -546,7 +551,8 @@ int MultiviewRti::createImage(unsigned char** buffer, int& width, int& height, c
 			rightImage.valid = false;
 			leftUpImage.valid = false;
 			rightUpImage.valid = false;
-			images[(*viewpointLayout)[newDown][newLeft]]->createImage(buffer, width, height, light, rect);
+			//images[(*viewpointLayout)[newDown][newLeft]]->createImage(buffer, width, height, light, rect);
+			images[viewpointLayout(newDown, newLeft)]->createImage(buffer, width, height, light, rect);
 		}
 	}
 	else
@@ -556,7 +562,8 @@ int MultiviewRti::createImage(unsigned char** buffer, int& width, int& height, c
 		rightImage.valid = false;
 		leftUpImage.valid = false;
 		rightUpImage.valid = false;
-		images[(*viewpointLayout)[(int)newPosY][(int)newPosX]]->createImage(buffer, width, height, light, rect, level, mode);
+		//images[(*viewpointLayout)[(int)newPosY][(int)newPosX]]->createImage(buffer, width, height, light, rect, level, mode);
+		images[viewpointLayout((int)newPosY, (int)newPosX)]->createImage(buffer, width, height, light, rect, level, mode);
 	}
 	posX = newPosX;
 	posY = newPosY;

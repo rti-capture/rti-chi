@@ -1,4 +1,4 @@
-/****************************************************************************
+﻿/****************************************************************************
 * RTIViewer                                                         o o     *
 * Single and Multi-View Reflectance Transformation Image Viewer   o     o   *
 *                                                                _   O  _   *
@@ -1189,7 +1189,6 @@ void DetailEnhancement::updateConfig(OffsetNum o, TileSize size, int level, Shar
 	emit refreshImage();
 }
 
-
 DetailEnhDlg::DetailEnhDlg(QWidget* parent) 
 :	QWidget(parent),
 	config(NULL)
@@ -1238,10 +1237,15 @@ DetailConfDlg::DetailConfDlg(QWidget *parent) : QDialog(parent)
 
 	localOffsetCmb = new QComboBox(this);
 	localOffsetCmb->setDuplicatesEnabled(false);
-	localOffsetCmb->addItem("5� (9 samples)", QVariant(OFFSET_5));
-	localOffsetCmb->addItem("10� (25 samples)", QVariant(OFFSET_10));
-	localOffsetCmb->addItem("15� (49 samples)", QVariant(OFFSET_15));
-	
+#if _MSC_VER
+    localOffsetCmb->addItem("5° (9 samples)", QVariant(OFFSET_5));
+    localOffsetCmb->addItem("10° (25 samples)", QVariant(OFFSET_10));
+    localOffsetCmb->addItem("15° (49 samples)", QVariant(OFFSET_15));
+#elif __MINGW32__
+    localOffsetCmb->addItem(trUtf8("5° (9 samples)"), QVariant(OFFSET_5));
+    localOffsetCmb->addItem(trUtf8("10° (25 samples)"), QVariant(OFFSET_10));
+    localOffsetCmb->addItem(trUtf8("15° (49 samples)"), QVariant(OFFSET_15));
+#endif
 	tilesSizeCmb = new QComboBox(this);
 	tilesSizeCmb->setDuplicatesEnabled(false);
 	tilesSizeCmb->addItem("8", QVariant(8));
@@ -1338,6 +1342,56 @@ DetailConfDlg::DetailConfDlg(QWidget *parent) : QDialog(parent)
 }
 
 
+OffsetNum DetailEnhancement::getNOffset()
+{
+    return nOffset;
+}
+
+TileSize DetailEnhancement::getMinTileSize()
+{
+    return minTileSize;
+}
+
+int DetailEnhancement::getMinLevel()
+{
+    return minLevel;
+}
+
+SharpnessMeasures DetailEnhancement::getSharpnessOperator()
+{
+    return sharpnessOperator;
+}
+
+SphereSampling DetailEnhancement::getSphereSampling()
+{
+    return sphereSampl;
+}
+
+float DetailEnhancement::getK1()
+{
+    return k1;
+}
+
+float DetailEnhancement::getK2()
+{
+    return k2;
+}
+
+float DetailEnhancement::getThreshold()
+{
+    return threshold;
+}
+
+SmoothingFilter DetailEnhancement::getFilter()
+{
+    return filter;
+}
+
+int DetailEnhancement::getNIterSmoothing()
+{
+    return nIterSmoothing;
+}
+
 void DetailConfDlg::setCurrentValue(OffsetNum o, TileSize size, int level, SharpnessMeasures m, SphereSampling ss, float v1, float v2, float t, SmoothingFilter f, int nIter)
 {
 	nOffset = o;
@@ -1381,6 +1435,16 @@ void DetailConfDlg::okPressed()
 		close();
 		return;
 	}
+	nOffset = (OffsetNum) a;
+	minTileSize = (TileSize) b;
+	minLevel = c;
+	sharpnessOperator = (SharpnessMeasures) d;
+	sphereSampl = (SphereSampling) e;
+	k1 = f;
+	k2 = g; 
+	threshold = h;
+	filter = (SmoothingFilter) i;
+	nIterSmoothing = l;
 	close();
 	emit configUpdated(static_cast<OffsetNum>(a), static_cast<TileSize>(b), c, static_cast<SharpnessMeasures>(d),
 						static_cast<SphereSampling>(e), f, g, h, static_cast<SmoothingFilter>(i), l);
@@ -1397,5 +1461,7 @@ void DetailConfDlg::k2Changed(double k)
 {
 	k1Snb->setValue(1-k);
 }
+
+
 
 

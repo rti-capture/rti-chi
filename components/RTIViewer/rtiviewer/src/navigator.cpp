@@ -28,6 +28,8 @@
 #include <QMouseEvent>
 #include <QApplication>
 
+#include <QDebug>
+
 Navigator::Navigator(QWidget *parent, int w, int h, int zoom) : QWidget(parent),
 	height(h),	
 	width(w),
@@ -44,8 +46,8 @@ Navigator::Navigator(QWidget *parent, int w, int h, int zoom) : QWidget(parent),
 
 	connect(timer, SIGNAL(timeout()), this, SLOT(update()));
 	
-	setAutoFillBackground(false);
-	setFixedSize(w, h);
+    setAutoFillBackground(false);
+    setFixedSize(w, h);
 }
 
 Navigator::~Navigator()
@@ -147,18 +149,18 @@ void Navigator::wheelEvent(QWheelEvent *event)
 	if (off > 0)
 	{
 		int offx, offy;
-		if (2*off < selection.width() - limitW)
+        if (2*off < selection.width() - limitW)
 			offx = off;
 		else
-			offx = 0;
+            offx = (selection.width() - limitW);
 		
 		
-		if (2*off < selection.height() - limitH)
+        if (2*off < selection.height() - limitH)
 			offy = off;
 		else
-			offy = 0;
+            offy = selection.height() - limitH;
 		
-		if (offx > 0 && offy > 0)
+        if (offx > 0 || offy > 0)
 		{
 			selection.setX(selection.x() + offx);
 			selection.setY(selection.y() + offy);
@@ -179,31 +181,31 @@ void Navigator::wheelEvent(QWheelEvent *event)
 
 void Navigator::setImage(QImage* img, int rtiW, int rtiH)
 {
-	if(image)
+    if(image)
 		delete image;
-	if(!img)
+    if(!img)
 	{
 		image = NULL;
 		update();
 		return;
 	}
-	image = img;
+    image = img;
 	rtiWidth = rtiW;
 	rtiHeight = rtiH;
-        float viewHeight, viewWidth;
-        float ratio = static_cast<float>(img->width()) / static_cast<float>(img->height());
+    float viewHeight, viewWidth;
+    float ratio = static_cast<float>(img->width()) / static_cast<float>(img->height());
 	
-	if (img->height() > height)
+    if (img->height() > height)
 		viewHeight = height;
 	else
 		viewHeight = img->height();
 
-	if (img->width() > width)
+    if (img->width() > width)
 		viewWidth = width;
 	else
 		viewWidth = img->width();
 
-        float ratio2 = viewWidth / viewHeight;
+    float ratio2 = viewWidth / viewHeight;
 	if (ratio2 != ratio)
 	{
 		if (viewWidth / ratio <= height)
@@ -213,7 +215,7 @@ void Navigator::setImage(QImage* img, int rtiW, int rtiH)
 	}
 	pos = QRectF((width - viewWidth)/2, (height - viewHeight)/2, viewWidth, viewHeight);
 	selection = pos;
-	update();
+    update();
 }
 
 

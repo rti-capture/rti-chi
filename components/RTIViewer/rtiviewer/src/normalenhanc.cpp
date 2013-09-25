@@ -30,8 +30,6 @@
 #include "normalenhanc.h"
 #include "loadingdlg.h"
 
-#include <QGridLayout>
-#include <QLabel>
 #include <QApplication>
 #include <QTime>
 
@@ -39,35 +37,27 @@
 
 NormalEControl::NormalEControl(int gain, int kd, int envIll, QWidget *parent) : QWidget(parent)
 {
-	QLabel* label1 = new QLabel("Gain");
-	sliderGain = new QSlider(Qt::Horizontal);
-	sliderGain->setRange(0, 100);
-	sliderGain->setValue(gain);
-	sliderGain->setTracking(false);
-	connect(sliderGain, SIGNAL(valueChanged(int)), this, SIGNAL(gainChanged(int)));
-
-	QLabel* label2 = new QLabel("Diffuse");
-	sliderKd = new QSlider(Qt::Horizontal);
-	sliderKd->setRange(0, 100);
-	sliderKd->setValue(kd);
-	sliderKd->setTracking(false);
-	connect(sliderKd, SIGNAL(valueChanged(int)), this, SIGNAL(kdChanged(int)));
-	
-	QLabel* label3 = new QLabel("Environment");
-	sliderEnvIll = new QSlider(Qt::Horizontal);
-	sliderEnvIll->setRange(0, 100);
-	sliderEnvIll->setValue(envIll);
-	sliderEnvIll->setTracking(false);
-	connect(sliderEnvIll, SIGNAL(valueChanged(int)), this, SIGNAL(envIllChanged(int)));
-
-	QGridLayout *layout = new QGridLayout;
-	layout->addWidget(label1, 0, 0);
-	layout->addWidget(sliderGain, 0, 1);
-	layout->addWidget(label3, 1, 0);
-	layout->addWidget(sliderEnvIll, 1, 1);
-	setLayout(layout);
+    groups.append(new RenderControlGroup(this, "Gain", gain));
+    connect(groups.at(0)->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(gainChanged(int)));
+//    groups.append(new RenderControlGroup("Diffuse", kd));
+//    connect(groups.at(1)->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(kdChanged(int)));
+    groups.append(new RenderControlGroup(this, "Environment", envIll));
+    connect(groups.at(1)->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(envIllChanged(int)));
+    setLayout(createLayout());
 }
 
+bool NormalEControl::eventFilter(QObject* watched, QEvent* event)
+{
+    int s;
+    if ((s = getSliderIndex(watched, event)) != -1)
+        if (s == 0)
+            emit (gainChanged(groups.at(s)->slider->value()));
+//        else if (s == 1)
+//            emit (kdChanged(groups.at(s)->slider->value()));
+        else
+            emit (envIllChanged(groups.at(s)->slider->value()));
+    return false;
+}
 
 NormalEnhancement::NormalEnhancement() :
 	gain(1.0f),
@@ -101,9 +91,9 @@ QString NormalEnhancement::getTitle()
 
 QWidget* NormalEnhancement::getControl(QWidget* parent)
 {
-	int initGain = (gain - minGain)*100/(maxGain - minGain);
-	int initKd = (kd - minKd)*100/(maxKd - minKd);
-	int initEnvIll = (envIll - minEnvIll)*100/(maxEnvIll - minEnvIll);
+    int initGain = roundParam((gain - minGain)*100/(maxGain - minGain));
+    int initKd = roundParam((kd - minKd)*100/(maxKd - minKd));
+    int initEnvIll = roundParam((envIll - minEnvIll)*100/(maxEnvIll - minEnvIll));
 	NormalEControl* control = new NormalEControl(initGain, initKd, initEnvIll, parent);
 	connect(control, SIGNAL(gainChanged(int)), this, SLOT(setGain(int)));
 	connect(control, SIGNAL(kdChanged(int)), this, SLOT(setKd(int)));
@@ -132,12 +122,24 @@ bool NormalEnhancement::enabledLighting()
 	return true;
 }
 
+float NormalEnhancement::getGain()
+{
+    // Get gain as a value normalized to the range [0,100]
 
+    return (gain - minGain)*100.0/(maxGain - minGain);
+}
 
 void NormalEnhancement::setGain(int value)
 {
 	gain = minGain + value * (maxGain - minGain)/100;
 	emit refreshImage();
+}
+
+float NormalEnhancement::getKd()
+{
+    // Get kd as a value normalized to the range [0,100]
+
+    return (kd - minKd)*100.0/(maxKd - minKd);
 }
 
 void NormalEnhancement::setKd(int value)
@@ -146,12 +148,18 @@ void NormalEnhancement::setKd(int value)
 	emit refreshImage();
 }
 
+float NormalEnhancement::getEnvIll()
+{
+    // Get envIll as a value normalized to the range [0,100]
+
+    return (envIll - minEnvIll)*100.0/(maxEnvIll - minEnvIll);
+}
+
 void NormalEnhancement::setEnvIll(int value)
 {
 	envIll = minEnvIll + value * (maxEnvIll - minEnvIll) / 100;
 	emit refreshImage();
 }
-
 
 void NormalEnhancement::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& rgb, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
 {

@@ -31,10 +31,18 @@
 #include <QImage>
 #include <QTransform>
 #include <QTime>
+#include <QDebug>
+
 
 #if _MSC_VER
 #include <windows.h>
+#elif __MINGW32__
+#define WIN32_WINNT 0x0500
+#define WINVER 0x0500
+#include <windows.h>
 #endif
+
+
 
 Rti* Ptm::getPtm(QTextStream &in)
 {
@@ -129,11 +137,11 @@ int RGBPtm::load(QString name, CallBackPos * cb)
 	setHeight(str.toInt(&error));
 	if (!error) return -1;
 
-#if _MSC_VER
-	MEMORYSTATUSEX statex;
+#if _MSC_VER || __MINGW32__
+    MEMORYSTATUSEX statex;
 	statex.dwLength = sizeof (statex);
 	GlobalMemoryStatusEx (&statex);
-	if (w*h*176 > statex.ullAvailVirtual*0.95)
+    if (w*h*176 > statex.ullAvailVirtual*0.95)
 		return -2;
 #endif
 
@@ -315,8 +323,8 @@ int RGBPtm::createImage(unsigned char** buffer, int& width, int& height, const v
 	height = ceil(rect.height());
 	int offx = rect.x();
 	int offy = rect.y();
-	if (currentRendering != DETAIL_ENHANCEMENT || mode == NORMALS_MODE || mode == LUMR_MODE || mode == LUMG_MODE || mode == LUMB_MODE)
-	{
+    if (currentRendering != DETAIL_ENHANCEMENT || mode == LUMR_MODE || mode == LUMG_MODE || mode == LUMB_MODE)
+    {
 		for (int i = 0; i < level; i++)
 		{
 			width = ceil(width/2.0);
@@ -329,23 +337,7 @@ int RGBPtm::createImage(unsigned char** buffer, int& width, int& height, const v
 	(*buffer) = new unsigned char[width*height*4];
 	int offsetBuf = 0;
 	
-	if (mode == NORMALS_MODE)
-	{
-		// Creates normal map.
-		const vcg::Point3f* normalPtr = normals.getLevel(level);
-		for (int y = offy; y < offy + height; y++)
-		{
-			for (int x = offx; x < offx + width; x++)
-			{
-				int offset = y * mipMapSize[level].width() + x;
-				for (int i = 0; i < 3; i++)
-					(*buffer)[offsetBuf + i] = toColor(normalPtr[offset][i]);
-				(*buffer)[offsetBuf + 3] = 255;
-				offsetBuf += 4;
-			}
-		}
-	}
-	else if (mode == LUMR_MODE || mode == LUMG_MODE || mode == LUMB_MODE)
+    if (mode == LUMR_MODE || mode == LUMG_MODE || mode == LUMB_MODE)
 	{
 		// Creates map of the RGB component.
 		const PTMCoefficient* coeffPtr = NULL;
@@ -388,6 +380,7 @@ int RGBPtm::createImage(unsigned char** buffer, int& width, int& height, const v
 		switch(currentRendering)
 		{
                         case DEFAULT: printf("Default rendering: %.5f s\n", diff); break;
+                        case NORMALS: printf("Normals: %.5f s\n", diff); break;
                         case DIFFUSE_GAIN: printf("Diffuse gain: %.5f s\n", diff); break;
                         case SPECULAR_ENHANCEMENT: printf("Specular enhancement: %.5f s\n", diff); break;
                         case NORMAL_ENHANCEMENT: printf("Normal enhancement: %.5f s\n", diff); break;
@@ -576,7 +569,7 @@ int LRGBPtm::load(QString name, CallBackPos *cb)
 	setHeight(str.toInt(&error));
 	if (!error) return -1;
 
-#if _MSC_VER
+#if MSC_VER || __MINGW32__
 	MEMORYSTATUSEX statex;
 	statex.dwLength = sizeof (statex);
 	GlobalMemoryStatusEx (&statex);
@@ -584,11 +577,11 @@ int LRGBPtm::load(QString name, CallBackPos *cb)
 		return -2;
 #endif
 
-	QString text = "Loading LRGB PTM...";
+    QString text = "Loading LRGB PTM...";
 	if (loadData(file, w, h, 6, false, cb, text) != 0)
 		return -1;
 
-	if (cb != NULL)	(*cb)(99, "Done");
+    if (cb != NULL)	(*cb)(99, "Done");
 
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();
@@ -605,7 +598,7 @@ int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urt
 	w = width;
 	h = height;
 
-	if (!urti)
+    if (!urti)
 	{
 		//Gets scale value
 		bool eof, error;
@@ -636,7 +629,7 @@ int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urt
 	{
 
 	}
-	
+
 	//Allocates array for polynomial coefficients and rgb components
 	PTMCoefficient* coeffPtr = new PTMCoefficient[w*h];
 	unsigned char* rgbPtr = new unsigned char[w*h*3];
@@ -644,7 +637,7 @@ int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urt
 	int offset;
 	unsigned char c;
 	
-	//Reads coefficient and rgb components from file
+    //Reads coefficient and rgb components from file
 	for (int y = h - 1; y >= 0; y--)
 	{
 		if (cb != NULL && (y % 50 == 0))(*cb)((h - y) * 40 / h, text);
@@ -673,7 +666,7 @@ int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urt
 		}
 	}
 
-	if (version == "PTM_1.2")
+    if (version == "PTM_1.2")
 	{
 		for (int y = h - 1; y >= 0; y--)
 		{
@@ -693,16 +686,16 @@ int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urt
 	}
 	fclose(file);
 
-	mipMapSize[0] = QSize(w, h);
+    mipMapSize[0] = QSize(w, h);
 
 	coefficients.setLevel(coeffPtr, w*h, 0);
 	rgb.setLevel(rgbPtr, w*h*3, 0);
 	
 	// Computes mip-mapping and normals.
 	if (cb != NULL)	(*cb)(55, "Mip mapping generation...");
-	generateMipMap(1, w, h, cb, 55, 20);
-	calculateNormals(normals, coefficients, true, cb, 75, 20);
-	return 0;
+    generateMipMap(1, w, h, cb, 55, 20);
+    calculateNormals(normals, coefficients, true, cb, 75, 20);
+    return 0;
 }
 
 
@@ -855,8 +848,9 @@ int LRGBPtm::createImage(unsigned char** buffer, int& width, int& height, const 
 		else
 			level = maxRemoteResolution - minRemoteResolution;
 	}
-	bool flag = (mode == NORMALS_MODE || mode == LUM_MODE || mode == RGB_MODE || (mode >= A0_MODE && mode <= A5_MODE));
-	if (currentRendering != DETAIL_ENHANCEMENT || flag)
+
+    bool flag = (mode == LUM_MODE || mode == RGB_MODE || (mode >= A0_MODE && mode <= A5_MODE));
+    if (currentRendering != DETAIL_ENHANCEMENT || flag)
 	{
 		for (int i = 0; i < level; i++)
 		{
@@ -869,23 +863,8 @@ int LRGBPtm::createImage(unsigned char** buffer, int& width, int& height, const 
 
 	(*buffer) = new unsigned char[width*height*4];
 	int offsetBuf = 0;
-	if (mode == NORMALS_MODE)
-	{
-		// Creates the maps of normals.
-		const vcg::Point3f* normalsLevel = normals.getLevel(level);
-		for (int y = offy; y < offy + height; y++)
-		{
-			for (int x = offx; x < offx + width; x++)
-			{
-				int offset = y * mipMapSize[level].width() + x;
-				for (int i = 0; i < 3; i++)
-					(*buffer)[offsetBuf + i] = toColor(normalsLevel[offset][i]);
-				(*buffer)[offsetBuf + 3] = 255;
-				offsetBuf += 4;
-			}
-		}
-	}
-	else if (mode == LUM_MODE)
+
+    if (mode == LUM_MODE)
 	{
 		// Creates the map of luminance.
 		const PTMCoefficient* coeffPtr = coefficients.getLevel(level);
@@ -954,6 +933,7 @@ int LRGBPtm::createImage(unsigned char** buffer, int& width, int& height, const 
 		switch(currentRendering)
 		{
                         case DEFAULT: printf("Default rendering: %.5f s\n", diff); break;
+                        case NORMALS: printf("Normals: %.5f s\n", diff); break;
                         case DIFFUSE_GAIN: printf("Diffuse gain: %.5f s\n", diff); break;
                         case SPECULAR_ENHANCEMENT: printf("Specular enhancement: %.5f s\n", diff); break;
                         case NORMAL_ENHANCEMENT: printf("Normal enhancement: %.5f s\n", diff); break;
@@ -1129,8 +1109,8 @@ void LRGBPtm::saveRemoteDescr(QString& filename, int level)
 
 void LRGBPtm::allocateSubLevel(int level, int w, int h)
 {
-	coefficients.allocateLevel(level, w*h);
-	rgb.allocateLevel(level, w*h*3); 
+    coefficients.allocateLevel(level, w*h);
+    rgb.allocateLevel(level, w*h*3);
 }
 
 
@@ -1229,7 +1209,7 @@ int JPEGLRGBPtm::load(QString name, CallBackPos *cb)
 	setHeight(str.toInt(&error));
 	if (!error) return -1;
 
-#if _MSC_VER
+#if _MSC_VER || __MINGW32__
 	MEMORYSTATUSEX statex;
 	statex.dwLength = sizeof (statex);
 	GlobalMemoryStatusEx (&statex);

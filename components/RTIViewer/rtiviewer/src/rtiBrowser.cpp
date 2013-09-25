@@ -32,10 +32,14 @@
 #include <QApplication>
 #include <QColor>
 #include <QFileDialog>
+#include <QUuid>
+
+#include <QDebug>
 
 #include <iostream>
 
 RtiBrowser::RtiBrowser(int w, int h, Rti *image, int maxZ, QWidget *parent): QGLWidget(parent),
+gui((RtiViewerDlg*)parent),
 img(NULL),
 light(0,0,1),
 lightChanged(false),
@@ -67,7 +71,6 @@ focus(false),
 interactive(true),
 posUpdated(false),
 defaultMode(QKeySequence(Qt::ALT + Qt::Key_Q), this),
-normalsMode(QKeySequence(Qt::ALT + Qt::Key_W), this),
 smoothMode(QKeySequence(Qt::ALT + Qt::Key_E), this),
 contrastMode(QKeySequence(Qt::ALT + Qt::Key_R), this),
 enhancedMode(QKeySequence(Qt::ALT + Qt::Key_T), this),
@@ -84,7 +87,11 @@ a3Mode(QKeySequence(Qt::ALT + Qt::Key_J), this),
 a4Mode(QKeySequence(Qt::ALT + Qt::Key_K), this),
 a5Mode(QKeySequence(Qt::ALT + Qt::Key_L), this),
 lightVectorMode(QKeySequence(Qt::ALT + Qt::Key_M), this),
-lightVectorMode2(QKeySequence(Qt::ALT + Qt::Key_N), this)
+lightVectorMode2(QKeySequence(Qt::ALT + Qt::Key_N), this),
+  addingHighlightBox(false),
+  editingHighlightBox(false),
+  drawingHighlightBox(false),
+  haveHighlightBox(false)
 {
 
     currentMode = DEFAULT_MODE;
@@ -97,7 +104,6 @@ lightVectorMode2(QKeySequence(Qt::ALT + Qt::Key_N), this)
     connect(&zoomIn, SIGNAL(activated()), this, SLOT(zoomInActivated()));
     connect(&zoomOut, SIGNAL(activated()), this, SLOT(zoomOutActivated()));
     connect(&defaultMode, SIGNAL(activated()), this, SLOT(defaultModeActivated()));
-    connect(&normalsMode, SIGNAL(activated()), this, SLOT(normalsModeActivated()));
     connect(&smoothMode, SIGNAL(activated()), this, SLOT(smoothModeActivated()));
     connect(&contrastMode, SIGNAL(activated()), this, SLOT(contrastModeActivated()));
     connect(&enhancedMode, SIGNAL(activated()), this, SLOT(enhancedModeActivated()));
@@ -169,6 +175,7 @@ void RtiBrowser::setImage(Rti* rti)
 
     // Set sub-img
     subimg = QRectF(0.0, 0.0, img->width(), img->height());
+    emit viewChanged(subimg);
     level = zoom >= 1 ? 0 :  floor(log(1.0/zoom)/log(2.0));
     updateTexture();
 }
@@ -199,7 +206,18 @@ QSize RtiBrowser::getSize()
     return QSize(_width, _height);
 }
 
-QMap<int, RenderingMode*>* RtiBrowser::getRenderingMode()
+QRectF RtiBrowser::getSubimage()
+{
+    return subimg;
+}
+
+QSize RtiBrowser::getImageSize()
+{
+    return QSize(img->width(), img->height());
+}
+
+
+QMap<int, RenderingMode*>* RtiBrowser::getRenderingModes()
 {
     if (img)
         return img->getSupportedRendering();
@@ -226,7 +244,7 @@ void RtiBrowser::initializeGL()
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(0.0f, (GLfloat)_width, (GLfloat)_height, 0.0f);
+	glOrtho(0.0f, (GLfloat)_width, (GLfloat)_height, 0.0f, -1.0f, 1.0f);
 
 }
 
@@ -262,6 +280,115 @@ void RtiBrowser::paintGL()
     }
     glEnd();
 
+    // Draw the highlight box for the currently selected bookmark, if any
+
+    if (textureData)
+    {
+        // If we already have a highlight box, draw it now.
+
+        if (haveHighlightBox)
+        {
+            // Convert the coordinates of the highlight box from the coordinate
+            // system used by the image to the coordinate system used by the
+            // browser widget.
+
+            float x1 = highlightBox.topLeft().x();
+            float y1 = highlightBox.topLeft().y();
+            imageToBrowser(x1, y1);
+            float x2 = highlightBox.bottomRight().x();
+            float y2 = highlightBox.bottomRight().y();
+            imageToBrowser(x2, y2);
+
+            // Disable the texture while we draw the highlight box. If we don't
+            // disable the texture, OpenGL ignores the line color commands.
+
+            glDisable(GL_TEXTURE_2D);
+
+            // Draw the highlight box twice, once in black and once in white. This
+            // makes it visible against any background color.
+
+            glLineWidth(1.0);
+            qglColor(Qt::white);
+            glBegin(GL_LINE_LOOP);
+            glVertex3f(x1, y1, 0.0f);
+            glVertex3f(x2, y1, 0.0f);
+            glVertex3f(x2, y2, 0.0f);
+            glVertex3f(x1, y2, 0.0f);
+            glEnd();
+
+            glLineWidth(2.0);
+            qglColor(Qt::black);
+            glBegin(GL_LINE_LOOP);
+            glVertex3f(x1 - 2, y1 - 2, 0.0f);
+            glVertex3f(x2 + 2, y1 - 2, 0.0f);
+            glVertex3f(x2 + 2, y2 + 2, 0.0f);
+            glVertex3f(x1 - 2, y2 + 2, 0.0f);
+            glEnd();
+
+            // Re-enable the texture.
+
+            glEnable(GL_TEXTURE_2D);
+        }
+    }
+
+    // Draw the highlight box while the user is drawing it.
+
+    if (drawingHighlightBox)
+    {
+        // Disable the texture while we draw the highlight box. If we don't
+        // disable the texture, OpenGL ignores the line color commands.
+
+        glDisable(GL_TEXTURE_2D);
+
+        // Draw the highlight box twice, once in black and once in white. This
+        // makes it visible against any background color.
+
+        glLineWidth(1.0);
+        qglColor(Qt::white);
+        glBegin(GL_LINE_LOOP);
+        glVertex2f(bmStartX, bmStartY);
+        glVertex2f(bmEndX, bmStartY);
+        glVertex2f(bmEndX, bmEndY);
+        glVertex2f(bmStartX, bmEndY);
+        glEnd();
+
+        // Assume that the upper left corner is the anchor. Test
+        // whether other corners are the anchor and adjust the
+        // shifts as needed.
+
+        int shiftStartX = -2,
+            shiftEndX = 2,
+            shiftStartY = -2,
+            shiftEndY = 2;
+        if (bmStartX > bmEndX)
+        {
+            shiftStartX = -1 * shiftStartX;
+            shiftEndX = -1 * shiftEndX;
+        }
+        if (bmStartY > bmEndY)
+        {
+            shiftStartY = -1 * shiftStartY;
+            shiftEndY = -1 * shiftEndY;
+        }
+
+        glLineWidth(2.0);
+        qglColor(Qt::black);
+        glBegin(GL_LINE_LOOP);
+        glVertex2f(bmStartX + shiftStartX, bmStartY + shiftStartY);
+        glVertex2f(bmEndX + shiftEndX, bmStartY + shiftStartY);
+        glVertex2f(bmEndX + shiftEndX, bmEndY + shiftEndY);
+        glVertex2f(bmStartX + shiftStartX, bmEndY + shiftEndY);
+        glEnd();
+
+        // Re-enable the texture.
+
+        glEnable(GL_TEXTURE_2D);
+
+        // Flush the buffer(s) to force immediate drawing.
+
+        glFlush();
+    }
+
     glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -281,12 +408,11 @@ void RtiBrowser::paintGL()
 	QString text;
 	switch(currentMode)
 	{
-		case NORMALS_MODE: text = "NORMALS MAP"; break;
 		case SMOOTH_MODE: text = "SMOOTHED SIGNAL MAP"; break;
 		case CONTRAST_MODE: text = "CONTRAST SIGNAL MAP"; break;
 		case ENHANCED_MODE: text = "ENHANCED SIGNAL MAP"; break;
 		case LUM_UNSHARP_MODE: text = "LUMINANCE (UNSHARP MASKING)"; break;
-		case LUM_MODE: text = "LRGB LUMINACE CHANNEL "; break;
+        case LUM_MODE: text = "LRGB LUMINANCE CHANNEL "; break;
 		case RGB_MODE: text = "LRGB RGB COMPONENTS"; break;
 		case LUMR_MODE: text = "RGB RED COMPONENT"; break;
 		case LUMG_MODE: text = "RGB GREEN COMPONENT"; break;
@@ -318,7 +444,7 @@ void RtiBrowser::resizeGL(int width, int height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(0.0f, (GLfloat)_width, (GLfloat)_height, 0.0f);
+	glOrtho(0.0f, (GLfloat)_width, (GLfloat)_height, 0.0f, -1.0f, 1.0f);
 
     if (img)
     {
@@ -342,6 +468,87 @@ void RtiBrowser::resizeGL(int width, int height)
 void RtiBrowser::mousePressEvent(QMouseEvent *event)
 {
     if (!img) return;
+
+    if (addingHighlightBox)
+    {
+        // Check if this press event is the start of drawing a bookmark
+        // highlight box. If it is, set a flag that the user is drawing
+        // a highlight box and record the coordinates of the starting point.
+        // Note that the event coordinates are relative to the browser widget.
+
+        addingHighlightBox = false;
+        drawingHighlightBox = true;
+        bmStartX = event->x();
+        bmStartY = event->y();
+        bmEndX = event->x();
+        bmEndY = event->y();
+        return;
+    }
+    else if (editingHighlightBox)
+    {
+        // Check if this press event is the start of editing (resizing)
+        // a highlight box. If it is, set a flag that the user is editing
+        // a highlight box and no longer has a highlight box.
+
+        editingHighlightBox = false;
+        haveHighlightBox = false;
+        drawingHighlightBox = true;
+
+        // Calculate which corner is closest to where the user clicked.
+        // We only consider a corner to be "close" if it is less than
+        // 20 units away. (The number 20 was chosen by trial-and-error).
+
+        // The highlight box uses the image's coordinate system, so we
+        // must convert them to the browser's coordinate system, which
+        // is used by the event.
+
+        int closest = -1;
+        float shortestDistance = 20.0;
+
+        for (int i = 0; i < 4; i++)
+        {
+            QPointF point = getCorner(i, highlightBox);
+            float x = point.x();
+            float y = point.y();
+            imageToBrowser(x, y);
+            float distance = sqrt((event->x() - x) * (event->x() - x) +
+                                  (event->y() - y) * (event->y() - y));
+
+            if (distance < shortestDistance)
+            {
+                shortestDistance = distance;
+                closest = i;
+            }
+        }
+
+        if (closest != -1)
+        {
+            // If we found a corner that was close, anchor the highlight box at
+            // the opposite corner (bmStartX, bmStartY) and let the user
+            // drag the close corner.
+
+            QPointF point = getCorner((closest + 2) % 4, highlightBox);
+            float x = point.x();
+            float y = point.y();
+            imageToBrowser(x, y);
+            bmStartX = x;
+            bmStartY = y;
+            bmEndX = event->x();
+            bmEndY = event->y();
+        }
+        else
+        {
+            // If no corner is close to where the user clicked, start a
+            // new highlight box. This is the same as adding a highlight box.
+
+            bmStartX = event->x();
+            bmStartY = event->y();
+            bmEndX = event->x();
+            bmEndY = event->y();
+        }
+        return;
+    }
+
     if (event->button() == Qt::LeftButton)
     {
         // Begins a dragging operation.
@@ -376,6 +583,23 @@ void RtiBrowser::mousePressEvent(QMouseEvent *event)
 void RtiBrowser::mouseMoveEvent(QMouseEvent *event)
 {
     if (!img) return;
+
+    // If we are adding or editing a highlight box, just return. This will
+    // avoid changing the cursor.
+
+    if (addingHighlightBox || editingHighlightBox) return;
+
+    // If the user is drawing a bookmark highlight box, use the current
+    // point as the end point of the box and update the texture.
+
+    if (drawingHighlightBox)
+    {
+        bmEndX = event->x();
+        bmEndY = event->y();
+        updateTexture();
+        return;
+    }
+
     posUpdated = false;
     if (dragging)
     {
@@ -439,6 +663,56 @@ void RtiBrowser::mouseReleaseEvent(QMouseEvent *event)
 {
     setFocus();
     if (!img) return;
+
+    if (drawingHighlightBox)
+    {
+        // If the user is done drawing a bookmark highlight box, calculate the
+        // coordinates of the box in the coordinate system used by the image.
+        // Note that bmStartX, bmStartY, etc. give the coordinates of the
+        // mouse relative to the browser widget.
+
+        float x1 = bmStartX;
+        float y1 = bmStartY;
+        browserToImage(x1, y1);
+        float x2 = bmEndX;
+        float y2 = bmEndY;
+        browserToImage(x2, y2);
+
+        // Flip x and y coordinates as necessary so (x1, y1) is the upper left
+        // corner of the box and (x2, y2) is the lower right corner.
+        //
+        // The Qt coordinate system uses the upper left corner as the origin
+        // but defines upper left and lower right visually. Thus, the x coordinate
+        // of the upper left corner of a box is less than the x coordinate of
+        // the lower right corner but the y coordinate of the upper left corner
+        // is less than the y coordinate of the lower right corner.
+
+        if (x1 > x2)
+        {
+            float temp = x1;
+            x1 = x2;
+            x2 = temp;
+        }
+
+        if (y1 > y2)
+        {
+            float temp = y1;
+            y1 = y2;
+            y2 = temp;
+        }
+
+        // Create a new highlight box, send it to the BookmarkControl,
+        // and set it in the browser.
+
+        QRectF rect = QRectF(QPointF(x1,y1), QPointF(x2,y2));
+
+        emit highlightBoxDrawn(rect);
+        drawingHighlightBox = false;
+        haveHighlightBox = true;
+        highlightBox = rect;
+        return;
+    }
+
     if (event->button() == Qt::LeftButton)
     {
         timer->stop();
@@ -590,6 +864,86 @@ void RtiBrowser::zoomInActivated()
     updateTexture();
 }
 
+void RtiBrowser::addHighlightBox()
+{
+    // Start drawing a new highlight box.
+
+    addingHighlightBox = true;
+}
+
+void RtiBrowser::editHighlightBox()
+{
+    // Start editing an existing highlight box.
+
+    editingHighlightBox = true;
+}
+
+void RtiBrowser::setHighlightBox(bool drawHighlightBox, QRectF box)
+{
+    // Set the highlight box. This is sent by the BookmarkControl
+    // when the user selects a new bookmark.
+
+    haveHighlightBox = drawHighlightBox;
+    highlightBox = box;
+    updateTexture();
+}
+
+void RtiBrowser::deleteHighlightBox()
+{
+    // Delete the existing highlight box.
+
+    haveHighlightBox = false;
+}
+
+QPointF RtiBrowser::getCorner(int corner, QRectF rect)
+{
+    // Get the specified corner of a rectangle.
+
+    if (corner == 0)
+        return rect.topLeft();
+    else if (corner == 1)
+        return rect.topRight();
+    else if (corner == 2)
+        return rect.bottomRight();
+    else // if (corner == 3)
+        return rect.bottomLeft();
+}
+
+void RtiBrowser::imageToBrowser(float & x, float & y)
+{
+    // Convert a point from the coordinates used by the image to the
+    // coordinates used by the browser widget. For more information,
+    // see the comments in browserToImage().
+
+    x = (_width - viewWidth)/2.0 + (x - subimg.x()) * zoom;
+    y = (_height - viewHeight)/2.0 + (y - subimg.y()) * zoom;
+}
+
+void RtiBrowser::browserToImage(float & x, float & y)
+{
+    // Convert a point from the coordinates used by the browser widget
+    // to the coordinates used by the image.
+
+    // Working backwards:
+    //
+    // a) The browser window might be larger than the viewport, so
+    //    (_width - viewWidth)/2.0 is the space from the left side
+    //    of the browser window to the left edge of the viewport.
+    //
+    // b) The X coordinate is relative to the browser widget.
+    //
+    // c) The X coordinate minus the space calculated in (a) gives the
+    //    X coordinate relative to the viewport.
+    //
+    // d) The value calculated in (c) divided by the zoom gives the X
+    //    coordinate in the coordinates used by the subimage being displayed.
+    //
+    // e) The value in (d) shifted by the X origin of the subimage gives
+    //    the X coordinate in the coordinates used by the image.
+
+    x = subimg.x() + (x  - (_width - viewWidth)/2.0)/zoom;
+    y = subimg.y() + (y  - (_height - viewHeight)/2.0)/zoom;
+}
 
 void RtiBrowser::setLight(vcg::Point3f l, bool refresh)
 {
@@ -792,14 +1146,6 @@ void RtiBrowser::defaultModeActivated()
 }
 
 
-void RtiBrowser::normalsModeActivated()
-{
-    if (!img) return;
-    currentMode = NORMALS_MODE;
-    updateTexture();
-}
-
-
 void RtiBrowser::smoothModeActivated()
 {
     if (!img) return;
@@ -947,7 +1293,7 @@ void RtiBrowser::lightVectorMode2Activated()
 void RtiBrowser::snapshotActivated()
 {
     if (!img) return;
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save snapshot"), "snapshot.jpg", tr("JPEG (*.jpg *.jpeg);; PNG (*.png)"));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save snapshot"), gui->getRTIFileInfo().absolutePath() + "/snapshot.jpg", tr("JPEG (*.jpg *.jpeg);; PNG (*.png)"));
     if (fileName == "") return;
 	unsigned char* imgBuffer;
 	int tempW = 0;
@@ -966,8 +1312,225 @@ void RtiBrowser::snapshotActivated()
     }
     snapshotImg.save(fileName, 0, 100);
 	delete[] imgBuffer;
+
+    saveSnapshotMetadata(fileName);
 }
 
+void RtiBrowser::saveSnapshotMetadata(QString fileName)
+{
+    // This function saves the metadata about a snapshot to an XMP file.
+
+    // Create a new DOM document.
+
+    QDomDocument xmp;
+
+    // Add the XML declaration
+
+    QDomProcessingInstruction header = xmp.createProcessingInstruction( "xml", "version=\"1.0\"" );
+    xmp.appendChild(header);
+
+    // Create the rdf:RDF element.
+    //
+    // Note that QDomDocument writes namespace declarations on every element
+    // that uses a namespace prefix or has an attribute that uses a namespace
+    // prefix. This leads to an unnecessarily verbose XML document. As a workaround,
+    // we declare the namespaces we need on the root element and use
+    // QDomDocument.createElement instead of QDomDocument.createElementNS. Yech.
+
+    QDomElement rdf = createChild(xmp, xmp, "rdf:RDF");
+    rdf.setAttribute("xmlns:rdf", rdfURI);
+    rdf.setAttribute("xmlns:rti", rtiURI);
+    rdf.setAttribute("xmlns:xmp", xmpURI);
+    rdf.setAttribute("xmlns:dc", dcURI);
+    rdf.setAttribute("xmlns:stDim", stDimURI);
+
+    // Add the rdf:Description child
+
+    QDomElement description = createChild(xmp, rdf, "rdf:Description");
+    description.setAttribute("rdf:about", "");
+
+    // Add information about the RTIViewer.
+
+    createChild(xmp, description, "xmp:CreatorTool", rtiViewerURL);
+    createChild(xmp, description, "xmp:CreateDate", QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"));
+
+    // Add information about the RTI file from which the snapshot was created.
+
+    QDomElement sourceImage = createChild(xmp, description, "rti:RTIImage");
+    sourceImage.setAttribute("rdf:parseType", "Resource");
+
+    createChild(xmp, sourceImage, "dc:source", gui->getRTIFileInfo().absoluteFilePath());
+    QString imageType = img->typeFormat();
+    imageType.replace(" ", "-");
+    imageType = imageType.toLower();
+    createChild(xmp, sourceImage, "dc:format", "image/x-rti-" + imageType);
+
+    QDomElement imageSize = createChild(xmp, sourceImage, "rti:Size");
+    createChild(xmp, imageSize, "stDim:w", QString::number(img->width()));
+    createChild(xmp, imageSize, "stDim:h", QString::number(img->height()));
+    createChild(xmp, imageSize, "stDim:unit", "pixel");
+
+    // Add information about the snapshot.
+
+    QDomElement snapshot = createChild(xmp, description, "rti:Snapshot");
+    sourceImage.setAttribute("rdf:parseType", "Resource");
+
+    // Create the dc:Identifier and rti:Size children.
+
+    createChild(xmp, snapshot, "dc:Identifier", QUuid::createUuid().toString());
+
+    QDomElement subimageSize = createChild(xmp, snapshot, "rti:Size");
+    createChild(xmp, subimageSize, "stDim:w", QString::number(subimg.width()));
+    createChild(xmp, subimageSize, "stDim:h", QString::number(subimg.height()));
+    createChild(xmp, subimageSize, "stDim:unit", "pixel");
+
+    // Create the rti:RenderingInfo child.
+
+    QDomElement info = createChild(xmp, snapshot, "rti:RenderingInfo");
+    info.setAttribute("rdf:parseType", "Resource");
+
+    // Create the rti:Zoom, rti:Pan, and rti:Incidence children.
+
+    createChild(xmp, info, "rti:Zoom", QString::number(zoom * 100.0));
+
+    QDomElement pan = createChild(xmp, info, "rti:Pan");
+    pan.setAttribute("rdf:parseType", "Resource");
+    createChild(xmp, pan, "rti:x", QString::number(subimg.topLeft().x()));
+    createChild(xmp, pan, "rti:y", QString::number(subimg.topLeft().y()));
+
+    QDomElement incidence = createChild(xmp, info, "rti:Incidence");
+    incidence.setAttribute("rdf:parseType", "Resource");
+    createChild(xmp, incidence, "rti:x", QString::number(light.X()));
+    createChild(xmp, incidence, "rti:y", QString::number(light.Y()));
+
+    // Create the rti:RenderingMode child and rti:Parameters child (if any)
+
+    QDomElement renderingMode = createChild(xmp, info, "rti:RenderingMode");
+    renderingMode.setAttribute("rdf:parseType", "Resource");
+    QDomComment renderingModeComment = xmp.createComment(
+        "0=DEFAULT,\n1=DIFFUSE_GAIN,\n2=SPECULAR_ENHANCEMENT,\n3=NORMAL_ENHANCEMENT,\n4=UNSHARP_MASKING_IMG,\n5=UNSHARP_MASKING_LUM,\n6=COEFF_ENHANCEMENT,\n7=DETAIL_ENHANCEMENT,\n8=DYN_DETAIL_ENHANCEMENT\n9=NORMALS_VISUALIZATION");
+    renderingMode.appendChild(renderingModeComment);
+
+    int mode = getCurrentRendering();
+    createChild(xmp, renderingMode, "rti:RenderingModeID", QString::number(mode));
+
+    if (mode != NORMALS)
+    {
+        QDomElement parameters = createChild(xmp, renderingMode, "rti:Parameters");
+        QDomElement parametersBag = createChild(xmp, parameters, "rdf:Bag");
+
+        switch (mode)
+        {
+            case DIFFUSE_GAIN:
+
+                {
+                    DiffuseGain* dg = static_cast<DiffuseGain*> (getRenderingModes()->value(mode));
+                    createParameterChild(xmp, parametersBag, "gain", dg->getGain());
+                }
+                break;
+
+            case SPECULAR_ENHANCEMENT:
+
+                {
+                    SpecularEnhancement* se = static_cast<SpecularEnhancement*> (getRenderingModes()->value(mode));
+                    createParameterChild(xmp, parametersBag, "kd", se->getKd());
+                    createParameterChild(xmp, parametersBag, "ks", se->getKs());
+                    createParameterChild(xmp, parametersBag, "exp", se->getExp());
+                }
+                break;
+
+            case NORMAL_ENHANCEMENT:
+
+                {
+                    NormalEnhancement* ne = static_cast<NormalEnhancement*> (getRenderingModes()->value(mode));
+                    createParameterChild(xmp, parametersBag, "gain", ne->getGain());
+    //                createParameterChild(xmp, parametersBag, "kd", ne->getKd());
+                    createParameterChild(xmp, parametersBag, "env", ne->getEnvIll());
+                }
+                break;
+
+            case UNSHARP_MASKING_IMG:
+
+                {
+                    UnsharpMasking* um_img = static_cast<UnsharpMasking*> (getRenderingModes()->value(mode));
+                    createParameterChild(xmp, parametersBag, "gain", um_img->getGain());
+                }
+                break;
+
+            case UNSHARP_MASKING_LUM:
+
+                {
+                    UnsharpMasking* um_lum = static_cast<UnsharpMasking*> (getRenderingModes()->value(mode));
+                    createParameterChild(xmp, parametersBag, "gain", um_lum->getGain());
+                }
+                break;
+
+            case COEFF_ENHANCEMENT:
+
+                {
+                    CoeffEnhancement* ce = static_cast<CoeffEnhancement*> (getRenderingModes()->value(mode));
+                    createParameterChild(xmp, parametersBag, "gain", ce->getGain());
+                }
+                break;
+
+            case DETAIL_ENHANCEMENT:
+
+                {
+                    DetailEnhancement* de = static_cast<DetailEnhancement*> (getRenderingModes()->value(mode));
+                    createParameterChild(xmp, parametersBag, "nOffSet", (float)de->getNOffset());
+                    createParameterChild(xmp, parametersBag, "minTileSize", (float)de->getMinTileSize());
+                    createParameterChild(xmp, parametersBag, "minLevel", (float)de->getMinLevel());
+                    createParameterChild(xmp, parametersBag, "sharpnessOperator", (float)de->getSharpnessOperator());
+                    createParameterChild(xmp, parametersBag, "sphereSample", (float)de->getSphereSampling());
+                    createParameterChild(xmp, parametersBag, "k1", de->getK1());
+                    createParameterChild(xmp, parametersBag, "k2", de->getK2());
+                    createParameterChild(xmp, parametersBag, "threshold", de->getThreshold());
+                    createParameterChild(xmp, parametersBag, "filter", (float)de->getFilter());
+                    createParameterChild(xmp, parametersBag, "nIterSmoothing", (float)de->getNIterSmoothing());
+                }
+                break;
+
+            case DYN_DETAIL_ENHANCEMENT:
+
+                {
+                    DynamicDetailEnh* dde = static_cast<DynamicDetailEnh*> (getRenderingModes()->value(mode));
+                    createParameterChild(xmp, parametersBag, "degreeOffSet", (float)dde->getDegreeOffset());
+                    createParameterChild(xmp, parametersBag, "tileSize", (float)dde->getTileSize());
+                    createParameterChild(xmp, parametersBag, "sharpnessOperator", (float)dde->getSharpnessOperator());
+                    createParameterChild(xmp, parametersBag, "sphereSample", (float)dde->getSphereSampling());
+                    createParameterChild(xmp, parametersBag, "k1", dde->getK1());
+                    createParameterChild(xmp, parametersBag, "k2", dde->getK2());
+                    createParameterChild(xmp, parametersBag, "threshold", dde->getThreshold());
+                    createParameterChild(xmp, parametersBag, "filter", (float)dde->getFilter());
+                    createParameterChild(xmp, parametersBag, "nIterSmoothing", (float)dde->getNIterSmoothing());
+                }
+                break;
+
+            default:
+
+                break;
+        }
+
+    }
+
+    // Open the metadata file, save the DOM document, and close the file.
+
+    int fileExtensionPos = fileName.lastIndexOf(".") + 1;
+    fileName.replace(fileExtensionPos, fileName.length() - fileExtensionPos, "xmp");
+    QFile xmpFile(fileName);
+    xmpFile.open(QIODevice::WriteOnly);
+    QTextStream out(&xmpFile);
+    xmp.save(out, 2);
+    xmpFile.close();
+}
+
+void RtiBrowser::createParameterChild(QDomDocument xmp, QDomElement parametersBag, QString name, float value)
+{
+    QDomElement parameterLi = createChild(xmp, parametersBag, "rdf:li");
+    QDomElement param = createChild(xmp, parameterLi, "rti:Parameter");
+    param.setAttribute("name", name);
+    param.setAttribute("value", QString::number(value));
+}
 
 void RtiBrowser::updateZoom(int zoomVal)
 {
@@ -978,4 +1541,19 @@ void RtiBrowser::updateZoom(int zoomVal)
 		zoom = maxZoom;
     updateZoomimg();
     updateTexture();
+}
+
+void RtiBrowser::setPanX(double x)
+{
+    updateView(QRectF(QPointF(x, subimg.y()), subimg.size()), false);
+}
+
+void RtiBrowser::setPanY(double y)
+{
+    updateView(QRectF(QPointF(subimg.x(), y), subimg.size()), false);
+}
+
+void RtiBrowser::setPan(QPointF point)
+{
+    updateView(QRectF(point, subimg.size()), false);
 }

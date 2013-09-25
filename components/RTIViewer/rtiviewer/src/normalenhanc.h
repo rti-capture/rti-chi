@@ -26,26 +26,18 @@
 #define NORMALENHANCEMENT_H
 
 #include "renderingmode.h"
+#include "rendercontrolutils.h"
 #include "util.h"
 
 #include <vcg/space/point3.h>
-
-#include <QSlider>
-
 
 //! Widget for Normal Enhancement settings.
 /*!
   The class defines the widget that is showed in the Rendering Dialog to set the parameters of the rendering mode Normal Enhancement.
 */
-class NormalEControl : public QWidget
+class NormalEControl : public QWidget, public RenderControlUtils
 {
 	Q_OBJECT
-
-private:
-	
-	QSlider* sliderGain; /*!< Slider to set the gain value. */
-	QSlider* sliderKd; /*!< Slider to set the diffusive constant. */
-	QSlider* sliderEnvIll; /*!< Slider to set the ambiental term. */
 
 public:
 
@@ -57,6 +49,8 @@ public:
 	  \param parent
 	*/
 	NormalEControl(int gain, int kd, int envIll, QWidget *parent = 0);
+
+    bool eventFilter(QObject* watched, QEvent* event);
 
 signals:
 
@@ -128,6 +122,10 @@ public:
 	virtual void applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCoeff& greenCoeff, const PyramidCoeff& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer);
 
 	void applyHSH(const PyramidCoeffF& redCoeff, const PyramidCoeffF& greenCoeff, const PyramidCoeffF& blueCoeff, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer){}
+
+    float getGain();
+    float getKd();
+    float getEnvIll();
 
 private:
 
