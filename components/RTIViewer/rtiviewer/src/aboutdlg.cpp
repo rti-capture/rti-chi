@@ -100,7 +100,7 @@ void AboutDlg::initAbout()
 {
     // Initialize the main dialog box
 
-    this->setMinimumSize(875, 500);
+    this->setMinimumSize(875, 550);
     this->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     this->setModal(true);
 }
@@ -139,17 +139,17 @@ QLayout *AboutDlg::initTitleLayout()
     // user guide layout, and a GPL 3 label.
 
     titleLabel = new QLabel();
-    titleLabel->setMaximumSize(170, 64);
+    titleLabel->setMaximumSize(250, 64);
     titleLabel->setAlignment(Qt::AlignCenter);
 
     QLabel * tombImage = new QLabel();
-    tombImage->setMaximumSize(170, 170);
+    tombImage->setMaximumSize(250, 250);
     tombImage->setPixmap(QPixmap(":/images/tomb.png"));
     tombImage->setScaledContents(true);
     tombImage->setAlignment(Qt::AlignCenter);
 
     gplLabel = new QLabel();
-    gplLabel->setMaximumSize(170, 32);
+    gplLabel->setMaximumSize(250, 32);
     gplLabel->setAlignment(Qt::AlignCenter);
 
     QVBoxLayout * titleLayout = new QVBoxLayout();
@@ -181,8 +181,10 @@ QLayout *AboutDlg::initUserGuideLayout()
     QHBoxLayout * userGuideLayout = new QHBoxLayout();
     userGuideLayout->setSizeConstraint(QLayout::SetMaximumSize);
     userGuideLayout->setSpacing(5);
+	userGuideLayout->addSpacerItem(new QSpacerItem(100, 32, QSizePolicy::Maximum, QSizePolicy::Fixed));
     userGuideLayout->addWidget(guideLabel);
     userGuideLayout->addWidget(pdfLogo);
+	userGuideLayout->addSpacerItem(new QSpacerItem(100, 32, QSizePolicy::Maximum, QSizePolicy::Fixed));
 
     return userGuideLayout;
 }
@@ -311,6 +313,7 @@ void AboutDlg::setConnections()
 
     connect(guideLabel, SIGNAL(linkActivated(QString)), this, SLOT(showManual(QString)));
     connect(descLabel, SIGNAL(linkActivated(QString)), this, SLOT(showURL(QString)));
+	connect(titleLabel, SIGNAL(linkActivated(QString)), this, SLOT(showURL(QString)));
     connect(okButton, SIGNAL(clicked()), this, SLOT(close()));
 }
 
@@ -330,7 +333,7 @@ char * AboutDlg::getTitleHTML()
     return "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0//EN' 'http://www.w3.org/TR/REC-html40/strict.dtd'>\n"
             "<html><head />"
             "<body style=\" font-family:'MS Shell Dlg 2'; font-style:normal; font-size:16pt; font-weight:600;\">"
-            "<p align='center'>RTIViewer<br />v1.1.0</p>"
+            "<p align='center'>RTIViewer v1.1.0 <br /> <a href = 'http://culturalheritageimaging.org/What_We_Offer/Downloads/View/index.html' style = \"font-weight: 100; font-size: 14pt;\">Web page</a></p>"
             "</body></html>";
 }
 

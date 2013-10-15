@@ -47,6 +47,8 @@ DynamicDetailEControl::DynamicDetailEControl(unsigned int tileSize, unsigned int
 	QLabel* label2 = new QLabel("Offset (1-20°)");
 #elif __MINGW32__
     QLabel* label2 = new QLabel(trUtf8("Offset (1-20°)"));
+#else
+    QLabel* label2 = new QLabel("Offset (1-20°)");
 #endif
 
 	tileSizeCmb = new QComboBox(this);

@@ -19,7 +19,7 @@ win32-g++:QMAKE_LFLAGS += -m32
 win32-g++:QMAKE_CXXFLAGS += -O3 -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize
 win32-g++:QMAKE_CFLAGS += -O3 -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize
 
-macx-g++:QMAKE_LIBS +=
+#macx-g++:QMAKE_LIBS +=
 macx-g++:QMAKE_LFLAGS += -m32
 macx-g++:QMAKE_CXXFLAGS += -O3 -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize
 macx-g++:QMAKE_CFLAGS += -O3 -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize

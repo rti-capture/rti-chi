@@ -2,6 +2,7 @@ TEMPLATE       = app
 TARGET         = rtiwebmaker
 LANGUAGE       = C++
 
+DESTDIR        = bin
 CONFIG         += qt debug_and_release network console warn_off
 
 QT             += xml
@@ -10,9 +11,11 @@ MOC_DIR        = moc
 
 win32-msvc2005:QMAKE_LFLAGS   += /LARGEADDRESSAWARE
 win32-msvc2008:QMAKE_LFLAGS   += /LARGEADDRESSAWARE
+win32-msvc2010:QMAKE_LFLAGS   += /LARGEADDRESSAWARE
 
 win32-msvc2005:QMAKE_CXXFLAGS   += /O2 /Ot /Oi /openmp /Zp16 /fp:fast /arch:SSE2
 win32-msvc2008:QMAKE_CXXFLAGS   += /O2 /Ot /Oi /openmp /Zp16 /fp:fast /arch:SSE2
+win32-msvc2010:QMAKE_CXXFLAGS   += /O2 /Ot /Oi /openmp /Zp16 /fp:fast /arch:SSE2
 
 win32-g++:QMAKE_LIBS += -lgomp
 win32-g++:QMAKE_LFLAGS += -m32
@@ -64,11 +67,12 @@ HEADERS        = \
                ../../rtiviewer/src/rendercontrolutils.h
 
 
-DEFINES += _YES_I_WANT_TO_USE_DANGEROUS_STUFF
+#DEFINES += _YES_I_WANT_TO_USE_DANGEROUS_STUFF
 
 mac: LIBS       += ../../compression/src/lib/libjpeg2000.a
 win32-msvc2005: LIBS  += ../../compression/src/lib/jpeg2000.lib
 win32-msvc2008: LIBS  += ../../compression/src/lib/jpeg2000.lib
+win32-msvc2010: LIBS  += ../../compression/src/lib/jpeg2000.lib
 win32-g++: LIBS += ../../compression/src/lib/libjpeg2000.a
 
 mac: CONFIG -= app_bundle

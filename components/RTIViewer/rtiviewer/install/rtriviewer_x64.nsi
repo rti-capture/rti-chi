@@ -2,12 +2,12 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "RTIViewer"
-!define PRODUCT_VERSION "1.0.2"
+!define PRODUCT_VERSION "1.1.0"
 !define PRODUCT_PUBLISHER "VCG - ISTI - CNR"
-!define PRODUCT_WEB_SITE "http://chi-dev.wikidot.com/rtiviewer"
+!define PRODUCT_WEB_SITE "http://culturalheritageimaging.org/What_We_Offer/Downloads/View/index.html"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
-!define QT_BASE "C:\Qt\4.7.0"
+!define QT_BASE "C:\Qt\4.8.4_x64"
 !define DIR_INST_NAME "RTIViewer"
 !define APPL_INST_NAME "RTIViewer"
 
@@ -45,21 +45,21 @@
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "RTIViewerSetup.exe"
-InstallDir "$PROGRAMFILES\${DIR_INST_NAME}"
+OutFile "RTIViewerSetup-1.1.0-x64.exe"
+InstallDir "$PROGRAMFILES64\${DIR_INST_NAME}"
 
 ShowInstDetails show
 ShowUnInstDetails show
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite on
-  File "..\src\release\rtiviewer.exe"
-  File "..\..\rtiwebmaker\src\release\rtiwebmaker.exe"
+  File "..\src\bin\RTIViewer.exe"
+  File "..\..\rtiwebmaker\src\bin\rtiwebmaker.exe"
   File "..\doc\manual.pdf"
   
   CreateDirectory "$SMPROGRAMS\${DIR_INST_NAME}"
-  CreateShortCut "$SMPROGRAMS\${DIR_INST_NAME}\${APPL_INST_NAME}.lnk" "$INSTDIR\rtiviewer.exe"
-  CreateShortCut "$DESKTOP\${APPL_INST_NAME}.lnk" "$INSTDIR\rtiviewer.exe"
+  CreateShortCut "$SMPROGRAMS\${DIR_INST_NAME}\${APPL_INST_NAME}.lnk" "$INSTDIR\RTIViewer.exe"
+  CreateShortCut "$DESKTOP\${APPL_INST_NAME}.lnk" "$INSTDIR\RTIViewer.exe"
   
   ;Let's delete all the dangerous stuff from previous releases.
   Delete "$INSTDIR\qt*.dll"
@@ -78,11 +78,9 @@ Section "MainSection" SEC01
   
   File "..\doc\readme.txt"
   File "..\doc\gpl.txt"
-  File "..\install\msvc\Microsoft.VC90.CRT.manifest"
-  File "..\install\msvc\Microsoft.VC90.OpenMP.manifest"
-  File "..\install\msvc\msvcp90.dll"
-  File "..\install\msvc\msvcr90.dll"
-  File "..\install\msvc\vcomp90.dll"
+  File "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\redist\x64\Microsoft.VC100.OpenMP\vcomp100.dll"
+  File "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\redist\x64\Microsoft.VC100.CRT\msvcp100.dll"
+   File "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\redist\x64\Microsoft.VC100.CRT\msvcr100.dll"
   
   File "..\doc\readme.txt"
   File "..\doc\gpl.txt"
@@ -100,15 +98,15 @@ Section -Post
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
   
-  ${registerExtension} "$INSTDIR\rtiviewer.exe" ".ptm" "Polynomial Texture Map"
-  ${registerExtension} "$INSTDIR\rtiviewer.exe" ".rti" "RTI Image"
-  ${registerExtension} "$INSTDIR\rtiviewer.exe" ".hsh" "Hemispherical Harmonics"
-  ${registerExtension} "$INSTDIR\rtiviewer.exe" ".mview" "Multi View RTI"
+  ${registerExtension} "$INSTDIR\RTIViewer.exe" ".ptm" "Polynomial Texture Map"
+  ${registerExtension} "$INSTDIR\RTIViewer.exe" ".rti" "RTI Image"
+  ${registerExtension} "$INSTDIR\RTIViewer.exe" ".hsh" "Hemispherical Harmonics"
+  ${registerExtension} "$INSTDIR\RTIViewer.exe" ".mview" "Multi View RTI"
 SectionEnd
 
 
 Function LaunchLink
-  ExecShell "" "$INSTDIR\rtiviewer.exe"
+  ExecShell "" "$INSTDIR\RTIViewer.exe"
 FunctionEnd
 
 Function un.onUninstSuccess

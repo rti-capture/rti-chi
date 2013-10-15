@@ -111,7 +111,10 @@ QFrame * RtiViewerDlg::initBrowserFrame()
 {
     // Create a new browser
 
-    browser = new RtiBrowser(650, 650, NULL, maxZoom, this);
+	QGLFormat openGLFormat;
+	openGLFormat.setVersion(2, 1);
+
+    browser = new RtiBrowser(650, 650, NULL, maxZoom, this, openGLFormat);
 
     // Create the browser layout.
 
@@ -556,7 +559,6 @@ void RtiViewerDlg::initAppSettings()
 int RtiViewerDlg::open()
 {
     getter->closeConnection();
-    QString prova = dir.path();
     QString path = QFileDialog::getOpenFileName(this, tr("Open File"), dir.path() , filterStr);
     return openFile(path);
 }

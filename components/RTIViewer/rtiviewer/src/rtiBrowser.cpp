@@ -35,10 +35,11 @@
 #include <QUuid>
 
 #include <QDebug>
+#include <QMessageBox>
 
 #include <iostream>
 
-RtiBrowser::RtiBrowser(int w, int h, Rti *image, int maxZ, QWidget *parent): QGLWidget(parent),
+RtiBrowser::RtiBrowser(int w, int h, Rti *image, int maxZ, QWidget *parent, const QGLFormat& format): QGLWidget(format, parent),
 gui((RtiViewerDlg*)parent),
 img(NULL),
 light(0,0,1),
@@ -235,6 +236,40 @@ int RtiBrowser::getCurrentRendering()
 
 void RtiBrowser::initializeGL()
 {
+	QGLFormat format = this->format();
+    unsigned int value = ((unsigned int)QGLFormat::openGLVersionFlags() | (unsigned int)QGLFormat::OpenGL_Version_2_1);
+	if (value == 0)
+	{
+        QString version;
+        switch(QGLFormat::openGLVersionFlags())
+        {
+            case QGLFormat::OpenGL_Version_1_1:
+                version = "1.1";
+                break;
+            case QGLFormat::OpenGL_Version_1_2:
+                version = "1.2";
+                break;
+            case QGLFormat::OpenGL_Version_1_3:
+                version = "1.3";
+                break;
+            case QGLFormat::OpenGL_Version_1_4:
+                version = "1.4";
+                break;
+            case QGLFormat::OpenGL_Version_1_5:
+                version = "1.5";
+                break;
+            case QGLFormat::OpenGL_Version_2_0:
+                version = "2.0";
+                break;
+            default:
+                version = "unknown";
+                break;
+        }
+	    QString message("RTIViewer requires your graphics card to support OpenGL version 2.1 or later. Your graphic card currently uses version %1. To solve this problem, please update your graphics drivers. If the updated drivers do not support version 2.1 or later, you may have rendering problems.");
+        message.arg(version);
+		QMessageBox::warning(this, tr("RTIViewer"), message);
+	}
+
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glViewport(0, 0, _width, _height);
     glGenTextures(1, &texName);
@@ -965,10 +1000,10 @@ void RtiBrowser::updateLight()
         dxLight = theta;
     else if (theta - dxLight > M_PI)
         dxLight = theta - M_PI;
-    if (phi - dyLight > M_PI_2)
-        dyLight = phi - M_PI_2;
-    else if (phi - dyLight < -M_PI_2)
-        dyLight = M_PI_2 + phi;
+    if (phi - dyLight > M_PI / 2.0)
+        dyLight = phi - M_PI / 2.0;
+    else if (phi - dyLight < -M_PI / 2.0)
+        dyLight = M_PI / 2.0 + phi;
     vcg::Matrix33f rotX, rotY;
     rotX.SetRotateRad(dyLight, vcg::Point3f(1,0,0));
     rotY.SetRotateRad(dxLight, vcg::Point3f(0,1,0));
@@ -1293,13 +1328,13 @@ void RtiBrowser::lightVectorMode2Activated()
 void RtiBrowser::snapshotActivated()
 {
     if (!img) return;
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save snapshot"), gui->getRTIFileInfo().absolutePath() + "/snapshot.jpg", tr("JPEG (*.jpg *.jpeg);; PNG (*.png)"));
+    QString fileName = QFileDialog::getSaveFileName(this->parentWidget(), tr("Save snapshot"), gui->getRTIFileInfo().absolutePath() + "/snapshot.jpg", tr("JPEG (*.jpg *.jpeg);; PNG (*.png)"));
     if (fileName == "") return;
 	unsigned char* imgBuffer;
 	int tempW = 0;
 	int tempH = 0;
 	img->createImage(&imgBuffer, tempW, tempH, light, subimg);  
-    QImage snapshotImg(tempW, tempH, QImage::Format_RGB32);
+    QImage snapshotImg(tempW, tempH, QImage::Format_RGB888);
     QRgb value;
     for (int j = 0; j < tempH; j++)
     {

@@ -1,6 +1,6 @@
 #!/bin/bash
 # this is a script shell for setting up the application bundle for the mac
-# it should be run in the rtiviewer/src/install dir.
+# it should be run in the rtiviewer/install dir.
 # it moves plugins and frameworks into the package and runs the 
 # install_tool on them to change the linking path to the local version of qt
 # the build was issued with
@@ -8,19 +8,26 @@
 # make clean
 # make release
 # Note that sometimes you have to copy by hand the icons in the rtiviewer.app/Contents/Resources directory
-cd ./../src
+
+cd ../src
+
 QTPATH="/Library/Frameworks"
+
+QTIMAGELIBSPATH="/Developer/Applications/Qt/plugins/imageformats"
+
 APPNAME="RTIViewer.app"
 APPNAME2="rtiwebmaker"
-
 BUNDLE="RTIViewerBundle"
 
 QTCOMPONENTS="QtCore QtGui QtOpenGL QtNetwork QtXml"
 
-QTCORE=QtCore.framework/Versions/4.0/QtCore
-QTGUI=QtGui.framework/Versions/4.0/QtGui
+QTCORE=QtCore.framework/Versions/4/QtCore
+QTGUI=QtGui.framework/Versions/4/QtGui
+QTNETWORK=QtNetwork.framework/Versions/4/QtNetwork
+QTXML=QtXml.framework/Versions/4/QtXml
+QTOPENGL=QtOpenGL.framework/Versions/4/QtOpenGL
 
-if [ -e $APPNAME -a -d $APPNAME ]
+if [ -e ./bin/$APPNAME ]
 then
   echo "------------------"
 else
@@ -28,7 +35,7 @@ else
   exit 0
 fi
 
-if [ -e ../../rtiwebmaker/src/$APPNAME2 ]
+if [ -e ../../rtiwebmaker/src/bin/$APPNAME2 ]
 then
 	echo "------------------"
 else
@@ -41,55 +48,58 @@ echo "Starting to copying stuff in the bundle"
 rm -r -f $BUNDLE
 
 mkdir $BUNDLE
-cp -r $APPNAME $BUNDLE
+cp -r bins/$APPNAME $BUNDLE
 
-cp -r ../../rtiwebmaker/src/rtiwebmaker $BUNDLE/rtiviewer.app/Contents/MacOS
+mkdir $BUNDLE/$APPNAME/Contents/MacOS
+
+cp -r ../../rtiwebmaker/src/bin/rtiwebmaker $BUNDLE/rtiviewer.app/Contents/MacOS
+
 cp -r ../doc/manual.pdf $BUNDLE
 
 cp -r ../doc/gpl.txt $BUNDLE
 cp -r ../doc/readme.txt $BUNDLE
 cp -r ../doc/thirdpartycode.txt $BUNDLE
 
+mkdir $BUNDLE/$APPNAME/Contents/Resources
 # we must add also a qt.conf that contains the new dir of the plugins
 cp ../install/qt.conf $BUNDLE/$APPNAME/Contents/Resources
 
 # copy the files icons into the app.
-# cp images/rtiviewer_obj.icns $BUNDLE/$APPNAME/Contents/Resources
+cp images/rtiviewer.icns $BUNDLE/$APPNAME/Contents/Resources
 
 mkdir $BUNDLE/$APPNAME/Contents/Frameworks   
 mkdir $BUNDLE/$APPNAME/Contents/plugins   
-mkdir $BUNDLE/$APPNAME/Contents/plugins/imageformats 
-
-#cp ../../docs/gpl.txt $BUNDLE
-#cp ../../docs/readme.txt $BUNDLE
+mkdir $BUNDLE/$APPNAME/Contents/plugins/imageformats
 
 for x in $QTCOMPONENTS
 do
-#    cp -R $QTPATH/$x.framework $BUNDLE/$APPNAME/Contents/Frameworks 
-rsync -avu --exclude='*debug*' $QTPATH/$x.framework $BUNDLE/$APPNAME/Contents/Frameworks
+  rsync -avu --exclude='*debug*' $QTPATH/$x.framework $BUNDLE/$APPNAME/Contents/Frameworks
 done
 
 echo "now trying to change the paths in the rtiviewer executable"
 
 for x in $QTCOMPONENTS
-  do
-   install_name_tool -id  @executable_path/../Frameworks/$x.framework/Versions/4.0/$x $BUNDLE/rtiviewer.app/Contents/Frameworks/$x.framework/Versions/4.0/$x
-  done
+do
+  install_name_tool -id  @executable_path/../Frameworks/$x.framework/Versions/4/$x $BUNDLE/rtiviewer.app/Contents/Frameworks/$x.framework/Versions/4/$x
+done
+
+install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/$QTGUI
   
-install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/QtGui.framework/Versions/4.0/QtGui
-install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/QtXml.framework/Versions/4.0/QtXml
-install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/QtNetwork.framework/Versions/4.0/QtNetwork
-install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/QtOpenGL.framework/Versions/4.0/QtOpenGL
-install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/QtOpenGL.framework/Versions/4.0/QtOpenGL
-install_name_tool -change QtGui.framework/Versions/4/QtGui   @executable_path/../Frameworks/$QTGUI  $BUNDLE/rtiviewer.app/Contents/Frameworks/QtOpenGL.framework/Versions/4.0/QtOpenGL
+install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/$QTXML
+
+install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/$QTNETWORK
+
+install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/$QTOPENGL
+
+install_name_tool -change $QTGUI @executable_path/../Frameworks/$QTGUI $BUNDLE/rtiviewer.app/Contents/Frameworks/$QTOPENGL
 
 
 IMAGEFORMATSPLUGINS="libqjpeg.dylib libqgif.dylib libqtiff.dylib"
 for x in $IMAGEFORMATSPLUGINS
 do
-cp /Developer/Applications/Qt/plugins/imageformats/$x $BUNDLE/rtiviewer.app/Contents/plugins/imageformats
-install_name_tool -change QtCore.framework/Versions/4/QtCore  @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore  $BUNDLE/rtiviewer.app/Contents/plugins/imageformats/$x 
-install_name_tool -change QtGui.framework/Versions/4/QtGui    @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui    $BUNDLE/rtiviewer.app/Contents/plugins/imageformats/$x 
+  cp $QTIMAGELIBSPATH/$x $BUNDLE/rtiviewer.app/Contents/plugins/imageformats
+  install_name_tool -change $QTCORE  @executable_path/../Frameworks/$QTCORE  $BUNDLE/rtiviewer.app/Contents/plugins/imageformats/$x 
+  install_name_tool -change $QTGUI   @executable_path/../Frameworks/$QTGUI   $BUNDLE/rtiviewer.app/Contents/plugins/imageformats/$x 
 done
 
 echo "Now Changing " #--------------------------
@@ -97,34 +107,35 @@ echo "Now Changing " #--------------------------
 EXECNAMES="MacOS/rtiviewer" 
 for x in $EXECNAMES
 do
-  install_name_tool -change QtCore.framework/Versions/4/QtCore       @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore       $BUNDLE/rtiviewer.app/Contents/$x
-  install_name_tool -change QtGui.framework/Versions/4/QtGui         @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui         $BUNDLE/rtiviewer.app/Contents/$x
-  install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork $BUNDLE/rtiviewer.app/Contents/$x
-  install_name_tool -change QtOpenGL.framework/Versions/4/QtOpenGL   @executable_path/../Frameworks/QtOpenGL.framework/Versions/4/QtOpenGL   $BUNDLE/rtiviewer.app/Contents/$x
-  install_name_tool -change QtXml.framework/Versions/4/QtXml         @executable_path/../Frameworks/QtXml.framework/Versions/4/QtXml         $BUNDLE/rtiviewer.app/Contents/$x
+  install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE       $BUNDLE/rtiviewer.app/Contents/$x
+  install_name_tool -change $QTGUI @executable_path/../Frameworks/$QTGUI         $BUNDLE/rtiviewer.app/Contents/$x
+  install_name_tool -change $QTNETWORK @executable_path/../Frameworks/$QTNETWORK $BUNDLE/rtiviewer.app/Contents/$x
+  install_name_tool -change $QTOPENGL @executable_path/../Frameworks/$QTOPENGL   $BUNDLE/rtiviewer.app/Contents/$x
+  install_name_tool -change $QTXML @executable_path/../Frameworks/$QTXML         $BUNDLE/rtiviewer.app/Contents/$x
 done
+
 
 EXECNAMES="MacOS/rtiwebmaker" 
 for x in $EXECNAMES
 do
-	install_name_tool -change QtCore.framework/Versions/4/QtCore       @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore       $BUNDLE/rtiviewer.app/Contents/$x
-	install_name_tool -change QtXml.framework/Versions/4/QtXml         @executable_path/../Frameworks/QtXml.framework/Versions/4/QtXml         $BUNDLE/rtiviewer.app/Contents/$x
-	install_name_tool -change QtGui.framework/Versions/4/QtGui         @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui         $BUNDLE/rtiviewer.app/Contents/$x
+  install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE       $BUNDLE/rtiviewer.app/Contents/$x
+  install_name_tool -change $QTGUI @executable_path/../Frameworks/$QTGUI         $BUNDLE/rtiviewer.app/Contents/$x
+  install_name_tool -change $QTXML @executable_path/../Frameworks/$QTXML         $BUNDLE/rtiviewer.app/Contents/$x
 done
 
+echo "Create link"
 cd ./$BUNDLE
 ln -s ./rtiviewer.app/Contents/MacOS/RTIWebMaker ./
 cd ../
 
-cd ../install
+cd ../install 
+echo "Done"
 
 #Suppose you have:
 #1) Folder of content
 #2) Background image file for that folder, in the folder.
 #3) Icon for dmg, anywhere.
-
 #To make disk image (with background, and with custom image icon):
-
 # 1) Open Disk Utility
 # 2) Images-->New-->Blank Image
 #   a) leave it on read/write disk image
@@ -146,4 +157,3 @@ cd ../install
 # 9) Choose a new filename for the converted (final) .dmg file. Note that the name of the mounted image itself will remain unchanged.
 #   a) Select Compressed, then go ahead & convert.
 # 10) Voila, you are finished.
-

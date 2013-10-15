@@ -1,8 +1,9 @@
 TEMPLATE = app
 TARGET = RTIViewer
 LANGUAGE = C++
-CONFIG += qt debug_and_release xml network opengl warn_off x86 #console
- 
+CONFIG += qt debug_and_release xml network opengl warn_off #console
+
+DESTDIR = bin
 QT += opengl xml network
 
 UI_DIR = ui
@@ -26,6 +27,8 @@ win32-g++:QMAKE_CFLAGS += -msse2 -fopenmp
 
 macx-g++:QMAKE_LIBS += -lgomp
 macx-g++:QMAKE_LFLAGS += -m32
+#macx-g++:QMAKE_CXXFLAGS += -msse2 -fopenmp
+#macx-g++:QMAKE_CFLAGS += -msse2 -fopenmp
 macx-g++:QMAKE_CXXFLAGS += -O3 -msse2 -fopenmp -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize
 
 macx-g++:QMAKE_CFLAGS += -O3 -msse2 -fopenmp -funroll-loops -ffast-math -fforce-addr -fno-math-errno -ftree-vectorize

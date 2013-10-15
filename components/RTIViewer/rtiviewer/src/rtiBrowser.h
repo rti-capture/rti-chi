@@ -75,7 +75,7 @@ public:
 	  \param maxZ maximum zoom level.
 	  \param parent
 	*/
-	RtiBrowser(int w, int h, Rti *image, int maxZ, QWidget * parent);
+	RtiBrowser(int w, int h, Rti *image, int maxZ, QWidget * parent, const QGLFormat& format);
 	~RtiBrowser();
 
 	/*!
