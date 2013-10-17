@@ -896,7 +896,7 @@ void RtiViewerDlg::spinnerChanged(QDoubleSpinBox * spinner1, QDoubleSpinBox * sp
     // enter this method a second time.
 
     spinner2->blockSignals(true);
-    double otherCoord = sqrt(1.0 - value*value);
+    double otherCoord = trunc(100.0 * sqrt(1.0 - value*value))/100.0;
     if (spinner2->value() >= 0.0)
     {
         if (spinner2->value() > otherCoord)
