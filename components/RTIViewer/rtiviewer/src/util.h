@@ -590,6 +590,6 @@ const QString stDimURI = "http://ns.adobe.com/xap/1.0/sType/Dimensions#";
  * RTIViewer URL constant
  *===================================================================*/
 
-const QString rtiViewerURL = "http://www.culturalheritageimaging.org/tools/RTIViewer/1.1.0a";
+const QString rtiViewerURL = "http://www.culturalheritageimaging.org/tools/RTIViewer/1.1.0";
 
 #endif  /* UTIL_H */
