@@ -32,6 +32,7 @@
 #include <QApplication>
 #include <QColor>
 #include <QFileDialog>
+#include <QPainter>
 #include <QUuid>
 
 #include <QDebug>
@@ -1345,6 +1346,78 @@ void RtiBrowser::snapshotActivated()
             snapshotImg.setPixel(i, j, value);
         }
     }
+
+    // Draw the bookmark's highlight box, if any.
+
+    if (haveHighlightBox)
+    {
+        // Create a new QPainter to draw on the image
+
+        QPainter painter(&snapshotImg);
+
+        // Create a new pen with color white and width 1.
+
+        QPen pen(Qt::white, 1);
+        pen.setJoinStyle(Qt::MiterJoin);
+        painter.setPen(pen);
+
+        // Create two boxes and draw them. We draw two boxes (one black and
+        // one white) so the box will show up against any background.
+
+        // We use integers because floating point calculations occasionally
+        // lead to unexpected results. In particular, the outer edge of the
+        // outer box is supposed to be two pixels away from the inner box, but it
+        // is sometimes one pixel and sometimes three pixels away when floating
+        // point calculations are used. This problem does not occur with integer
+        // calculations.
+
+        // The coordinates of the highlight box are relative to the upper left
+        // corner of the entire picture, while the coordinates of the snapshot
+        // are relative to the upper left corner of the current sub-image. Therefore,
+        // we transform the highlight box coordinates to sub-image coordinates by
+        // subtracting the upper left coordinates of the sub-image, which are relative
+        // to the entire picture.
+
+        int x1 = static_cast<int>(highlightBox.topLeft().x() - subimg.topLeft().x()),
+            y1 = static_cast<int>(highlightBox.topLeft().y() - subimg.topLeft().y()),
+            x2 = static_cast<int>(highlightBox.bottomRight().x() - subimg.topLeft().x()),
+            y2 = static_cast<int>(highlightBox.bottomRight().y() - subimg.topLeft().y());
+
+        QPoint points[5] =
+        {
+            QPoint(x1, y1),
+            QPoint(x2, y1),
+            QPoint(x2, y2),
+            QPoint(x1, y2),
+            QPoint(x1, y1)
+        };
+        painter.drawPolyline(points, 5);
+
+        // Set the pen color to black and the width to 2. Note that we
+        // call setPen again. This is because setPen copies the QPen
+        // object and changes to pen color and width aren't passed to
+        // QPainter without the second call. (Yes, I know this is obvious
+        // in C++, but I've got a Java mind...)
+
+        pen.setColor(Qt::black);
+        pen.setWidth(2);
+        painter.setPen(pen);
+
+        // Create an outer box and draw it. Whether we add/subtract 1 or 2
+        // depends on how the line (which is two pixels wide) is centered on
+        // the specified pixel. In particular, the second pixel of horizontal
+        // lines is drawn above the specified pixel and the second pixel of
+        // vertical lines is drawn to the left of the specified pixel.
+
+        points[0] = QPoint(x1 - 1, y1 - 1);
+        points[1] = QPoint(x2 + 2, y1 - 1);
+        points[2] = QPoint(x2 + 2, y2 + 2);
+        points[3] = QPoint(x1 - 1, y2 + 2);
+        points[4] = QPoint(x1 - 1, y1 - 1);
+
+        painter.drawPolyline(points, 5);
+    }
+
     snapshotImg.save(fileName, 0, 100);
 	delete[] imgBuffer;
 
@@ -1412,7 +1485,8 @@ void RtiBrowser::saveSnapshotMetadata(QString fileName)
 
     // Create the dc:Identifier and rti:Size children.
 
-    createChild(xmp, snapshot, "dc:Identifier", QUuid::createUuid().toString());
+    QString uuid(QUuid::createUuid().toString().mid(1,36).prepend("uuid:"));
+    createChild(xmp, snapshot, "dc:Identifier", uuid);
 
     QDomElement subimageSize = createChild(xmp, snapshot, "rti:Size");
     createChild(xmp, subimageSize, "stDim:w", QString::number(subimg.width()));
@@ -1456,6 +1530,28 @@ void RtiBrowser::saveSnapshotMetadata(QString fileName)
 
         switch (mode)
         {
+/*
+            case DEFAULT:
+
+                {
+                    // If we are using the default rendering, check if the image is a multi-
+                    // view image by trying to cast the RenderingMode to DefaultMRti. If the
+                    // cast succeeds, get the horizontal and vertical views.
+
+                    // For more information about compiling this code and other issues, see
+                    // the comments in BookmarkControl.displayRendering().
+
+                    DefaultMRti* mrti = static_cast<DefaultMRti*> (getRenderingModes()->value(mode));
+                    if (mrti != 0)
+                    {
+                        bookmark.params.append(RenderingParam("horizontalShift", mrti->getCurrentPositionX())); // WON'T COMPILE: getCurrentPositionX() does not exist
+                        bookmark.params.append(RenderingParam("nearestViewpoint", mrti->getUseFlow())); // WON'T COMPILE: getUseFlow() does not exist
+                        bookmark.params.append(RenderingParam("verticalShift", mrti->getCurrentPositionY())); // WON'T COMPILE: getCurrentPositionX() does not exist
+                    }
+                }
+                break;
+            */
+
             case DIFFUSE_GAIN:
 
                 {
@@ -1468,9 +1564,9 @@ void RtiBrowser::saveSnapshotMetadata(QString fileName)
 
                 {
                     SpecularEnhancement* se = static_cast<SpecularEnhancement*> (getRenderingModes()->value(mode));
-                    createParameterChild(xmp, parametersBag, "kd", se->getKd());
-                    createParameterChild(xmp, parametersBag, "ks", se->getKs());
-                    createParameterChild(xmp, parametersBag, "exp", se->getExp());
+                    createParameterChild(xmp, parametersBag, "diffuseColor", se->getKd());
+                    createParameterChild(xmp, parametersBag, "specularity", se->getKs());
+                    createParameterChild(xmp, parametersBag, "highlightSize", se->getExp());
                 }
                 break;
 
@@ -1480,7 +1576,7 @@ void RtiBrowser::saveSnapshotMetadata(QString fileName)
                     NormalEnhancement* ne = static_cast<NormalEnhancement*> (getRenderingModes()->value(mode));
                     createParameterChild(xmp, parametersBag, "gain", ne->getGain());
     //                createParameterChild(xmp, parametersBag, "kd", ne->getKd());
-                    createParameterChild(xmp, parametersBag, "env", ne->getEnvIll());
+                    createParameterChild(xmp, parametersBag, "environment", ne->getEnvIll());
                 }
                 break;
 
@@ -1512,16 +1608,16 @@ void RtiBrowser::saveSnapshotMetadata(QString fileName)
 
                 {
                     DetailEnhancement* de = static_cast<DetailEnhancement*> (getRenderingModes()->value(mode));
-                    createParameterChild(xmp, parametersBag, "nOffSet", (float)de->getNOffset());
-                    createParameterChild(xmp, parametersBag, "minTileSize", (float)de->getMinTileSize());
-                    createParameterChild(xmp, parametersBag, "minLevel", (float)de->getMinLevel());
+                    createParameterChild(xmp, parametersBag, "localOffset", (float)de->getNOffset());
+                    createParameterChild(xmp, parametersBag, "tileSize", (float)de->getMinTileSize());
+                    createParameterChild(xmp, parametersBag, "numberInitialTiles", (float)de->getMinLevel());
                     createParameterChild(xmp, parametersBag, "sharpnessOperator", (float)de->getSharpnessOperator());
-                    createParameterChild(xmp, parametersBag, "sphereSample", (float)de->getSphereSampling());
-                    createParameterChild(xmp, parametersBag, "k1", de->getK1());
-                    createParameterChild(xmp, parametersBag, "k2", de->getK2());
+                    createParameterChild(xmp, parametersBag, "lightSampling", (float)de->getSphereSampling());
+                    createParameterChild(xmp, parametersBag, "k1Sharpness", de->getK1());
+                    createParameterChild(xmp, parametersBag, "k2Lightness", de->getK2());
                     createParameterChild(xmp, parametersBag, "threshold", de->getThreshold());
-                    createParameterChild(xmp, parametersBag, "filter", (float)de->getFilter());
-                    createParameterChild(xmp, parametersBag, "nIterSmoothing", (float)de->getNIterSmoothing());
+                    createParameterChild(xmp, parametersBag, "smoothingFilter", (float)de->getFilter());
+                    createParameterChild(xmp, parametersBag, "numberIterationSmoothing", (float)de->getNIterSmoothing());
                 }
                 break;
 
@@ -1529,15 +1625,15 @@ void RtiBrowser::saveSnapshotMetadata(QString fileName)
 
                 {
                     DynamicDetailEnh* dde = static_cast<DynamicDetailEnh*> (getRenderingModes()->value(mode));
-                    createParameterChild(xmp, parametersBag, "degreeOffSet", (float)dde->getDegreeOffset());
+                    createParameterChild(xmp, parametersBag, "degreeOffset", (float)dde->getDegreeOffset());
                     createParameterChild(xmp, parametersBag, "tileSize", (float)dde->getTileSize());
                     createParameterChild(xmp, parametersBag, "sharpnessOperator", (float)dde->getSharpnessOperator());
-                    createParameterChild(xmp, parametersBag, "sphereSample", (float)dde->getSphereSampling());
-                    createParameterChild(xmp, parametersBag, "k1", dde->getK1());
-                    createParameterChild(xmp, parametersBag, "k2", dde->getK2());
+                    createParameterChild(xmp, parametersBag, "lightSampling", (float)dde->getSphereSampling());
+                    createParameterChild(xmp, parametersBag, "k1Sharpness", dde->getK1());
+                    createParameterChild(xmp, parametersBag, "k2Lightness", dde->getK2());
                     createParameterChild(xmp, parametersBag, "threshold", dde->getThreshold());
-                    createParameterChild(xmp, parametersBag, "filter", (float)dde->getFilter());
-                    createParameterChild(xmp, parametersBag, "nIterSmoothing", (float)dde->getNIterSmoothing());
+                    createParameterChild(xmp, parametersBag, "smoothingFilter", (float)dde->getFilter());
+                    createParameterChild(xmp, parametersBag, "numberIterationSmoothing", (float)dde->getNIterSmoothing());
                 }
                 break;
 

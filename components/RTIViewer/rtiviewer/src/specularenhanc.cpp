@@ -31,16 +31,13 @@
 
 #include <omp.h>
 
-SpecularEControl::SpecularEControl(int kd, int ks, int exp, QWidget *parent) : QWidget(parent)
+SpecularEControl::SpecularEControl(int kd, int ks, int exp, int minExp, int maxExp, QWidget *parent) : QWidget(parent)
 {
     groups.append(new RenderControlGroup(this, "Diffuse Color", kd));
-//    groups.append(new RenderControlGroup(this, "Kd", kd));
     connect(groups.at(0)->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(kdChanged(int)));
     groups.append(new RenderControlGroup(this, "Specularity", ks));
-//    groups.append(new RenderControlGroup(this, "Ks", ks));
     connect(groups.at(1)->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(ksChanged(int)));
-    groups.append(new RenderControlGroup(this, "Highlight Size", exp));
-//    groups.append(new RenderControlGroup(this, "N", exp));
+    groups.append(new RenderControlGroup(this, "Highlight Size", exp, minExp, maxExp));
     connect(groups.at(2)->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(expChanged(int)));
     setLayout(createLayout());
 }
@@ -83,8 +80,9 @@ QWidget* SpecularEnhancement::getControl(QWidget* parent)
 {
     int initKd = roundParam((kd - minKd)*100/(maxKd - minKd));
     int initKs = roundParam((ks - minKs)*100/(maxKs - minKs));
-    int initExp = roundParam((exp - minExp)*100.0/(maxExp - minExp));
-	SpecularEControl* control = new SpecularEControl(initKd, initKs, initExp, parent);
+    int initExp = exp;
+//    int initExp = roundParam((exp - minExp)*100.0/(maxExp - minExp));
+    SpecularEControl* control = new SpecularEControl(initKd, initKs, initExp, minExp, maxExp, parent);
 	connect(control, SIGNAL(kdChanged(int)), this, SLOT(setKd(int)));
 	connect(control, SIGNAL(ksChanged(int)), this, SLOT(setKs(int)));
 	connect(control, SIGNAL(expChanged(int)), this, SLOT(setExp(int)));
@@ -139,14 +137,18 @@ void SpecularEnhancement::setKs(int value)
 
 float SpecularEnhancement::getExp()
 {
+    return exp;
+/*
     // Get exp as a value normalized to the range [0,100]
 
     return (exp - minExp)*100.0/(maxExp - minExp);
+*/
 }
 
 void SpecularEnhancement::setExp(int value)
 {
-	exp = minExp + value * (maxExp - minExp)/100;
+    exp = value;
+//    exp = minExp + value * (maxExp - minExp)/100;
 	emit refreshImage();
 }
 

@@ -477,6 +477,116 @@ void BookmarkControl::displayRendering(const Bookmark & bookmark)
 
     switch (bookmark.renderingMode)
     {
+/*        case DEFAULT:
+
+          // If we are using the default rendering, check if the image is
+          // a multi-view image by trying to cast the RenderingMode to DefaultMRti.
+          // If the cast succeeds, set the horizontal and vertical views.
+
+          // OPEN ISSUES:
+          //
+          // a) The code has not been compiled and will not compile in its current state.
+          //    In particular, it calls private methods to set the horizontal and vertical
+          //    sliders and the check box.
+          //
+          // b) It is possible that the values stored in the bookmark file (which were directly
+          //    retrieved from the sliders) use a different scale than setPosX() and setPosY().
+          //    Please read the code in ViewpointControl and DefaultMRti (in multiviewrti.h and .cpp).
+          //
+          // c) There is an open design issue about whether this code should be here or
+          //    somewhere else. Currently, the horizontal and vertical sliders are treated
+          //    as rendering mode controls. The problem with this architecture is it does not
+          //    allow multi-view RTI files to support any other rendering modes, such as diffuse
+          //    gain, specular enhancement, or normals visualization. The reason is that it would
+          //    not be possible to display the multi-view controls and the other rendering mode
+          //    controls at the same time because this would require two rendering modes (multi-view
+          //    and some other mode, such as specular enhancement, to be selected at the same
+          //    time. An additional problem is that the controls for both rendering modes would
+          //    occupy the same space on the GUI.
+          //
+          //    An alternate solution is to move the multi-view controls somewhere else on the
+          //    GUI and somewhere else in the code. The obvious place is to make them parallel
+          //    to controls such as the pan and zoom spinners, since they are controlling the
+          //    user's viewpoint (like pan and zoom), not the way the image is rendered (like
+          //    specular enhancement or normals visualization).
+          //
+          //    All of this is relevant to the bookmark and snapshot XMP files because it
+          //    dictates where the multiview information is stored in the file, what tags are
+          //    used, and where the information is processed in the code:
+          //
+          //    a) If multiview is considered another rendering mode, then the multiview
+          //       information should be part of the rendering parameters in the bookmark file,
+          //       use the rendering parameter tags, and be processed here.
+          //
+          //    b) If multiview is considered to be a way the user controls their viewpoint,
+          //       then the multiview information should be stored parallel to Pan and Zoom,
+          //       use tags like rti:HorizontalShift, rti:VerticalShift, and rti:NearestViewpoint,
+          //       and be processed next to the code that processes those tags.
+          //
+          //    Personally, I feel (b) is the correct choice, even if multiview continues
+          //    to use the rendering mode mechanism internally. However, this code is written
+          //    to use choice (a). If (b) is used (and multiview continues to internally use
+          //    the rendering mode mechanism), then the following changes need to be made:
+          //
+          //    a) Change the bookmark structure by adding fields for multiview (boolean),
+          //       horizontal shift, vertical shift, and nearest viewpoint.
+          //
+          //    b) In displayBookmark(), call a method that contains the code in this
+          //       case (the DEFAULT case). The method would first check if the multiview
+          //       boolean was set.
+          //
+          //    c) In loadBookmarkFile(), add code to read the rti:HorizontalShift,
+          //       rti:VerticalShift, and rti:NearestViewpoint tags and store these in
+          //       the bookmark structure. (With the current code, this would happen
+          //       in the existing code when rendering parameters are read.)
+          //
+          //    d) In saveBookmarkFile(), add code to store the values of the horizontal
+          //       and vertical shifts and nearest viewpoint fields of the bookmark
+          //       structure in the rti:HorizontalShift, rti:VerticalShift, and
+          //       rti:NearestViewpoint tags. These tags should be siblings of the tags
+          //       for zoom and pan.
+          //
+          //    e) In addBookmark(), pass the bookmark to a method (addShift()) that
+          //       uses the code that is currently in the DEFAULT case of getRenderingMode().
+          //       Modify the code to set the fields for horizontal and vertical shift
+          //       and nearest viewpoint instead of setting rendering parameters.
+          //
+          //    f) In RtiBrowser.saveSnapshotMetadata(), move the code currently in the
+          //       DEFAULT case of the switch statement that handles rendering modes to
+          //       a place higher in the method. It should instead create rti:HorizontalShift,
+          //       rti:VerticalShift, and rti:NearestViewpoint elements that are siblings
+          //       of the elements for zoom and pan.
+
+           {
+               DefaultMRti* mrti = dynamic_cast<DefaultMRti*>(rm);
+               if (mrti != 0)
+               {
+                   ViewpointControl * vc = (ViewpointControl*)renderingDialog->getRenderingControl();
+                   for (int j=0; j < bookmark.params.count(); j++)
+                   {
+                       RenderingParam param = bookmark.params.at(j);
+                       int value = roundParam(param.value);
+                       if (param.name == QString("horizontalShift"))
+                       {
+                           mrti->setPosX(value);
+                           vc->viewpointSlider->setValue(value); // WON'T COMPILE: viewpointSlider is private.
+                       }
+                       else if (param.name == QString("nearestViewpoint"))
+                       {
+                           // mrti->; // It does not appear that DefaultMRti cares about snapNearest. I believe this only affects viewpointSlider.
+                           vc->snapNearest->setCheckState(value); // WON'T COMPILE: snapNearest is private.
+                       }
+                       else if (param.name == QString("verticalShift"))
+                       {
+                           mrti->setPosY(value);
+                           vc->vertical->setValue(value); // WON'T COMPILE: vertical is private.
+                       }
+                   }
+                }
+            }
+            break;
+    }*/
+
         case DIFFUSE_GAIN:
 
             {
@@ -497,17 +607,17 @@ void BookmarkControl::displayRendering(const Bookmark & bookmark)
                 {
                     RenderingParam param = bookmark.params.at(j);
                     int value = roundParam(param.value);
-                    if (param.name == QString("kd"))
+                    if (param.name == QString("diffuseColor"))
                     {
                         se->setKd(value);
                         sec->groups.at(0)->spinBox->setValue(value);
                     }
-                    else if (param.name == QString("ks"))
+                    else if (param.name == QString("specularity"))
                     {
                         se->setKs(value);
                         sec->groups.at(1)->spinBox->setValue(value);
                     }
-                    else if (param.name == QString("exp"))
+                    else if (param.name == QString("highlightSize"))
                     {
                         se->setExp(value);
                         sec->groups.at(2)->spinBox->setValue(value);
@@ -532,7 +642,7 @@ void BookmarkControl::displayRendering(const Bookmark & bookmark)
                     }
 //                    else if (param.name == QString("kd"))
 //                        ne->setKd((int)param.value);
-                    else if (param.name == QString("env"))
+                    else if (param.name == QString("environment"))
                     {
                         ne->setEnvIll(value);
                         nec->groups.at(1)->spinBox->setValue(value);
@@ -594,25 +704,25 @@ void BookmarkControl::displayRendering(const Bookmark & bookmark)
                 for (int j=0; j < bookmark.params.count(); j++)
                 {
                     RenderingParam param = bookmark.params.at(j);
-                    if (param.name == QString("nOffSet"))
+                    if (param.name == QString("localOffset"))
                         o = (OffsetNum)((int)param.value);
-                    else if (param.name == QString("minTileSize"))
+                    else if (param.name == QString("tileSize"))
                         size = (TileSize)((int)param.value);
-                    else if (param.name == QString("minLevel"))
+                    else if (param.name == QString("numberInitialTiles"))
                         level = param.value;
                     else if (param.name == QString("sharpnessOperator"))
                         m = (SharpnessMeasures)((int)param.value);
-                    else if (param.name == QString("sphereSample"))
+                    else if (param.name == QString("lightSampling"))
                         ss = (SphereSampling)((int)param.value);
-                    else if (param.name == QString("k1"))
+                    else if (param.name == QString("k1Sharpness"))
                         k1 = param.value;
-                    else if (param.name == QString("k2"))
+                    else if (param.name == QString("k2Lightness"))
                         k2 = param.value;
                     else if (param.name == QString("threshold"))
                         t = param.value;
-                    else if (param.name == QString("filter"))
+                    else if (param.name == QString("smoothingFilter"))
                         f = (SmoothingFilter)((int)param.value);
-                    else if (param.name == QString("nIterSmoothing"))
+                    else if (param.name == QString("numberIterationSmoothing"))
                         nIter = param.value;
                 }
                 de->updateConfig(o, size, level, m, ss, k1, k2, t, f, nIter);
@@ -637,23 +747,23 @@ void BookmarkControl::displayRendering(const Bookmark & bookmark)
                 for (int j=0; j < bookmark.params.count(); j++)
                 {
                     RenderingParam param = bookmark.params.at(j);
-                    if (param.name == QString("degreeOffSet"))
+                    if (param.name == QString("degreeOffset"))
                         o = (int)param.value;
                     else if (param.name == QString("tileSize"))
                         size = (int)param.value;
                     else if (param.name == QString("sharpnessOperator"))
                         m = (SharpnessMeasuresDyn)((int)param.value);
-                    else if (param.name == QString("sphereSample"))
+                    else if (param.name == QString("lightSampling"))
                         ss = (SphereSamplingDyn)((int)param.value);
-                    else if (param.name == QString("k1"))
+                    else if (param.name == QString("k1Sharpness"))
                         k1 = param.value;
-                    else if (param.name == QString("k2"))
+                    else if (param.name == QString("k2Lightness"))
                         k2 = param.value;
                     else if (param.name == QString("threshold"))
                         t = param.value;
-                    else if (param.name == QString("filter"))
+                    else if (param.name == QString("smoothingFilter"))
                         f = (SmoothingFilterDyn)((int)param.value);
-                    else if (param.name == QString("nIterSmoothing"))
+                    else if (param.name == QString("numberIterationSmoothing"))
                         nIter = param.value;
                 }
                 dde->setOffset(o);
@@ -1062,6 +1172,28 @@ void BookmarkControl::getRenderingMode(Bookmark & bookmark)
     bookmark.params.clear();
     switch (bookmark.renderingMode)
     {
+/*
+        case DEFAULT:
+
+        {
+            // If we are using the default rendering, check if the image is a multi-
+            // view image by trying to cast the RenderingMode to DefaultMRti. If the
+            // cast succeeds, get the horizontal and vertical views.
+
+            // For more information about compiling this code and other issues, see
+            // the comments in displayRendering().
+
+            DefaultMRti* mrti = static_cast<DefaultMRti*> (browser->getRenderingModes()->value(bookmark.renderingMode));
+            if (mrti != 0)
+            {
+                bookmark.params.append(RenderingParam("horizontalShift", mrti->getCurrentPositionX())); // WON'T COMPILE: getCurrentPositionX() does not exist
+                bookmark.params.append(RenderingParam("nearestViewpoint", mrti->getUseFlow())); // WON'T COMPILE: getUseFlow() does not exist
+                bookmark.params.append(RenderingParam("verticalShift", mrti->getCurrentPositionY())); // WON'T COMPILE: getCurrentPositionX() does not exist
+            }
+        }
+        break;
+        */
+
         case DIFFUSE_GAIN:
 
             {
@@ -1074,9 +1206,9 @@ void BookmarkControl::getRenderingMode(Bookmark & bookmark)
 
             {
                 SpecularEnhancement* se = static_cast<SpecularEnhancement*> (browser->getRenderingModes()->value(bookmark.renderingMode));
-                bookmark.params.append(RenderingParam("kd", se->getKd()));
-                bookmark.params.append(RenderingParam("ks", se->getKs()));
-                bookmark.params.append(RenderingParam("exp", se->getExp()));
+                bookmark.params.append(RenderingParam("diffuseColor", se->getKd()));
+                bookmark.params.append(RenderingParam("specularity", se->getKs()));
+                bookmark.params.append(RenderingParam("highlightSize", se->getExp()));
             }
             break;
 
@@ -1086,7 +1218,7 @@ void BookmarkControl::getRenderingMode(Bookmark & bookmark)
                 NormalEnhancement* ne = static_cast<NormalEnhancement*> (browser->getRenderingModes()->value(bookmark.renderingMode));
                 bookmark.params.append(RenderingParam("gain", ne->getGain()));
 //                bookmark.params.append(RenderingParam("kd", ne->getKd()));
-                bookmark.params.append(RenderingParam("env", ne->getEnvIll()));
+                bookmark.params.append(RenderingParam("environment", ne->getEnvIll()));
             }
             break;
 
@@ -1118,16 +1250,16 @@ void BookmarkControl::getRenderingMode(Bookmark & bookmark)
 
             {
                 DetailEnhancement* de = static_cast<DetailEnhancement*> (browser->getRenderingModes()->value(bookmark.renderingMode));
-                bookmark.params.append(RenderingParam("nOffSet", (float)de->getNOffset()));
-                bookmark.params.append(RenderingParam("minTileSize", (float)de->getMinTileSize()));
-                bookmark.params.append(RenderingParam("minLevel", (float)de->getMinLevel()));
+                bookmark.params.append(RenderingParam("localOffset", (float)de->getNOffset()));
+                bookmark.params.append(RenderingParam("tileSize", (float)de->getMinTileSize()));
+                bookmark.params.append(RenderingParam("numberInitialTiles", (float)de->getMinLevel()));
                 bookmark.params.append(RenderingParam("sharpnessOperator", (float)de->getSharpnessOperator()));
-                bookmark.params.append(RenderingParam("sphereSample", (float)de->getSphereSampling()));
-                bookmark.params.append(RenderingParam("k1", de->getK1()));
-                bookmark.params.append(RenderingParam("k2", de->getK2()));
+                bookmark.params.append(RenderingParam("lightSampling", (float)de->getSphereSampling()));
+                bookmark.params.append(RenderingParam("k1Sharpness", de->getK1()));
+                bookmark.params.append(RenderingParam("k2Lightness", de->getK2()));
                 bookmark.params.append(RenderingParam("threshold", de->getThreshold()));
-                bookmark.params.append(RenderingParam("filter", (float)de->getFilter()));
-                bookmark.params.append(RenderingParam("nIterSmoothing", (float)de->getNIterSmoothing()));
+                bookmark.params.append(RenderingParam("smoothingFilter", (float)de->getFilter()));
+                bookmark.params.append(RenderingParam("numberIterationSmoothing", (float)de->getNIterSmoothing()));
             }
             break;
 
@@ -1135,15 +1267,15 @@ void BookmarkControl::getRenderingMode(Bookmark & bookmark)
 
             {
                 DynamicDetailEnh* dde = static_cast<DynamicDetailEnh*> (browser->getRenderingModes()->value(bookmark.renderingMode));
-                bookmark.params.append(RenderingParam("degreeOffSet", (float)dde->getDegreeOffset()));
+                bookmark.params.append(RenderingParam("degreeOffset", (float)dde->getDegreeOffset()));
                 bookmark.params.append(RenderingParam("tileSize", (float)dde->getTileSize()));
                 bookmark.params.append(RenderingParam("sharpnessOperator", (float)dde->getSharpnessOperator()));
-                bookmark.params.append(RenderingParam("sphereSample", (float)dde->getSphereSampling()));
-                bookmark.params.append(RenderingParam("k1", dde->getK1()));
-                bookmark.params.append(RenderingParam("k2", dde->getK2()));
+                bookmark.params.append(RenderingParam("lightSampling", (float)dde->getSphereSampling()));
+                bookmark.params.append(RenderingParam("k1Sharpness", dde->getK1()));
+                bookmark.params.append(RenderingParam("k2Lightness", dde->getK2()));
                 bookmark.params.append(RenderingParam("threshold", dde->getThreshold()));
-                bookmark.params.append(RenderingParam("filter", (float)dde->getFilter()));
-                bookmark.params.append(RenderingParam("nIterSmoothing", (float)dde->getNIterSmoothing()));
+                bookmark.params.append(RenderingParam("smoothingFilter", (float)dde->getFilter()));
+                bookmark.params.append(RenderingParam("numberIterationSmoothing", (float)dde->getNIterSmoothing()));
             }
             break;
 

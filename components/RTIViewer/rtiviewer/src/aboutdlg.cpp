@@ -385,7 +385,8 @@ char * AboutDlg::getDescHTML()
                 "from the University of California, Santa Cruz, the Universidade do "
                 "Minho in Portugal, Tom Malzbender of HP Labs, and CHI. Version 1.1 "
                 "was organized by CHI, majority funded from an additional IMLS grant, "
-                "and developed by Ronald Bourret, Gianpaolo Palma, and several volunteers.</p>"
+                "and developed by Ronald Bourret, Gianpaolo Palma, Leif Isaksen, and "
+                "several volunteers.</p>"
 
             "<p>This software is available under the Gnu General Public License, "
                 "version 3. To receive a copy of the source code, please email "

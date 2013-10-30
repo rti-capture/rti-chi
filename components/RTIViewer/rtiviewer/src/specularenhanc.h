@@ -47,7 +47,7 @@ public:
 	  \param exp value for specular exponent.
 	  \param parent
 	*/
-	SpecularEControl(int kd, int ks, int exp,  QWidget *parent = 0);
+    SpecularEControl(int kd, int ks, int exp,  int minExp, int maxExp, QWidget *parent = 0);
 
     bool eventFilter(QObject* watched, QEvent* event);
 
