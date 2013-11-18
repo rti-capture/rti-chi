@@ -533,6 +533,14 @@ static void getHSH(float theta, float phi, float* hweights, int order)
 	}
 }
 
+
+#ifdef WIN32
+static double trunc(double d)
+{ 
+	return (d>0) ? floor(d) : ceil(d);
+}
+#endif
+
 static int roundParam(float value)
 {
     // Apparently, Visual Studio does not support the standard C++ round

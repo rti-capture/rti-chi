@@ -1,7 +1,7 @@
 RTIViewer                                                         o o     
 Single and Multi-View Reflectance Transformation Image Viewer   o     o   
                                                                 _  O  _   
-Copyright	(C) 2008-2010                                        \/)\/    
+Copyright	(C) 2008-2013                                        \/)\/    
 Visual Computing Lab - ISTI CNR					              	/\/|      
 and											                       |      
 Cultural Heritage Imaging							               \      

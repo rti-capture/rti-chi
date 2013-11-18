@@ -48,11 +48,11 @@ echo "Starting to copying stuff in the bundle"
 rm -r -f $BUNDLE
 
 mkdir $BUNDLE
-cp -r bins/$APPNAME $BUNDLE
+cp -r bin/$APPNAME $BUNDLE
 
 mkdir $BUNDLE/$APPNAME/Contents/MacOS
 
-cp -r ../../rtiwebmaker/src/bin/rtiwebmaker $BUNDLE/rtiviewer.app/Contents/MacOS
+cp -r ../../rtiwebmaker/src/bin/rtiwebmaker $BUNDLE/$APPNAME/Contents/MacOS
 
 cp -r ../doc/manual.pdf $BUNDLE
 
@@ -80,26 +80,26 @@ echo "now trying to change the paths in the rtiviewer executable"
 
 for x in $QTCOMPONENTS
 do
-  install_name_tool -id  @executable_path/../Frameworks/$x.framework/Versions/4/$x $BUNDLE/rtiviewer.app/Contents/Frameworks/$x.framework/Versions/4/$x
+  install_name_tool -id  @executable_path/../Frameworks/$x.framework/Versions/4/$x $BUNDLE/$APPNAME/Contents/Frameworks/$x.framework/Versions/4/$x
 done
 
-install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/$QTGUI
+install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE $BUNDLE/$APPNAME/Contents/Frameworks/$QTGUI
   
-install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/$QTXML
+install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE $BUNDLE/$APPNAME/Contents/Frameworks/$QTXML
 
-install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/$QTNETWORK
+install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE $BUNDLE/$APPNAME/Contents/Frameworks/$QTNETWORK
 
-install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE $BUNDLE/rtiviewer.app/Contents/Frameworks/$QTOPENGL
+install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE $BUNDLE/$APPNAME/Contents/Frameworks/$QTOPENGL
 
-install_name_tool -change $QTGUI @executable_path/../Frameworks/$QTGUI $BUNDLE/rtiviewer.app/Contents/Frameworks/$QTOPENGL
+install_name_tool -change $QTGUI @executable_path/../Frameworks/$QTGUI $BUNDLE/$APPNAME/Contents/Frameworks/$QTOPENGL
 
 
 IMAGEFORMATSPLUGINS="libqjpeg.dylib libqgif.dylib libqtiff.dylib"
 for x in $IMAGEFORMATSPLUGINS
 do
-  cp $QTIMAGELIBSPATH/$x $BUNDLE/rtiviewer.app/Contents/plugins/imageformats
-  install_name_tool -change $QTCORE  @executable_path/../Frameworks/$QTCORE  $BUNDLE/rtiviewer.app/Contents/plugins/imageformats/$x 
-  install_name_tool -change $QTGUI   @executable_path/../Frameworks/$QTGUI   $BUNDLE/rtiviewer.app/Contents/plugins/imageformats/$x 
+  cp $QTIMAGELIBSPATH/$x $BUNDLE/$APPNAME/Contents/plugins/imageformats
+  install_name_tool -change $QTCORE  @executable_path/../Frameworks/$QTCORE  $BUNDLE/$APPNAME/Contents/plugins/imageformats/$x 
+  install_name_tool -change $QTGUI   @executable_path/../Frameworks/$QTGUI   $BUNDLE/$APPNAME/Contents/plugins/imageformats/$x 
 done
 
 echo "Now Changing " #--------------------------
@@ -107,25 +107,25 @@ echo "Now Changing " #--------------------------
 EXECNAMES="MacOS/rtiviewer" 
 for x in $EXECNAMES
 do
-  install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE       $BUNDLE/rtiviewer.app/Contents/$x
-  install_name_tool -change $QTGUI @executable_path/../Frameworks/$QTGUI         $BUNDLE/rtiviewer.app/Contents/$x
-  install_name_tool -change $QTNETWORK @executable_path/../Frameworks/$QTNETWORK $BUNDLE/rtiviewer.app/Contents/$x
-  install_name_tool -change $QTOPENGL @executable_path/../Frameworks/$QTOPENGL   $BUNDLE/rtiviewer.app/Contents/$x
-  install_name_tool -change $QTXML @executable_path/../Frameworks/$QTXML         $BUNDLE/rtiviewer.app/Contents/$x
+  install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE       $BUNDLE/$APPNAME/Contents/$x
+  install_name_tool -change $QTGUI @executable_path/../Frameworks/$QTGUI         $BUNDLE/$APPNAME/Contents/$x
+  install_name_tool -change $QTNETWORK @executable_path/../Frameworks/$QTNETWORK $BUNDLE/$APPNAME/Contents/$x
+  install_name_tool -change $QTOPENGL @executable_path/../Frameworks/$QTOPENGL   $BUNDLE/$APPNAME/Contents/$x
+  install_name_tool -change $QTXML @executable_path/../Frameworks/$QTXML         $BUNDLE/$APPNAME/Contents/$x
 done
 
 
 EXECNAMES="MacOS/rtiwebmaker" 
 for x in $EXECNAMES
 do
-  install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE       $BUNDLE/rtiviewer.app/Contents/$x
-  install_name_tool -change $QTGUI @executable_path/../Frameworks/$QTGUI         $BUNDLE/rtiviewer.app/Contents/$x
-  install_name_tool -change $QTXML @executable_path/../Frameworks/$QTXML         $BUNDLE/rtiviewer.app/Contents/$x
+  install_name_tool -change $QTCORE @executable_path/../Frameworks/$QTCORE       $BUNDLE/$APPNAME/Contents/$x
+  install_name_tool -change $QTGUI @executable_path/../Frameworks/$QTGUI         $BUNDLE/$APPNAME/Contents/$x
+  install_name_tool -change $QTXML @executable_path/../Frameworks/$QTXML         $BUNDLE/$APPNAME/Contents/$x
 done
 
 echo "Create link"
 cd ./$BUNDLE
-ln -s ./rtiviewer.app/Contents/MacOS/RTIWebMaker ./
+ln -s ./$APPNAME/Contents/MacOS/RTIWebMaker ./
 cd ../
 
 cd ../install 
