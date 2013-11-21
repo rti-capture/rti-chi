@@ -48,9 +48,12 @@ Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 OutFile "RTIViewerSetup-1.1.0-x86.exe"
 InstallDir "$PROGRAMFILES32\${DIR_INST_NAME}"
 
+RequestExecutionLevel admin
+
 ShowInstDetails show
 ShowUnInstDetails show
 Section "MainSection" SEC01
+  SetShellVarContext all
   SetOutPath "$INSTDIR"
   SetOverwrite on
   File "..\src\bin\RTIViewer-1.1.0.exe"
@@ -63,7 +66,7 @@ Section "MainSection" SEC01
   
   ;Let's delete all the dangerous stuff from previous releases.
   Delete "$INSTDIR\qt*.dll"
-  Delete "$INSTDIR\ming*.dll"
+  Delete "$INSTDIR\*.dll"
   Delete "$INSTDIR\imageformats\*.dll"
   
   SetOutPath "$INSTDIR\imageformats"
@@ -120,6 +123,7 @@ Function un.onInit
 FunctionEnd
 
 Section Uninstall
+  SetShellVarContext all
   Delete "$INSTDIR\qt*.dll"
   Delete "$INSTDIR\*.txt"
   Delete "$INSTDIR\*.pdf"
@@ -129,7 +133,6 @@ Section Uninstall
   Delete "$INSTDIR\*.dll"
   Delete "$INSTDIR\*.manifest"
   
-  Delete "$SMPROGRAMS\${DIR_INST_NAME}\Uninstall.lnk"
   Delete "$DESKTOP\${APPL_INST_NAME}.lnk"
   Delete "$SMPROGRAMS\${DIR_INST_NAME}\${APPL_INST_NAME}.lnk"
 
@@ -143,5 +146,5 @@ Section Uninstall
   ${unregisterExtension} ".mview" "Multi View RTI"
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey "HKCU" "Software\VCG\RTIViewer"
-  SetAutoClose true
+  SetAutoClose false
 SectionEnd
