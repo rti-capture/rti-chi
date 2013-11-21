@@ -8,8 +8,8 @@
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 !define QT_BASE "C:\Qt\4.8.4"
-!define DIR_INST_NAME "RTIViewer"
-!define APPL_INST_NAME "RTIViewer"
+!define DIR_INST_NAME "RTIViewer-1.1.0"
+!define APPL_INST_NAME "RTIViewer-1.1.0"
 
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
@@ -53,13 +53,13 @@ ShowUnInstDetails show
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite on
-  File "..\src\bin\RTIViewer.exe"
+  File "..\src\bin\RTIViewer-1.1.0.exe"
   File "..\..\rtiwebmaker\src\bin\rtiwebmaker.exe"
   File "..\doc\manual.pdf"
   
   CreateDirectory "$SMPROGRAMS\${DIR_INST_NAME}"
-  CreateShortCut "$SMPROGRAMS\${DIR_INST_NAME}\${APPL_INST_NAME}.lnk" "$INSTDIR\RTIViewer.exe"
-  CreateShortCut "$DESKTOP\${APPL_INST_NAME}.lnk" "$INSTDIR\RTIViewer.exe"
+  CreateShortCut "$SMPROGRAMS\${DIR_INST_NAME}\${APPL_INST_NAME}.lnk" "$INSTDIR\RTIViewer-1.1.0.exe"
+  CreateShortCut "$DESKTOP\${APPL_INST_NAME}.lnk" "$INSTDIR\RTIViewer-1.1.0.exe"
   
   ;Let's delete all the dangerous stuff from previous releases.
   Delete "$INSTDIR\qt*.dll"
@@ -93,20 +93,20 @@ Section -Post
   WriteUninstaller "$INSTDIR\uninst.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\rtiviewer.exe"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\RTIViewer-1.1.0.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
   
-  ${registerExtension} "$INSTDIR\RTIViewer.exe" ".ptm" "Polynomial Texture Map"
-  ${registerExtension} "$INSTDIR\RTIViewer.exe" ".rti" "RTI Image"
-  ${registerExtension} "$INSTDIR\RTIViewer.exe" ".hsh" "Hemispherical Harmonics"
-  ${registerExtension} "$INSTDIR\RTIViewer.exe" ".mview" "Multi View RTI"
+  ${registerExtension} "$INSTDIR\RTIViewer-1.1.0.exe" ".ptm" "Polynomial Texture Map"
+  ${registerExtension} "$INSTDIR\RTIViewer-1.1.0.exe" ".rti" "RTI Image"
+  ${registerExtension} "$INSTDIR\RTIViewer-1.1.0.exe" ".hsh" "Hemispherical Harmonics"
+  ${registerExtension} "$INSTDIR\RTIViewer-1.1.0.exe" ".mview" "Multi View RTI"
 SectionEnd
 
 
 Function LaunchLink
-  ExecShell "" "$INSTDIR\RTIViewer.exe"
+  ExecShell "" "$INSTDIR\RTIViewer-1.1.0.exe"
 FunctionEnd
 
 Function un.onUninstSuccess
